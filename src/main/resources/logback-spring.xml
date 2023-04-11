@@ -122,7 +122,7 @@
         <root level="info">
             <appender-ref ref="INFO_FILE"/>
             <appender-ref ref="ERROR_FILE"/>
-            <appender-ref ref="DEBUG_FILE"/>
+<!--            <appender-ref ref="DEBUG_FILE"/>-->
         </root>
     </springProfile>
 
