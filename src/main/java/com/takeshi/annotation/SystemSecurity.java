@@ -1,0 +1,57 @@
+package com.takeshi.annotation;
+
+import java.lang.annotation.*;
+
+/**
+ * <p>放弃某些类型的校验</p>
+ * and
+ * <p>入参和出参数据加密解密，前端传递加密的参数时，即使后台使用的是对象接收，
+ * 前端传递参数时也是传递rsa加密后的对象字符串过来</p>
+ *
+ * @author 七濑武【Nanase Takeshi】
+ * @date 2022/6/23 9:14
+ */
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface SystemSecurity {
+
+    /**
+     * 放弃校验token
+     *
+     * @return boolean
+     */
+    boolean token() default false;
+
+    /**
+     * 放弃校验APP端调用接口的平台，需要配置yml文件中的 takeshi.app-platform 参数才会生效
+     *
+     * @return boolean
+     */
+    boolean platform() default false;
+
+    /**
+     * 放弃校验参数签名，需要配置yml文件中的 takeshi.signature 参数才会生效
+     *
+     * @return boolean
+     */
+    boolean signature() default false;
+
+    /**
+     * 放弃上述所有类型的校验，此属性优先级别最高
+     *
+     * @return boolean
+     */
+    boolean all() default false;
+
+    /**
+     * 入参是否解密，默认不解密
+     */
+    boolean inDecode() default false;
+
+    /**
+     * 出参是否加密，默认不加密
+     */
+    boolean outEncode() default false;
+
+}

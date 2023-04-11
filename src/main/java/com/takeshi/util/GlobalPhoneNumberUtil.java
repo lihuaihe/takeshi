@@ -1,0 +1,67 @@
+package com.takeshi.util;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.takeshi.constants.SysCode;
+import com.takeshi.exception.TakeshiException;
+import lombok.SneakyThrows;
+
+/**
+ * 全球手机号码工具类
+ *
+ * @author 七濑武【Nanase Takeshi】
+ * @date 2023/3/21 12:01
+ */
+public final class GlobalPhoneNumberUtil {
+
+    public static final PhoneNumberUtil instance = PhoneNumberUtil.getInstance();
+
+    private GlobalPhoneNumberUtil() {
+    }
+
+    /**
+     * 测试电话号码是否与有效模式匹配
+     *
+     * @param countryCode
+     * @param number
+     * @return
+     */
+    @SneakyThrows
+    public static boolean isValidNumber(String countryCode, String number) {
+        return instance.isValidNumber(parse(countryCode, number));
+    }
+
+    /**
+     * 测试电话号码是否与有效模式匹配，不匹配抛出异常
+     *
+     * @param countryCode
+     * @param number
+     * @return
+     */
+    public static void checkNumber(String countryCode, String number) {
+        boolean validNumber;
+        try {
+            validNumber = instance.isValidNumber(parse(countryCode, number));
+        } catch (NumberParseException ignored) {
+            validNumber = false;
+        }
+        if (!validNumber) {
+            throw new TakeshiException(SysCode.MOBILE_VALIDATION);
+        }
+    }
+
+    /**
+     * 解析字符串并将其作为原始缓冲区格式的电话号码返回
+     *
+     * @param countryCode
+     * @param number
+     * @return
+     *
+     * @throws NumberParseException
+     */
+    public static Phonenumber.PhoneNumber parse(String countryCode, String number) throws NumberParseException {
+        return instance.parse(countryCode.concat(number), null);
+    }
+
+}

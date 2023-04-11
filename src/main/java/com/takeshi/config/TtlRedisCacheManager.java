@@ -1,0 +1,70 @@
+package com.takeshi.config;
+
+import cn.hutool.core.util.ObjUtil;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.takeshi.jackson.SimpleJavaTimeModule;
+import org.springframework.data.redis.cache.RedisCache;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.lang.Nullable;
+
+import java.time.Duration;
+
+/**
+ * TtlRedisCacheManager
+ *
+ * @author 七濑武【Nanase Takeshi】
+ */
+public class TtlRedisCacheManager extends RedisCacheManager {
+
+    private TtlRedisCacheManager(RedisCacheWriter cacheWriter, RedisCacheConfiguration defaultCacheConfiguration) {
+        super(cacheWriter, defaultCacheConfiguration);
+    }
+
+    /**
+     * 对cacheNames用#分割，第二个值为缓存时间（单位：秒）<br/>
+     * 如果没有#分割则使用{@link TtlRedisCacheManager#defaultInstance}设置的默认缓存时间
+     *
+     * @param name        must not be {@literal null}.
+     * @param cacheConfig can be {@literal null}.
+     * @return
+     */
+    @Override
+    protected RedisCache createRedisCache(String name, @Nullable RedisCacheConfiguration cacheConfig) {
+        String[] split = name.split("#");
+        name = split[0];
+        if (split.length > 1 && ObjUtil.isNotNull(cacheConfig)) {
+            long ttl = Long.parseLong(split[1]);
+            cacheConfig = cacheConfig.entryTtl(Duration.ofSeconds(ttl));
+        }
+        return super.createRedisCache(name, cacheConfig);
+    }
+
+    public static TtlRedisCacheManager defaultInstance(RedisConnectionFactory factory) {
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
+        // 配置DateTime相关的序列化
+        om.registerModule(new SimpleJavaTimeModule());
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                // Set cache expiration time
+                .entryTtl(Duration.ofDays(1))
+                // Set the serialization method of the key
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                // Set the serialization method of value
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(om, Object.class)))
+                // Do not cache null values
+                .disableCachingNullValues();
+
+        return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);
+    }
+
+}
