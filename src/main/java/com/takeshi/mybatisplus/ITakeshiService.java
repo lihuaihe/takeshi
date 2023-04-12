@@ -1,6 +1,7 @@
 package com.takeshi.mybatisplus;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -49,7 +50,7 @@ public interface ITakeshiService<T> extends IService<T> {
     default Page<T> buildSortPage(BasicSortPage basicSortPage) {
         Page<T> page = Page.of(basicSortPage.getPageNum(), basicSortPage.getPageSize());
         if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
-            page.addOrder(new OrderItem(basicSortPage.getSortColumn(), basicSortPage.isAsc()));
+            page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
         }
         return page;
     }

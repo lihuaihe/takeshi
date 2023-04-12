@@ -2,7 +2,6 @@ package com.takeshi.pojo.basic;
 
 import cn.hutool.core.util.StrUtil;
 import com.takeshi.constraints.CheckSortColumn;
-import com.takeshi.constraints.CheckString;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,9 +24,8 @@ public class BasicSortPage extends BasicPage {
     @Parameter(description = "排序字段", schema = @Schema(description = "排序字段"))
     private String sortColumn;
 
-    @CheckString(value = {"DESC", "ASC"})
-    @Parameter(description = "排序规则 DESC/ASC", schema = @Schema(description = "排序规则 DESC/ASC"))
-    private String sortRule;
+    @Parameter(description = "是否是生序排序", schema = @Schema(description = "是否是生序排序"))
+    private Boolean sortAsc;
 
     /**
      * 将传入的参数转成下划线方式
@@ -37,26 +35,6 @@ public class BasicSortPage extends BasicPage {
     public BasicSortPage setSortColumn(String sortColumn) {
         this.sortColumn = StrUtil.isBlank(sortColumn) ? TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime) : StrUtil.toUnderlineCase(sortColumn);
         return this;
-    }
-
-    /**
-     * 设置默认值
-     *
-     * @param sortRule
-     */
-    public BasicSortPage setSortRule(String sortRule) {
-        this.sortRule = StrUtil.blankToDefault(sortRule, "DESC");
-        return this;
-    }
-
-    /**
-     * 是否是正序排序
-     *
-     * @return boolean
-     */
-    @Schema(hidden = true)
-    public boolean isAsc() {
-        return !StrUtil.equals(this.sortRule, "ASC");
     }
 
 }
