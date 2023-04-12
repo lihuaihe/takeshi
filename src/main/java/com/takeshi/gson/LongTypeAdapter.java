@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
  * LongTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2023/3/14 15:37
  */
 public class LongTypeAdapter implements JsonSerializer<Long>, JsonDeserializer<Long> {
 

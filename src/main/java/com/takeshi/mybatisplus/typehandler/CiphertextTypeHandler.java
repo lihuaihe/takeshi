@@ -19,7 +19,6 @@ import java.sql.SQLException;
  * <p>将明文使用RSA算法加密存入数据库，从数据库取出来时解密</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @since 2022/4/18 18:04
  */
 public class CiphertextTypeHandler extends BaseTypeHandler<String> {
 

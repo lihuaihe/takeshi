@@ -20,7 +20,6 @@ import java.time.ZonedDateTime;
  * <p>存入数据库，从数据库中获取的时候也转成ZonedDateTime返回到实体类中</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/4/18 18:04
  */
 public class ZonedDateTimeTypeHandler extends BaseTypeHandler<ZonedDateTime> {
 

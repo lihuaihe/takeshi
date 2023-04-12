@@ -9,7 +9,6 @@ import java.lang.annotation.*;
  * 前端传递参数时也是传递rsa加密后的对象字符串过来</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/23 9:14
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -46,11 +45,15 @@ public @interface SystemSecurity {
 
     /**
      * 入参是否解密，默认不解密
+     *
+     * @return boolean
      */
     boolean inDecode() default false;
 
     /**
      * 出参是否加密，默认不加密
+     *
+     * @return boolean
      */
     boolean outEncode() default false;
 

@@ -10,7 +10,6 @@ import java.lang.reflect.Type;
  * DateTimeTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/14 14:54
  */
 public class DateTimeTypeAdapter implements JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
 

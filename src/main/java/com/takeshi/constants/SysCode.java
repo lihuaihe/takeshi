@@ -26,7 +26,7 @@ public interface SysCode {
     String VERSION_EXAMPLE_STR = "{sysCode.versionExample.message}";
 
     /**
-     * 数值超出范围 (<[{minInteger} ~ {maxInteger}]位>.<[{minFraction} ~ {maxFraction}]位> 预期)
+     * 数值超出范围 (&lt;[{minInteger} ~ {maxInteger}]位&gt;.&lt;[{minFraction} ~ {maxFraction}]位&gt; 预期)
      */
     String NUMBER_DIGITS_STR = "{sysCode.numberDigits.message}";
 

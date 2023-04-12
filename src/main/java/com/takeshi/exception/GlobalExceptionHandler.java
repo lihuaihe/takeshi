@@ -33,6 +33,12 @@ public class GlobalExceptionHandler {
 
     private static final String SQL_CAUSE = "java.sql.SQL";
 
+    /**
+     * 异常处理
+     *
+     * @param exception 异常
+     * @return {@link ResponseDataVO}
+     */
     @ExceptionHandler(Exception.class)
     public ResponseDataVO<Object> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
@@ -43,12 +49,24 @@ public class GlobalExceptionHandler {
         }
     }
 
+    /**
+     * sql异常处理
+     *
+     * @param exception 异常
+     * @return {@link ResponseDataVO}
+     */
     @ExceptionHandler({SQLException.class, DataAccessException.class})
     public ResponseDataVO<Object> sqlExceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.sqlExceptionHandler --> SQLException: ", exception);
         return ResponseDataVO.success(SysCode.DB_ERROR);
     }
 
+    /**
+     * 运行时异常处理
+     *
+     * @param runtimeException 异常
+     * @return {@link ResponseDataVO}
+     */
     @ExceptionHandler(RuntimeException.class)
     public ResponseDataVO<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
         Throwable rootCause = ExceptionUtil.getRootCause(runtimeException);
@@ -73,20 +91,27 @@ public class GlobalExceptionHandler {
         return ResponseDataVO.fail(rootCause.getMessage());
     }
 
+    /**
+     * 参数校验异常
+     *
+     * @param bindException 异常
+     * @return {@link ResponseDataVO}
+     */
     @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
     public ResponseDataVO<Object> parameterBindHandler(BindException bindException) {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
         assert fieldError != null;
+        //TODO
         return ResponseDataVO.success(SysCode.PARAMETER_ERROR.getCode(), StrUtil.BRACKET_START + fieldError.getField() + StrUtil.BRACKET_END + fieldError.getDefaultMessage());
     }
 
     /**
      * 全局异常拦截（拦截项目中的NotLoginException异常）
      *
-     * @param notLoginException
-     * @return
+     * @param notLoginException 登录异常
+     * @return {@link ResponseDataVO}
      */
     @ExceptionHandler(NotLoginException.class)
     public ResponseDataVO<Object> notLoginExceptionHandler(NotLoginException notLoginException) {
@@ -115,8 +140,8 @@ public class GlobalExceptionHandler {
     /**
      * 全局异常拦截（拦截项目中的NotRoleException异常）
      *
-     * @param notRoleException
-     * @return
+     * @param notRoleException 角色异常
+     * @return {@link ResponseDataVO}
      */
     @ExceptionHandler(NotRoleException.class)
     public ResponseDataVO<Object> notRoleExceptionHandler(NotRoleException notRoleException) {
@@ -127,8 +152,8 @@ public class GlobalExceptionHandler {
     /**
      * 全局异常拦截（拦截项目中的NotPermissionException异常）
      *
-     * @param notPermissionException
-     * @return
+     * @param notPermissionException 权限异常
+     * @return {@link ResponseDataVO}
      */
     @ExceptionHandler(NotPermissionException.class)
     public ResponseDataVO<Object> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
@@ -139,8 +164,8 @@ public class GlobalExceptionHandler {
     /**
      * 全局异常拦截（拦截项目中的DisableServiceException异常）
      *
-     * @param disableServiceException
-     * @return
+     * @param disableServiceException 禁用异常
+     * @return {@link ResponseDataVO}
      */
     @ExceptionHandler(DisableServiceException.class)
     public ResponseDataVO<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {

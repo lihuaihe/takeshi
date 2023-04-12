@@ -9,7 +9,6 @@ import java.time.LocalDate;
  * LocalDataTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/14 14:54
  */
 public class LocalDataTypeAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
 

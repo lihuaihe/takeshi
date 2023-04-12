@@ -22,7 +22,6 @@ import java.security.KeyPair;
  * 配置一些yml里面变量可以在static类/方法中使用
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/3/29 17:21
  */
 @Component("StaticConfig")
 public class StaticConfig {
@@ -82,6 +81,17 @@ public class StaticConfig {
      */
     public static RSA rsa;
 
+    /**
+     * 构造函数
+     *
+     * @param applicationName     applicationName
+     * @param active              active
+     * @param serverPort          serverPort
+     * @param messageSource       messageSource
+     * @param redissonClient      redissonClient
+     * @param stringRedisTemplate stringRedisTemplate
+     * @param takeshiProperties   takeshiProperties
+     */
     public StaticConfig(@Value("${spring.application.name}") String applicationName,
                         @Value("${spring.profiles.active}") String active,
                         @Value("${server.port}") String serverPort,
@@ -115,10 +125,20 @@ public class StaticConfig {
         StaticConfig.rsa = SecureUtil.rsa(privateKeyValue, publicKeyValue);
     }
 
+    /**
+     * 是dev环境
+     *
+     * @return boolean
+     */
     public static boolean isDevActive() {
         return StrUtil.equals("dev", StaticConfig.active);
     }
 
+    /**
+     * 是prod环境
+     *
+     * @return boolean
+     */
     public static boolean isProdActive() {
         return StrUtil.equals("prod", StaticConfig.active);
     }

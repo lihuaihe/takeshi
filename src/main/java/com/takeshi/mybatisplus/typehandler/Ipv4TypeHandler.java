@@ -19,7 +19,6 @@ import java.sql.SQLException;
  * <p>存入数据库，从数据库中获取的时候也转成ip v4地址：xx.xx.xx.xx返回到实体类中</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/4/18 18:04
  */
 public class Ipv4TypeHandler extends BaseTypeHandler<String> {
 

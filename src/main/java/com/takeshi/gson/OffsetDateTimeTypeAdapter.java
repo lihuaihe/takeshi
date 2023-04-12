@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
  * OffsetDateTimeTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/14 14:54
  */
 public class OffsetDateTimeTypeAdapter implements JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
 

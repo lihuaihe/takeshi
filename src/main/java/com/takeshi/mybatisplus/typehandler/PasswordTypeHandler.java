@@ -18,7 +18,6 @@ import java.sql.SQLException;
  * <p>将明文使用RSA算法加密存入数据库，从数据库取出来时不进行解密，只做加密</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/4/18 18:04
  */
 public class PasswordTypeHandler extends BaseTypeHandler<String> {
 

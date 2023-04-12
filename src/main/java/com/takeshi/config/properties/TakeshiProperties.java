@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
  * 自定义额外属性值
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/08/17 17:39
  */
 @Data
 @Configuration
@@ -50,11 +49,21 @@ public class TakeshiProperties {
      */
     private FirebaseCredentials firebaseCredentials = new FirebaseCredentials();
 
+    /**
+     * getProjectName
+     *
+     * @return String
+     */
     public String getProjectName() {
         Assert.isFalse(StrUtil.isBlank(this.projectName), "Properties {takeshi.projectName} is null");
         return this.projectName;
     }
 
+    /**
+     * setProjectName
+     *
+     * @param projectName projectName
+     */
     public void setProjectName(String projectName) {
         this.projectName = projectName;
         if (StrUtil.isNotBlank(projectName) && StrUtil.isBlank(this.getAwsCredentials().bucketName)) {
@@ -62,6 +71,9 @@ public class TakeshiProperties {
         }
     }
 
+    /**
+     * AWSSecretsManagerCredentials
+     */
     @Data
     public static class AWSSecretsManagerCredentials implements AWSCredentials {
         /**
@@ -81,11 +93,21 @@ public class TakeshiProperties {
          */
         private String region;
 
+        /**
+         * getBucketName
+         *
+         * @return String
+         */
         public String getBucketName() {
             Assert.isFalse(StrUtil.isBlank(this.bucketName), "Properties {takeshi.awsCredentials.bucketName} or {takeshi.projectName} is null");
             return this.bucketName;
         }
 
+        /**
+         * getRegion
+         *
+         * @return {@link Regions}
+         */
         public Regions getRegion() {
             return StrUtil.isBlank(this.region) ? Regions.GovCloud : Regions.fromName(this.region);
         }
@@ -101,6 +123,9 @@ public class TakeshiProperties {
         }
     }
 
+    /**
+     * MandrillCredentials
+     */
     @Data
     public static class MandrillCredentials {
         /**
@@ -117,6 +142,9 @@ public class TakeshiProperties {
         private String fromName;
     }
 
+    /**
+     * FirebaseCredentials
+     */
     @Data
     public static class FirebaseCredentials {
         /**

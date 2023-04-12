@@ -18,13 +18,15 @@ import java.util.Date;
  * SimpleJavaTimeModule
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:11
  */
 public final class SimpleJavaTimeModule extends SimpleModule {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 构造函数
+     */
     public SimpleJavaTimeModule() {
         super();
         addSerializer(Long.class, ToStringSerializer.instance);

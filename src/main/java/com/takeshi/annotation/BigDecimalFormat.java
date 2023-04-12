@@ -12,7 +12,6 @@ import java.lang.annotation.*;
  * 格式化BigDecimal，解析字符串转BigDecimal
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:16
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
@@ -36,7 +35,7 @@ public @interface BigDecimalFormat {
      * <li>光速大小为每秒,###米 =》 将格式嵌入文本</li>
      * </ul>
      *
-     * @return
+     * @return String
      */
     String pattern() default "0.00";
 

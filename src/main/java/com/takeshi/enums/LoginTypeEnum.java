@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.IEnum;
  * LoginTypeEnum
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/17 14:31
  */
 public enum LoginTypeEnum implements IEnum<String> {
 

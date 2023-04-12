@@ -14,6 +14,9 @@ import java.io.IOException;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
+/**
+ * TakeshiFilter
+ */
 @Configuration
 @Order(HIGHEST_PRECEDENCE)  // 优先级最高
 public class TakeshiFilter implements Filter {

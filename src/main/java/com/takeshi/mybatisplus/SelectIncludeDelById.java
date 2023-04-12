@@ -12,12 +12,10 @@ import org.apache.ibatis.scripting.defaults.RawSqlSource;
  * SelectIncludeDelById
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/15 16:01
  */
 public class SelectIncludeDelById extends AbstractMethod {
 
     /**
-     * @date 3.5.0
      * @see AbstractMethod#AbstractMethod(String)
      */
     public SelectIncludeDelById() {
@@ -26,7 +24,6 @@ public class SelectIncludeDelById extends AbstractMethod {
 
     /**
      * @param methodName 方法名
-     * @date 3.5.0
      */
     public SelectIncludeDelById(String methodName) {
         super(methodName);

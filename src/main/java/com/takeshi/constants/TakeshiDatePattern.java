@@ -9,26 +9,64 @@ import java.time.format.DateTimeFormatter;
  * 日期格式化类
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 10:00
  */
 public final class TakeshiDatePattern extends DatePattern {
 
+    /**
+     * MM-dd
+     */
     public static final String NORM_MONTH_DAY_PATTERN = "MM-dd";
+    /**
+     * MM-dd
+     */
     public static final FastDateFormat NORM_MONTH_DAY_FORMAT = FastDateFormat.getInstance(NORM_MONTH_DAY_PATTERN);
+    /**
+     * MM-dd
+     */
     public static final DateTimeFormatter NORM_MONTH_DAY_FORMATTER = createFormatter(NORM_MONTH_DAY_PATTERN);
 
+    /**
+     * dd MMM yyyy
+     */
     public static final String NORM_DATE_PATTERN_REVERSE = "dd MMM yyyy";
+    /**
+     * dd MMM yyyy
+     */
     public static final FastDateFormat NORM_DATE_REVERSE_FORMAT = FastDateFormat.getInstance(NORM_DATE_PATTERN_REVERSE);
+    /**
+     * dd MMM yyyy
+     */
     public static final DateTimeFormatter NORM_DATE_REVERSE_FORMATTER = createFormatter(NORM_DATE_PATTERN_REVERSE);
 
+    /**
+     * yyyy MMM
+     */
     public static final String SIMPLE_MONTH_PATTERN = "yyyy MMM";
+    /**
+     * yyyy MMM
+     */
     public static final FastDateFormat SIMPLE_MONTH_FORMAT = FastDateFormat.getInstance(SIMPLE_MONTH_PATTERN);
+    /**
+     * yyyy MMM
+     */
     public static final DateTimeFormatter SIMPLE_MONTH_FORMATTER = createFormatter(SIMPLE_MONTH_PATTERN);
 
+    /**
+     * MMM yyyy
+     */
     public static final String SIMPLE_MONTH_PATTERN_REVERSE = "MMM yyyy";
+    /**
+     * MMM yyyy
+     */
     public static final FastDateFormat SIMPLE_MONTH_REVERSE_FORMAT = FastDateFormat.getInstance(SIMPLE_MONTH_PATTERN_REVERSE);
+    /**
+     * MMM yyyy
+     */
     public static final DateTimeFormatter SIMPLE_MONTH_REVERSE_FORMATTER = createFormatter(SIMPLE_MONTH_PATTERN_REVERSE);
 
+    /**
+     * 构造函数
+     */
     private TakeshiDatePattern() {
     }
 

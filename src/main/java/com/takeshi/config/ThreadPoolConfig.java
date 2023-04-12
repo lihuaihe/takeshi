@@ -23,6 +23,11 @@ public class ThreadPoolConfig {
      */
     private final int CORE = Runtime.getRuntime().availableProcessors() + 1;
 
+    /**
+     * threadPoolTaskExecutor
+     *
+     * @return ThreadPoolTaskExecutor
+     */
     @Bean("threadPoolTaskExecutor")
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -43,6 +48,8 @@ public class ThreadPoolConfig {
 
     /**
      * 执行周期性或定时任务
+     *
+     * @return ScheduledExecutorService
      */
     @Bean("scheduledExecutorService")
     protected ScheduledExecutorService scheduledExecutorService() {

@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * RedisUtils
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/1/22 14:29
  */
 @Slf4j
 @Component
@@ -46,8 +45,8 @@ public class RedisComponent {
     /**
      * 字符串
      *
-     * @param key
-     * @return BoundValueOperations<String, String>
+     * @param key key
+     * @return BoundValueOperations
      */
     public BoundValueOperations<String, String> boundValueOps(String key) {
         return stringRedisTemplate.boundValueOps(key);
@@ -56,8 +55,8 @@ public class RedisComponent {
     /**
      * 写入缓存
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      */
     public void save(String key, String value) {
         this.boundValueOps(key).set(value);
@@ -66,8 +65,8 @@ public class RedisComponent {
     /**
      * 写入缓存设置失效时间
      *
-     * @param key
-     * @param value
+     * @param key        key
+     * @param value      value
      * @param expireTime 秒数
      */
     public void save(String key, String value, long expireTime) {
@@ -77,10 +76,10 @@ public class RedisComponent {
     /**
      * 写入缓存设置失效时间和时间单位
      *
-     * @param key
-     * @param value
-     * @param expireTime
-     * @param timeUnit
+     * @param key        key
+     * @param value      value
+     * @param expireTime 失效时间
+     * @param timeUnit   时间单位
      */
     public void save(String key, String value, long expireTime, TimeUnit timeUnit) {
         this.boundValueOps(key).set(value, expireTime, timeUnit);
@@ -89,9 +88,9 @@ public class RedisComponent {
     /**
      * 如果绑定键不存在，则设置绑定键以保存字符串写入缓存
      *
-     * @param key
-     * @param value
-     * @return Boolean
+     * @param key   key
+     * @param value value
+     * @return boolean
      */
     public Boolean saveIfAbsent(String key, String value) {
         return this.boundValueOps(key).setIfAbsent(value);
@@ -100,10 +99,10 @@ public class RedisComponent {
     /**
      * 如果绑定键不存在，则设置绑定键以保存字符串写入缓存设置失效时间
      *
-     * @param key
-     * @param value
+     * @param key        key
+     * @param value      value
      * @param expireTime 秒数
-     * @return Boolean
+     * @return boolean
      */
     public Boolean saveIfAbsent(String key, String value, long expireTime) {
         return this.boundValueOps(key).setIfAbsent(value, expireTime, TimeUnit.SECONDS);
@@ -112,11 +111,11 @@ public class RedisComponent {
     /**
      * 如果绑定键不存在，则设置绑定键以保存字符串写入缓存设置失效时间和时间单位
      *
-     * @param key
-     * @param value
-     * @param expireTime
-     * @param timeUnit
-     * @return Boolean
+     * @param key        key
+     * @param value      value
+     * @param expireTime 失效时间
+     * @param timeUnit   时间单位
+     * @return boolean
      */
     public Boolean saveIfAbsent(String key, String value, long expireTime, TimeUnit timeUnit) {
         return this.boundValueOps(key).setIfAbsent(value, expireTime, timeUnit);
@@ -125,9 +124,9 @@ public class RedisComponent {
     /**
      * 如果绑定键存在，则设置绑定键以保存字符串写入缓存
      *
-     * @param key
-     * @param value
-     * @return Boolean
+     * @param key   key
+     * @param value value
+     * @return boolean
      */
     public Boolean saveIfPresent(String key, String value) {
         return this.boundValueOps(key).setIfPresent(value);
@@ -136,10 +135,10 @@ public class RedisComponent {
     /**
      * 如果绑定键存在，则设置绑定键以保存字符串写入缓存设置失效时间
      *
-     * @param key
-     * @param value
+     * @param key        key
+     * @param value      value
      * @param expireTime 秒数
-     * @return Boolean
+     * @return boolean
      */
     public Boolean saveIfPresent(String key, String value, long expireTime) {
         return this.boundValueOps(key).setIfPresent(value, expireTime, TimeUnit.SECONDS);
@@ -148,11 +147,11 @@ public class RedisComponent {
     /**
      * 如果绑定键存在，则设置绑定键以保存字符串写入缓存设置失效时间和时间单位
      *
-     * @param key
-     * @param value
-     * @param expireTime
-     * @param timeUnit
-     * @return Boolean
+     * @param key        key
+     * @param value      value
+     * @param expireTime 失效时间
+     * @param timeUnit   时间单位
+     * @return boolean
      */
     public Boolean saveIfPresent(String key, String value, long expireTime, TimeUnit timeUnit) {
         return this.boundValueOps(key).setIfPresent(value, expireTime, timeUnit);
@@ -161,9 +160,9 @@ public class RedisComponent {
     /**
      * 写入缓存设置失效时间到指定时间
      *
-     * @param key
-     * @param value
-     * @param dateTime 毫秒数
+     * @param key      key
+     * @param value    value
+     * @param dateTime 希望在哪个时间失效，毫秒数
      */
     public void saveToDateTime(String key, String value, long dateTime) {
         long timeout = dateTime - ZonedDateTime.now().toInstant().toEpochMilli();
@@ -173,8 +172,8 @@ public class RedisComponent {
     /**
      * 写入缓存设置失效时间到当天晚上凌晨
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      */
     public void saveMidnight(String key, String value) {
         long timeout = ZonedDateTime.now().with(LocalTime.MAX).toInstant().toEpochMilli() - ZonedDateTime.now().toInstant().toEpochMilli();
@@ -184,8 +183,8 @@ public class RedisComponent {
     /**
      * 写入缓存设置失效时间到本周日晚上凌晨
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      */
     public void saveSunDayMidnight(String key, String value) {
         long timeout = ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX).toInstant().toEpochMilli() - ZonedDateTime.now().toInstant().toEpochMilli();
@@ -195,8 +194,8 @@ public class RedisComponent {
     /**
      * 发送短信验证码后写入缓存设置失效时间5分钟
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      */
     public void saveSmsCode(String key, String value) {
         this.boundValueOps(key).set(value, 5, TimeUnit.MINUTES);
@@ -205,8 +204,8 @@ public class RedisComponent {
     /**
      * 读取缓存
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return value
      */
     public String get(String key) {
         return this.boundValueOps(key).get();
@@ -215,8 +214,8 @@ public class RedisComponent {
     /**
      * 获取key的剩余有效时间
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return 剩余有效时间（秒）
      */
     public Long getExpire(String key) {
         return stringRedisTemplate.getExpire(key);
@@ -225,9 +224,9 @@ public class RedisComponent {
     /**
      * 获取key的剩余有效时间，并将时间转换成指定的时间单位返回
      *
-     * @param key
-     * @param timeUnit
-     * @return
+     * @param key      key
+     * @param timeUnit 指定时间单位
+     * @return 剩余有效时间
      */
     public Long getExpire(String key, TimeUnit timeUnit) {
         return stringRedisTemplate.getExpire(key, timeUnit);
@@ -236,7 +235,7 @@ public class RedisComponent {
     /**
      * 批量删除对应的key
      *
-     * @param keys
+     * @param keys keys
      */
     public void delete(Collection<String> keys) {
         stringRedisTemplate.delete(keys);
@@ -245,7 +244,7 @@ public class RedisComponent {
     /**
      * 批量删除对应的key
      *
-     * @param keys
+     * @param keys keys
      */
     public void delete(String... keys) {
         stringRedisTemplate.delete(Arrays.asList(keys));
@@ -254,7 +253,7 @@ public class RedisComponent {
     /**
      * 删除对应的key
      *
-     * @param key
+     * @param key key
      */
     public void delete(String key) {
         if (hasKey(key)) {
@@ -265,8 +264,8 @@ public class RedisComponent {
     /**
      * 查询所有匹配的key
      *
-     * @param pattern
-     * @return
+     * @param pattern 正则
+     * @return 匹配到的key集合
      */
     public Set<String> keys(String pattern) {
         return stringRedisTemplate.keys(pattern);
@@ -275,8 +274,8 @@ public class RedisComponent {
     /**
      * 判断缓存中是否有对应的key
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return boolean
      */
     public Boolean hasKey(String key) {
         return stringRedisTemplate.hasKey(key);
@@ -285,7 +284,8 @@ public class RedisComponent {
     /**
      * 将绑定键下存储为字符串值的整数值增加一
      *
-     * @param key
+     * @param key key
+     * @return 在管道/事务中使用时为空
      */
     public Long increment(String key) {
         return this.boundValueOps(key).increment();
@@ -294,8 +294,9 @@ public class RedisComponent {
     /**
      * 将绑定键下存储为字符串值的整数值增加{@code delta}
      *
-     * @param key
-     * @param delta
+     * @param key   key
+     * @param delta delta
+     * @return 在管道/事务中使用时为空
      */
     public Long increment(String key, long delta) {
         return this.boundValueOps(key).increment(delta);
@@ -304,8 +305,9 @@ public class RedisComponent {
     /**
      * 将绑定键下存储为字符串值的浮点数值增加{@code delta}
      *
-     * @param key
-     * @param delta
+     * @param key   key
+     * @param delta delta
+     * @return 在管道/事务中使用时为空
      */
     public Double increment(String key, double delta) {
         return this.boundValueOps(key).increment(delta);
@@ -314,7 +316,8 @@ public class RedisComponent {
     /**
      * 将绑定键下存储为字符串值的整数值减一
      *
-     * @param key
+     * @param key key
+     * @return 在管道/事务中使用时为空
      */
     public Long decrement(String key) {
         return this.boundValueOps(key).decrement();
@@ -323,8 +326,9 @@ public class RedisComponent {
     /**
      * 将绑定键下存储为字符串值的整数值减{@code delta}
      *
-     * @param key
-     * @param delta
+     * @param key   key
+     * @param delta delta
+     * @return 在管道/事务中使用时为空
      */
     public Long decrement(String key, long delta) {
         return this.boundValueOps(key).decrement(delta);
@@ -333,9 +337,9 @@ public class RedisComponent {
     /**
      * 将value附加到绑定键
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key   key
+     * @param value value
+     * @return 在管道/事务中使用时为空
      */
     public Integer append(String key, String value) {
         return this.boundValueOps(key).append(value);
@@ -344,9 +348,9 @@ public class RedisComponent {
     /**
      * 设置key的生存时间
      *
-     * @param key
-     * @param timeout
-     * @param unit
+     * @param key     key
+     * @param timeout 失效时间
+     * @param unit    时间单位
      */
     public void expire(String key, long timeout, TimeUnit unit) {
         this.boundValueOps(key).expire(timeout, unit);
@@ -355,8 +359,8 @@ public class RedisComponent {
     /**
      * hash哈希
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return BoundHashOperations
      */
     public BoundHashOperations<String, String, String> boundHashOps(String key) {
         return stringRedisTemplate.boundHashOps(key);
@@ -365,9 +369,9 @@ public class RedisComponent {
     /**
      * 哈希 添加
      *
-     * @param key
-     * @param hashKey
-     * @param value
+     * @param key     key
+     * @param hashKey hashKey
+     * @param value   value
      */
     public void hashPut(String key, String hashKey, String value) {
         this.boundHashOps(key).put(hashKey, value);
@@ -376,8 +380,8 @@ public class RedisComponent {
     /**
      * 哈希 添加
      *
-     * @param key
-     * @param map
+     * @param key key
+     * @param map map
      */
     public void hashPutAll(String key, Map<String, String> map) {
         this.boundHashOps(key).putAll(map);
@@ -386,10 +390,10 @@ public class RedisComponent {
     /**
      * 哈希 添加，仅当 hashKey 不存在时，才设置哈希 hashKey 的 value
      *
-     * @param key
-     * @param hashKey
-     * @param value
-     * @return
+     * @param key     key
+     * @param hashKey hashKey
+     * @param value   value
+     * @return boolean
      */
     public Boolean hashPutIfAbsent(String key, String hashKey, String value) {
         return this.boundHashOps(key).putIfAbsent(hashKey, value);
@@ -398,8 +402,8 @@ public class RedisComponent {
     /**
      * 哈希 在绑定键处获取整个哈希
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return map
      */
     public Map<String, String> hashEntries(String key) {
         return this.boundHashOps(key).entries();
@@ -408,9 +412,9 @@ public class RedisComponent {
     /**
      * 哈希获取数据
      *
-     * @param key
-     * @param hashKey
-     * @return
+     * @param key     key
+     * @param hashKey hashKey
+     * @return String
      */
     public String hashGet(String key, String hashKey) {
         return this.boundHashOps(key).get(hashKey);
@@ -419,8 +423,8 @@ public class RedisComponent {
     /**
      * 哈希根据key删除数据
      *
-     * @param key
-     * @param hashKeys
+     * @param key      key
+     * @param hashKeys hashKeys
      */
     public void hashDelete(String key, String... hashKeys) {
         this.boundHashOps(key).delete(Arrays.stream(hashKeys).toArray());
@@ -429,8 +433,8 @@ public class RedisComponent {
     /**
      * list列表
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return BoundListOperations
      */
     public BoundListOperations<String, String> boundListOps(String key) {
         return stringRedisTemplate.boundListOps(key);
@@ -439,8 +443,8 @@ public class RedisComponent {
     /**
      * list列表添加
      *
-     * @param key
-     * @param value
+     * @param key   key
+     * @param value value
      */
     public void listPush(String key, String value) {
         this.boundListOps(key).rightPush(value);
@@ -449,10 +453,10 @@ public class RedisComponent {
     /**
      * list列表获取
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return 在管道/事务中使用时为空
      */
     public List<String> listRange(String key, long start, long end) {
         return this.boundListOps(key).range(start, end);
@@ -461,8 +465,8 @@ public class RedisComponent {
     /**
      * Set集合
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return BoundSetOperations
      */
     public BoundSetOperations<String, String> boundSetOps(String key) {
         return stringRedisTemplate.boundSetOps(key);
@@ -471,21 +475,21 @@ public class RedisComponent {
     /**
      * Set集合添加
      *
-     * @param key
-     * @param value
+     * @param key    key
+     * @param values values
      */
-    public void setAdd(String key, String... value) {
-        if (ArrayUtil.isNotEmpty(value)) {
-            this.boundSetOps(key).add(value);
+    public void setAdd(String key, String... values) {
+        if (ArrayUtil.isNotEmpty(values)) {
+            this.boundSetOps(key).add(values);
         }
     }
 
     /**
      * Set集合移除元素
      *
-     * @param key
-     * @param values
-     * @return
+     * @param key    key
+     * @param values values
+     * @return 在管道/事务中使用时为空
      */
     public Long setRemove(String key, String... values) {
         if (ArrayUtil.isEmpty(values)) {
@@ -497,8 +501,8 @@ public class RedisComponent {
     /**
      * Set集合获取
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return Set
      */
     public Set<String> setMembers(String key) {
         return this.boundSetOps(key).members();
@@ -507,9 +511,9 @@ public class RedisComponent {
     /**
      * 检查Set集合中是否包含value
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key   key
+     * @param value value
+     * @return boolean
      */
     public Boolean setIsMembers(String key, String value) {
         return this.boundSetOps(key).isMember(value);
@@ -518,8 +522,8 @@ public class RedisComponent {
     /**
      * ZSet有序集合
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return BoundZSetOperations
      */
     public BoundZSetOperations<String, String> boundZSetOps(String key) {
         return stringRedisTemplate.boundZSetOps(key);
@@ -528,9 +532,9 @@ public class RedisComponent {
     /**
      * 有序集合添加
      *
-     * @param key
-     * @param value
-     * @param score
+     * @param key   key
+     * @param value value
+     * @param score score
      */
     public void zSetAdd(String key, String value, double score) {
         this.boundZSetOps(key).add(value, score);
@@ -540,9 +544,9 @@ public class RedisComponent {
      * 有序集合删除
      * 从排序集中删除值。返回已移除元素的数量。
      *
-     * @param key
-     * @param values
-     * @return
+     * @param key    key
+     * @param values values
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetRemove(String key, String... values) {
         return this.boundZSetOps(key).remove(Arrays.stream(values).toArray());
@@ -552,9 +556,9 @@ public class RedisComponent {
      * 有序集合添加
      * 从以键为绑定键的排序集中获取具有值的元素的分数
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key   key
+     * @param value value
+     * @return 在管道/事务中使用时为空
      */
     public Double zSetScore(String key, String value) {
         return this.boundZSetOps(key).score(value);
@@ -563,9 +567,9 @@ public class RedisComponent {
     /**
      * 有序集合添加分数
      *
-     * @param key
-     * @param value
-     * @param delta
+     * @param key   key
+     * @param value value
+     * @param delta delta
      */
     public void zSetIncrementScore(String key, String value, double delta) {
         this.boundZSetOps(key).incrementScore(value, delta);
@@ -574,10 +578,10 @@ public class RedisComponent {
     /**
      * 有序集合获取
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return Set
      */
     public Set<String> zSetRange(String key, long start, long end) {
         return this.boundZSetOps(key).range(start, end);
@@ -587,10 +591,10 @@ public class RedisComponent {
      * 有序集合删除
      * 使用绑定键从排序集中删除开始和结束之间范围内的元素
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetRemoveRange(String key, long start, long end) {
         return this.boundZSetOps(key).removeRange(start, end);
@@ -600,9 +604,9 @@ public class RedisComponent {
      * 有序集合删除
      * 使用绑定键从排序集中删除 org.springframework.data.redis.connection.RedisZSetCommands.Range 中的元素。
      *
-     * @param key
-     * @param range
-     * @return
+     * @param key   key
+     * @param range range
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetRemoveRange(String key, Range<String> range) {
         return this.boundZSetOps(key).removeRangeByLex(range);
@@ -611,10 +615,10 @@ public class RedisComponent {
     /**
      * 有序集合获取
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return Set
      */
     public Set<String> zSetReverseRange(String key, long start, long end) {
         return this.boundZSetOps(key).reverseRange(start, end);
@@ -623,10 +627,10 @@ public class RedisComponent {
     /**
      * 有序集合获取
      *
-     * @param key
-     * @param min
-     * @param max
-     * @return
+     * @param key key
+     * @param min min
+     * @param max max
+     * @return Set
      */
     public Set<String> zSetRangeByScore(String key, double min, double max) {
         return this.boundZSetOps(key).rangeByScore(min, max);
@@ -636,10 +640,10 @@ public class RedisComponent {
      * 有序集合删除
      * 使用绑定键从排序集中删除分数在 min 和 max 之间的元素。
      *
-     * @param key
-     * @param min
-     * @param max
-     * @return
+     * @param key key
+     * @param min min
+     * @param max max
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetRemoveRange(String key, double min, double max) {
         return this.boundZSetOps(key).removeRangeByScore(min, max);
@@ -648,10 +652,10 @@ public class RedisComponent {
     /**
      * 有序集合获取
      *
-     * @param key
-     * @param min
-     * @param max
-     * @return
+     * @param key key
+     * @param min min
+     * @param max max
+     * @return Set
      */
     public Set<String> zSetReverseRangeByScore(String key, double min, double max) {
         return this.boundZSetOps(key).reverseRangeByScore(min, max);
@@ -660,9 +664,9 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key   key
+     * @param value value
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetRank(String key, String value) {
         return this.boundZSetOps(key).rank(value);
@@ -671,9 +675,9 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key   key
+     * @param value value
+     * @return 在管道/事务中使用时为空
      */
     public Long zSetReverseRank(String key, String value) {
         return this.boundZSetOps(key).reverseRank(value);
@@ -682,10 +686,10 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return Set
      */
     public Set<ZSetOperations.TypedTuple<String>> zSetRankWithScore(String key, long start, long end) {
         return this.boundZSetOps(key).rangeWithScores(start, end);
@@ -694,10 +698,10 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param start
-     * @param end
-     * @return
+     * @param key   key
+     * @param start start
+     * @param end   end
+     * @return Set
      */
     public Set<ZSetOperations.TypedTuple<String>> zSetReverseRangeWithScores(String key, long start, long end) {
         return this.boundZSetOps(key).reverseRangeWithScores(start, end);
@@ -706,10 +710,10 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param min
-     * @param max
-     * @return
+     * @param key key
+     * @param min min
+     * @param max max
+     * @return Set
      */
     public Set<ZSetOperations.TypedTuple<String>> zSetRangeByScoreWithScores(String key, long min, long max) {
         return this.boundZSetOps(key).rangeByScoreWithScores(min, max);
@@ -718,10 +722,10 @@ public class RedisComponent {
     /**
      * 有序集合获取排名
      *
-     * @param key
-     * @param min
-     * @param max
-     * @return
+     * @param key key
+     * @param min min
+     * @param max max
+     * @return Set
      */
     public Set<ZSetOperations.TypedTuple<String>> zSetReverseRangeByScoreWithScores(String key, long min, long max) {
         return this.boundZSetOps(key).reverseRangeByScoreWithScores(min, max);
@@ -730,8 +734,8 @@ public class RedisComponent {
     /**
      * 地理操作
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return BoundGeoOperations
      */
     public BoundGeoOperations<String, String> boundGeoOps(String key) {
         return stringRedisTemplate.boundGeoOps(key);
@@ -744,7 +748,7 @@ public class RedisComponent {
      * @param lon    经度
      * @param lat    维度
      * @param member 名称
-     * @return
+     * @return 添加的元素数。在管道/事务中使用时为空
      */
     public Long geoAdd(String key, double lon, double lat, String member) {
         return this.boundGeoOps(key).add(new Point(lon, lat), member);
@@ -755,7 +759,7 @@ public class RedisComponent {
      *
      * @param key      key
      * @param location 位置
-     * @return
+     * @return 添加的元素数。在管道/事务中使用时为空
      */
     public Long geoAdd(String key, RedisGeoCommands.GeoLocation<String> location) {
         return this.boundGeoOps(key).add(location);
@@ -764,9 +768,9 @@ public class RedisComponent {
     /**
      * 将成员/Point对的Map添加到指定key中
      *
-     * @param key
-     * @param memberCoordinateMap
-     * @return
+     * @param key                 key
+     * @param memberCoordinateMap memberCoordinateMap
+     * @return 添加的元素数。在管道/事务中使用时为空
      */
     public Long geoAdd(String key, Map<String, Point> memberCoordinateMap) {
         return this.boundGeoOps(key).add(memberCoordinateMap);
@@ -775,9 +779,9 @@ public class RedisComponent {
     /**
      * 将 {@link RedisGeoCommands.GeoLocation} 集合添加到指定key中
      *
-     * @param key
-     * @param locations
-     * @return
+     * @param key       key
+     * @param locations locations
+     * @return 添加的元素数。在管道/事务中使用时为空
      */
     public Long geoAdd(String key, Iterable<RedisGeoCommands.GeoLocation<String>> locations) {
         return this.boundGeoOps(key).add(locations);
@@ -786,9 +790,9 @@ public class RedisComponent {
     /**
      * 获取一个或多个成员的位置的 {@link Point} 表示
      *
-     * @param key
-     * @param members
-     * @return
+     * @param key     key
+     * @param members members
+     * @return 坐标集合
      */
     public List<Point> geoPosition(String key, String... members) {
         return this.boundGeoOps(key).position(members);
@@ -797,10 +801,10 @@ public class RedisComponent {
     /**
      * 获取 member1 和 member2 之间的距离
      *
-     * @param key
-     * @param member1
-     * @param member2
-     * @return
+     * @param key     key
+     * @param member1 member1
+     * @param member2 member2
+     * @return 距离
      */
     public Distance geoDistance(String key, String member1, String member2) {
         return this.boundGeoOps(key).distance(member1, member2);
@@ -809,11 +813,11 @@ public class RedisComponent {
     /**
      * 获取给定指标中 member1 和 member2 之间的距离
      *
-     * @param key
-     * @param member1
-     * @param member2
-     * @param metric
-     * @return
+     * @param key     key
+     * @param member1 member1
+     * @param member2 member2
+     * @param metric  metric
+     * @return 距离
      */
     public Distance geoDistance(String key, String member1, String member2, Metric metric) {
         return this.boundGeoOps(key).distance(member1, member2, metric);
@@ -826,7 +830,7 @@ public class RedisComponent {
      * @param lon      经度
      * @param lat      维度
      * @param distance 距离
-     * @return
+     * @return GeoResults
      */
     public GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius(String key, double lon, double lat,
                                                                       double distance) {
@@ -841,7 +845,7 @@ public class RedisComponent {
      * @param lat      维度
      * @param distance 距离
      * @param metrics  距离单位
-     * @return
+     * @return GeoResults
      */
     public GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius(String key, double lon, double lat,
                                                                       double distance, Metrics metrics) {
@@ -857,7 +861,7 @@ public class RedisComponent {
      * @param distance 距离
      * @param metrics  距离单位
      * @param count    指定的个数
-     * @return
+     * @return GeoResults
      */
     public GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius(String key, double lon, double lat,
                                                                       double distance, Metrics metrics, long count) {
@@ -872,7 +876,7 @@ public class RedisComponent {
      * @param key      key
      * @param member   成员
      * @param distance 距离
-     * @return
+     * @return GeoResults
      */
     public GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius(String key, String member, double distance) {
         return this.boundGeoOps(key).radius(member, new Distance(distance, Metrics.KILOMETERS));
@@ -881,9 +885,9 @@ public class RedisComponent {
     /**
      * 移除成员
      *
-     * @param key
-     * @param members
-     * @return
+     * @param key     key
+     * @param members members
+     * @return 删除的元素数。在管道/事务中使用时为空
      */
     public Long geoRemove(String key, String... members) {
         return this.boundGeoOps(key).remove(members);
@@ -892,9 +896,9 @@ public class RedisComponent {
     /**
      * 获取一个或多个成员的位置的 Geohash 表示
      *
-     * @param key
-     * @param members
-     * @return
+     * @param key     key
+     * @param members members
+     * @return 除非在管道事务中使用，否则永远不会为 null
      */
     public List<String> geoHash(String key, String... members) {
         return this.boundGeoOps(key).hash(members);
@@ -952,7 +956,7 @@ public class RedisComponent {
     }
 
     /**
-     * 返回与指定 <code>locks<code> 关联的 MultiLock 实例
+     * 返回与指定 <code>locks</code> 关联的 MultiLock 实例
      *
      * @param locks - 锁的集合
      * @return 多锁对象
@@ -963,7 +967,7 @@ public class RedisComponent {
 
     /**
      * 按名称返回 Lock 实例
-     * <p> 实现一个 <b>fair<b> 锁定，以保证线程的获取顺序</p>
+     * <p> 实现一个 <b>fair</b> 锁定，以保证线程的获取顺序</p>
      * 为了提高故障转移期间的可靠性，所有操作都等待传播到所有 Redis 从站
      *
      * @param key - 对象名称

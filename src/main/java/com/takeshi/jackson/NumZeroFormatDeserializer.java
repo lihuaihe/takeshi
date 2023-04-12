@@ -12,7 +12,6 @@ import java.io.IOException;
  * 数字字符串去掉首位的零，JSON反序列化使用
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/5/18 16:36
  */
 public class NumZeroFormatDeserializer extends JsonDeserializer<String> {
 

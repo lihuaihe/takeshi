@@ -12,15 +12,20 @@ import java.time.ZonedDateTime;
  * ZonedDateTimeTakeshiSerializer
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:11
  */
 @JacksonStdImpl
 public class ZonedDateTimeTakeshiSerializer extends StdSerializer<ZonedDateTime> {
 
+    /**
+     * 构造函数
+     */
     protected ZonedDateTimeTakeshiSerializer() {
         super(ZonedDateTime.class);
     }
 
+    /**
+     * ZonedDateTimeTakeshiSerializer Instance
+     */
     public static final ZonedDateTimeTakeshiSerializer INSTANCE = new ZonedDateTimeTakeshiSerializer();
 
     @Override

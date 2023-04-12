@@ -25,7 +25,6 @@ import java.util.List;
  * UploadController
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/10/13 09:27
  */
 @Validated
 @RestController
@@ -33,6 +32,16 @@ import java.util.List;
 @Tag(name = "上传文件")
 public class UploadController extends BaseController {
 
+    /**
+     * 上传文件
+     *
+     * @param file file
+     * @param sync sync
+     * @return ResponseDataVO
+     * @throws IOException          IOException
+     * @throws InterruptedException InterruptedException
+     * @throws MimeTypeException    MimeTypeException
+     */
     @SystemSecurity(all = true)
     @Operation(summary = "上传文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
@@ -44,6 +53,16 @@ public class UploadController extends BaseController {
         return success(AmazonS3Util.addFile(file, sync));
     }
 
+    /**
+     * 上传多个文件
+     *
+     * @param files files
+     * @param sync  sync
+     * @return ResponseDataVO
+     * @throws InterruptedException InterruptedException
+     * @throws IOException          IOException
+     * @throws MimeTypeException    MimeTypeException
+     */
     @SystemSecurity(all = true)
     @Operation(summary = "上传多个文件", description = "上传多个文件，最多同时上传9个文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)

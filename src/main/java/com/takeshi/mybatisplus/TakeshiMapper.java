@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
  * TakeshiMapper
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/15 14:48
  */
 public interface TakeshiMapper<T> extends BaseMapper<T> {
 
@@ -172,7 +171,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @param column  查询的字段
      * @param val     查询的值
      * @param resBean 异常信息对象
-     * @param args
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     default void columnExists(SFunction<T, ?> column, Object val, ResponseDataVO.ResBean resBean, Object... args) {
         if (this.exists(Wrappers.lambdaQuery(this.getEntityClass()).eq(column, val))) {
@@ -333,7 +332,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @param id     主键ID值
      * @param column 需要更新的字段
      * @param val    更新后的值
-     * @return
+     * @return boolean
      */
     default boolean updateColumnById(Serializable id, SFunction<T, ?> column, Serializable val) {
         TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
@@ -371,8 +370,8 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     /**
      * 根据 TableId 逻辑删除
      *
-     * @param id
-     * @return
+     * @param id id
+     * @return boolean
      */
     default boolean logicDeleteById(Serializable id) {
         TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());

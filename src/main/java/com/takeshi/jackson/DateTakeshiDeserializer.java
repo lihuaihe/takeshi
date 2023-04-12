@@ -14,13 +14,18 @@ import java.util.Date;
  * DateTakeshiDeserializer
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:11
  */
 @JacksonStdImpl
 public class DateTakeshiDeserializer extends StdDeserializer<Date> {
 
+    /**
+     * 实例
+     */
     public static final DateTakeshiDeserializer INSTANCE = new DateTakeshiDeserializer();
 
+    /**
+     * 构造函数
+     */
     protected DateTakeshiDeserializer() {
         super(Date.class);
     }

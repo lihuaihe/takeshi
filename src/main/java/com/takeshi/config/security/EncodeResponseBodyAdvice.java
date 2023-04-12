@@ -23,7 +23,6 @@ import java.util.Objects;
  * 返回结果中的data字段加密
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/6/3 11:37
  */
 @Slf4j
 @RestControllerAdvice

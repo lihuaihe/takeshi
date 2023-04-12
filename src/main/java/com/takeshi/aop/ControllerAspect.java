@@ -63,6 +63,12 @@ public class ControllerAspect {
     private final ObjectMapper objectMapper;
     private final RedissonClient redissonClient;
 
+    /**
+     * AOP环绕
+     *
+     * @param proceedingJoinPoint 程序加入点
+     * @return Object
+     */
     @Around("execution(* com..*..controller..*(..))")
     @AfterThrowing
     public Object around(ProceedingJoinPoint proceedingJoinPoint) {
@@ -97,9 +103,9 @@ public class ControllerAspect {
     /**
      * 重复提交
      *
-     * @param request
-     * @param signature
-     * @param args
+     * @param request   HttpServletRequest
+     * @param signature MethodSignature
+     * @param args      args
      */
     private void isRepeatSubmit(HttpServletRequest request, MethodSignature signature, Object[] args) {
         List<Object> list = Stream.of(args)

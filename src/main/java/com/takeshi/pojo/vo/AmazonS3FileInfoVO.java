@@ -12,7 +12,6 @@ import lombok.experimental.Accessors;
  * AmazonS3FileInfoVO
  *
  * @author 七濑武【Nanase Takeshi】
- * @since 2023/1/31 16:30
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -21,16 +20,34 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AmazonS3FileInfoVO extends AbstractBasicSerializable {
+    /**
+     * 文件URL
+     */
     @Schema(description = "文件URL")
     private String url;
+    /**
+     * 文件名称
+     */
     @Schema(description = "文件名称")
     private String fileName;
+    /**
+     * 文件类型
+     */
     @Schema(description = "文件类型")
     private String contentType;
+    /**
+     * 文件扩展名
+     */
     @Schema(description = "文件扩展名")
     private String extensionName;
+    /**
+     * 文件创建时间
+     */
     @Schema(description = "文件创建时间")
     private String createTime;
+    /**
+     * 文件大小（单位：字节）
+     */
     @Schema(description = "文件大小（单位：字节）")
     private Long size;
 }

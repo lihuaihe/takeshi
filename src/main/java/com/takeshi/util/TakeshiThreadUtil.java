@@ -14,11 +14,16 @@ public final class TakeshiThreadUtil {
 
     private static final long TIMEOUT = 120L;
 
+    /**
+     * 构造函数
+     */
     private TakeshiThreadUtil() {
     }
 
     /**
      * sleep等待,单位为毫秒
+     *
+     * @param milliseconds 等待时间（毫秒）
      */
     public static void sleep(long milliseconds) {
         try {
@@ -33,6 +38,9 @@ public final class TakeshiThreadUtil {
      * 如果超时, 则调用shutdownNow, 取消在workQueue中Pending的任务,并中断所有阻塞函数.
      * 如果仍然超時，則強制退出.
      * 另对在shutdown时线程本身被调用中断做了处理.
+     *
+     * @param pool    pool
+     * @param timeout timeout
      */
     public static void shutdownAndAwaitTermination(ExecutorService pool, long timeout) {
         if (pool != null && !pool.isShutdown()) {
@@ -63,6 +71,9 @@ public final class TakeshiThreadUtil {
 
     /**
      * 打印线程异常信息
+     *
+     * @param r r
+     * @param t t
      */
     public static void printException(Runnable r, Throwable t) {
         if (t == null && r instanceof Future<?>) {
@@ -83,4 +94,5 @@ public final class TakeshiThreadUtil {
             log.error(t.getMessage(), t);
         }
     }
+
 }

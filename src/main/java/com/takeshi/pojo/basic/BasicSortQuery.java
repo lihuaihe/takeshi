@@ -12,7 +12,6 @@ import lombok.experimental.Accessors;
  * BasicSortQuery
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/6/1 11:11
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -20,14 +19,23 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class BasicSortQuery extends BasicSortPage {
 
+    /**
+     * 关键字模糊搜索
+     */
     @NumZeroFormat
     @Parameter(description = "关键字模糊搜索", schema = @Schema(description = "关键字模糊搜索"))
     private String keyword;
 
+    /**
+     * 开始时间
+     */
     @NumberDigits(minInteger = 13, maxInteger = 13)
     @Parameter(description = "开始时间", schema = @Schema(description = "开始时间"))
     private Long startTime;
 
+    /**
+     * 结束时间
+     */
     @NumberDigits(minInteger = 13, maxInteger = 13)
     @Parameter(description = "结束时间", schema = @Schema(description = "结束时间"))
     private Long endTime;

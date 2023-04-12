@@ -26,7 +26,6 @@ import java.sql.SQLException;
  * <p>@TableField(typeHandler = GeoPointTypeHandler.class)</p>
  *
  * @author 七濑武【Nanase Takeshi】
- * @since 2022/4/18 18:04
  */
 public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
 

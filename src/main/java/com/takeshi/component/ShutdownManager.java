@@ -22,6 +22,9 @@ public class ShutdownManager {
 
     private static final long TIMEOUT = 60;
 
+    /**
+     * destroy
+     */
     @PreDestroy
     public void destroy() {
         shutdownAsyncManager();

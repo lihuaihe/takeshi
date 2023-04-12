@@ -10,7 +10,6 @@ import java.lang.annotation.*;
  * 去掉字符串前面多余的零
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/5/18 14:52
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

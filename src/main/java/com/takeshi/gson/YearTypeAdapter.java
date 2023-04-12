@@ -9,7 +9,6 @@ import java.time.Year;
  * YearTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/14 14:54
  */
 public class YearTypeAdapter implements JsonSerializer<Year>, JsonDeserializer<Year> {
 

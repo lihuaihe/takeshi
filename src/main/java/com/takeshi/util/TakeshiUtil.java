@@ -38,22 +38,24 @@ import java.util.*;
  * 工具类
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/5/31 17:36
  */
 @Slf4j
 public final class TakeshiUtil {
 
     private static final String LOCAL_IP = "0:0:0:0:0:0:0:1";
 
+    /**
+     * 构造函数
+     */
     private TakeshiUtil() {
     }
 
     /**
      * 解析lambda方法名转成属性名
      *
-     * @param func
-     * @param <T>
-     * @return
+     * @param func func
+     * @param <T>  T
+     * @return String
      */
     public static <T> String lambdaExtract(SFunction<T, ?> func) {
         return PropertyNamer.methodToProperty(LambdaUtils.extract(func).getImplMethodName());
@@ -62,7 +64,7 @@ public final class TakeshiUtil {
     /**
      * 判断是ios还是android
      *
-     * @param request
+     * @param request request
      * @return 1: ios, 2: android
      */
     public static int getDeviceType(HttpServletRequest request) {
@@ -79,8 +81,8 @@ public final class TakeshiUtil {
     /**
      * 获取客户端IP
      *
-     * @param request
-     * @return
+     * @param request request
+     * @return 客户端IP
      */
     public static String getClientIp(HttpServletRequest request) {
         String clientIp = JakartaServletUtil.getClientIP(request);
@@ -93,7 +95,8 @@ public final class TakeshiUtil {
     /**
      * 通过IP获取真实地址
      *
-     * @param ip@return
+     * @param ip ip
+     * @return 真实地址
      */
     public static String getRealAddressByIp(String ip) {
         HashMap<String, Object> map = new HashMap<>(6);
@@ -105,7 +108,7 @@ public final class TakeshiUtil {
     /**
      * 将URL的参数和body参数合并，path参数不参与
      *
-     * @param request
+     * @param request request
      * @return 按key排序后的map
      */
     public static Map<String, String> getAllParams(HttpServletRequest request) {
@@ -130,7 +133,7 @@ public final class TakeshiUtil {
      *
      * @param request     request
      * @param otherParams 其它附加参数字符串（例如密钥）
-     * @return
+     * @return 签名后的值
      */
     public static String signParams(HttpServletRequest request, String... otherParams) {
         Map<String, String> allParams = getAllParams(request);
@@ -146,7 +149,7 @@ public final class TakeshiUtil {
      * @param jsonArray     JSONArray字符串
      * @param typeReference List中元素类型
      * @param <T>           Bean类型
-     * @return
+     * @return list
      */
     public static <T> List<T> toList(String jsonArray, TypeReference<T> typeReference) {
         return toList(JSONUtil.parseArray(jsonArray), typeReference);
@@ -159,7 +162,7 @@ public final class TakeshiUtil {
      * @param typeReference  集合中元素类型
      * @param collectionType 集合类型（例如：ArrayList.class）
      * @param <T>            Bean类型
-     * @return
+     * @return list
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> toList(String jsonArray, TypeReference<T> typeReference, Class<?> collectionType) {
@@ -172,7 +175,7 @@ public final class TakeshiUtil {
      * @param jsonArray     {@link JSONArray}
      * @param typeReference List中元素类型
      * @param <T>           Bean类型
-     * @return
+     * @return list
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> toList(JSONArray jsonArray, TypeReference<T> typeReference) {
@@ -186,7 +189,7 @@ public final class TakeshiUtil {
      * @param typeReference  集合中元素类型
      * @param collectionType 集合类型（例如：ArrayList.class）
      * @param <T>            Bean类型
-     * @return
+     * @return list
      */
     public static <T> Collection<?> toList(JSONArray jsonArray, TypeReference<T> typeReference,
                                            Class<?> collectionType) {
@@ -199,7 +202,6 @@ public final class TakeshiUtil {
      *
      * @param path 相对ClassPath的目录或者绝对路径目录
      * @return 文件路径列表
-     *
      * @throws IORuntimeException IO异常
      */
     public static List<String> listFileNames(String path) throws IORuntimeException {
@@ -223,11 +225,11 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获取ColumnResolverWrapper<T>
+     * 获取ColumnResolverWrapper
      *
      * @param entityClass 实体类class
-     * @param <T>
-     * @return ColumnResolverWrapper<T>
+     * @param <T>         T
+     * @return ColumnResolverWrapper
      */
     public static <T> ColumnResolverWrapper<T> columnResolver(Class<T> entityClass) {
         return new ColumnResolverWrapper<>(entityClass);
@@ -236,9 +238,9 @@ public final class TakeshiUtil {
     /**
      * 解析lambda获取属性名
      *
-     * @param func
-     * @param <T>
-     * @return
+     * @param func func
+     * @param <T> T
+     * @return 属性名
      */
     public static <T> String getPropertyName(SFunction<T, ?> func) {
         return PropertyNamer.methodToProperty(LambdaUtils.extract(func).getImplMethodName());
@@ -247,9 +249,9 @@ public final class TakeshiUtil {
     /**
      * 解析lambda获取字段名
      *
-     * @param func
-     * @param <T>
-     * @return
+     * @param func func
+     * @param <T> T
+     * @return 字段名
      */
     public static <T> String getColumnName(SFunction<T, ?> func) {
         return StrUtil.toUnderlineCase(PropertyNamer.methodToProperty(LambdaUtils.extract(func).getImplMethodName()));

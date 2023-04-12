@@ -12,7 +12,6 @@ import java.util.Map;
  * MdcTaskDecorator
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/10/14 17:52
  */
 public class MdcTaskDecorator implements TaskDecorator {
 

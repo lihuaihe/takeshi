@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
  * GeoPointVO
  *
  * @author 七濑武【Nanase Takeshi】
- * @since 2022/12/16 16:12
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,8 +18,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(name = "经纬度对象")
 public class GeoPointVO extends AbstractBasicSerializable {
+    /**
+     * 经度
+     */
     @Schema(description = "经度")
     private Double lon;
+    /**
+     * 纬度
+     */
     @Schema(description = "纬度")
     private Double lat;
 }

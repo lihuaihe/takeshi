@@ -10,7 +10,6 @@ import lombok.experimental.Accessors;
  * SmsText
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/17 11:18
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

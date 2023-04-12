@@ -28,7 +28,6 @@ import java.util.Locale;
  * OpenApiConfig
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/4/16 16:50
  */
 @Primary
 @Configuration
@@ -39,6 +38,10 @@ public class OpenApiConfig {
 
     private final SaTokenConfig saTokenConfig;
 
+    /**
+     * 配置
+     * @return GroupedOpenApi
+     */
     @Bean
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
@@ -66,6 +69,11 @@ public class OpenApiConfig {
                 .build();
     }
 
+    /**
+     * 自定义配置
+     *
+     * @return OpenAPI
+     */
     @Bean
     public OpenAPI customOpenApi() {
         String tokenName = saTokenConfig.getTokenName();

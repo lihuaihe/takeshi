@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
  * 保存过滤器里面的流
  *
  * @author 725
- * @date 2021/09/22 12:26
  */
 public class TakeshiHttpRequestWrapper extends HttpServletRequestWrapper {
 
@@ -24,11 +23,24 @@ public class TakeshiHttpRequestWrapper extends HttpServletRequestWrapper {
      */
     private final byte[] bodyByte;
 
+    /**
+     * 包装request
+     *
+     * @param request request
+     * @throws IOException IOException
+     */
     private TakeshiHttpRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
         bodyByte = StreamUtils.copyToByteArray(request.getInputStream());
     }
 
+    /**
+     * 构建
+     *
+     * @param request request
+     * @return TakeshiHttpRequestWrapper
+     * @throws IOException IOException
+     */
     public static TakeshiHttpRequestWrapper build(HttpServletRequest request) throws IOException {
         return new TakeshiHttpRequestWrapper(request);
     }

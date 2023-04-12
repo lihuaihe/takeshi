@@ -66,8 +66,8 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param <T>
-     * @return
+     * @param <T> T
+     * @return T
      */
     public static <T> ResponseDataVO<T> success() {
         return new ResponseDataVO<>();
@@ -76,10 +76,10 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param code
-     * @param message
-     * @param <T>
-     * @return
+     * @param code    状态码
+     * @param message 消息
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(int code, String message) {
         return new ResponseDataVO<>(code, message);
@@ -88,11 +88,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param code
-     * @param message
-     * @param args
-     * @param <T>
-     * @return
+     * @param code    状态码
+     * @param message 消息
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(int code, String message, Object[] args) {
         return new ResponseDataVO<>(code, message, args);
@@ -101,11 +101,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param code
-     * @param message
-     * @param data
-     * @param <T>
-     * @return
+     * @param code    状态码
+     * @param message 消息
+     * @param data    附加对象
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(int code, String message, T data) {
         return new ResponseDataVO<>(code, message, data);
@@ -114,12 +114,12 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param code
-     * @param message
-     * @param data
-     * @param args
-     * @param <T>
-     * @return
+     * @param code    状态码
+     * @param message 消息
+     * @param data    附加对象
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(int code, String message, T data, Object... args) {
         return new ResponseDataVO<>(code, message, data, args);
@@ -128,9 +128,9 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param data
-     * @param <T>
-     * @return
+     * @param data 附加对象
+     * @param <T>  T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(T data) {
         return new ResponseDataVO<>(data);
@@ -139,9 +139,9 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param resBean
-     * @param <T>
-     * @return
+     * @param resBean 消息
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(ResBean resBean) {
         return new ResponseDataVO<>(resBean);
@@ -150,10 +150,10 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param resBean
-     * @param args
-     * @param <T>
-     * @return
+     * @param resBean 消息
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(ResBean resBean, Object[] args) {
         return new ResponseDataVO<>(resBean, args);
@@ -162,9 +162,10 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param resBean
-     * @param <T>
-     * @return
+     * @param resBean 消息
+     * @param date    附加对象
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(ResBean resBean, T date) {
         return new ResponseDataVO<>(resBean, date);
@@ -173,10 +174,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回结果状态信息
      *
-     * @param resBean
-     * @param args
-     * @param <T>
-     * @return
+     * @param resBean 消息
+     * @param date    附加对象
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> success(ResBean resBean, T date, Object... args) {
         return new ResponseDataVO<>(resBean, date, args);
@@ -185,9 +187,9 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag
-     * @param <T>
-     * @return
+     * @param flag 标志
+     * @param <T>  T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> retBool(boolean flag) {
         return flag ? success() : fail();
@@ -196,11 +198,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag
-     * @param failMessage
-     * @param args
-     * @param <T>
-     * @return
+     * @param flag        标志
+     * @param failMessage 失败消息
+     * @param args        将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>         T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> retBool(boolean flag, String failMessage, Object... args) {
         return flag ? success() : fail(failMessage, args);
@@ -209,11 +211,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag
-     * @param resBean
-     * @param args
-     * @param <T>
-     * @return
+     * @param flag    标志
+     * @param resBean 消息
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> retBool(boolean flag, ResBean resBean, Object... args) {
         return flag ? success() : success(resBean, args);
@@ -222,11 +224,11 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag
+     * @param flag           标志
      * @param resBeanOfTrue  flag为true该返回的结果
      * @param resBeanOfFalse flag为false该返回的结果
-     * @param <T>
-     * @return
+     * @param <T>            T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> retBool(boolean flag, ResBean resBeanOfTrue, ResBean resBeanOfFalse) {
         return flag ? success(resBeanOfTrue) : success(resBeanOfFalse);
@@ -235,12 +237,12 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag
+     * @param flag           标志
      * @param resBeanOfTrue  flag为true该返回的结果
      * @param resBeanOfFalse flag为false该返回的结果
-     * @param args
-     * @param <T>
-     * @return
+     * @param args           将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>            T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> retBool(boolean flag, ResBean resBeanOfTrue, ResBean resBeanOfFalse, Object... args) {
         return flag ? success(resBeanOfTrue, args) : success(resBeanOfFalse, args);
@@ -249,8 +251,8 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回失败结果状态
      *
-     * @param <T>
-     * @return
+     * @param <T> T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail() {
         return new ResponseDataVO<>(SysCode.FAIL);
@@ -259,9 +261,9 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回失败结果状态
      *
-     * @param message
-     * @param <T>
-     * @return
+     * @param message 消息
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail(String message) {
         return new ResponseDataVO<>(SysCode.FAIL.getCode(), message);
@@ -270,10 +272,10 @@ public class ResponseDataVO<T> implements Serializable {
     /**
      * 返回失败结果状态
      *
-     * @param message
-     * @param args
-     * @param <T>
-     * @return
+     * @param message 消息
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>     T
+     * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail(String message, Object... args) {
         return new ResponseDataVO<>(SysCode.FAIL.getCode(), message, args);
@@ -365,6 +367,9 @@ public class ResponseDataVO<T> implements Serializable {
         return StaticConfig.messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
+    /**
+     * 结果
+     */
     @Data
     @AllArgsConstructor
     public static class ResBean {
