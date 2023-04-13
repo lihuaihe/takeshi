@@ -27,7 +27,6 @@ import java.util.Map;
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2023/3/14 16:11
  */
 @Slf4j
 public final class FirebaseUtil {
@@ -63,11 +62,20 @@ public final class FirebaseUtil {
         }
     }
 
+    /**
+     * 构造函数
+     */
     private FirebaseUtil() {
     }
 
+    /**
+     * Firebase Database
+     */
     public static final class Database {
 
+        /**
+         * Database Reference
+         */
         public static final DatabaseReference DATABASE_REFERENCE = FirebaseDatabase.getInstance(FIREBASE_APP).getReference();
 
         private Database() {
@@ -76,9 +84,9 @@ public final class FirebaseUtil {
         /**
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
-         * @param pathString
-         * @param value
-         * @return
+         * @param pathString 子路径
+         * @param value      值
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
             return DATABASE_REFERENCE.child(pathString).setValueAsync(GsonUtil.fromJson(GsonUtil.gsonLongToString().toJson(value), Object.class));
@@ -87,8 +95,8 @@ public final class FirebaseUtil {
         /**
          * 将此位置的值设置为 null，即删除指定位置的数据
          *
-         * @param pathString
-         * @return
+         * @param pathString 子路径
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> removeValueAsync(String pathString) {
             return DATABASE_REFERENCE.child(pathString).removeValueAsync();
@@ -96,8 +104,14 @@ public final class FirebaseUtil {
 
     }
 
+    /**
+     * Firebase Messaging
+     */
     public static final class Messaging {
 
+        /**
+         * Firebase Messaging Instance
+         */
         public static final FirebaseMessaging FIREBASE_MESSAGING = FirebaseMessaging.getInstance(FIREBASE_APP);
 
         private Messaging() {
@@ -109,7 +123,7 @@ public final class FirebaseUtil {
          * @param token 设备的注册令牌
          * @param title 通知的标题
          * @param body  通知正文
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, null, null));
@@ -122,7 +136,7 @@ public final class FirebaseUtil {
          * @param title 通知的标题
          * @param body  通知正文
          * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, map, null));
@@ -136,7 +150,7 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map, String clickAction) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, map, clickAction));
@@ -148,7 +162,7 @@ public final class FirebaseUtil {
          * @param tokens 设备注册令牌的集合
          * @param title  通知的标题
          * @param body   通知正文
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body) {
             return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, null, null));
@@ -161,7 +175,7 @@ public final class FirebaseUtil {
          * @param title  通知的标题
          * @param body   通知正文
          * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, map, null));
@@ -175,7 +189,7 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @return
+         * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map, String clickAction) {
             return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, map, clickAction));
@@ -189,7 +203,7 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @return
+         * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, Map<String, String> map, String clickAction) {
             return Message.builder()
@@ -222,7 +236,7 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @return
+         * @return 多播消息
          */
         private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, Map<String, String> map, String clickAction) {
             return MulticastMessage.builder()

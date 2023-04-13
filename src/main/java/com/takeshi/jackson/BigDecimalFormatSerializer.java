@@ -18,17 +18,27 @@ import java.math.BigDecimal;
  * BigDecimalFormatSerializer
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:11
  */
 @JacksonStdImpl
 public class BigDecimalFormatSerializer extends StdSerializer<BigDecimal> implements ContextualSerializer {
 
+    /**
+     * pattern
+     */
     private String pattern;
 
+    /**
+     * 构造函数
+     */
     protected BigDecimalFormatSerializer() {
         super(BigDecimal.class);
     }
 
+    /**
+     * 有参构造函数
+     *
+     * @param pattern pattern
+     */
     protected BigDecimalFormatSerializer(String pattern) {
         super(BigDecimal.class);
         this.pattern = pattern;

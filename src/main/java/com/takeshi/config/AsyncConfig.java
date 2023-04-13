@@ -16,7 +16,6 @@ import java.util.concurrent.Executor;
  * Async注解使用自定义线程池
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/08/05 12:00
  */
 @EnableAsync
 @Configuration

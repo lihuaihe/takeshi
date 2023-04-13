@@ -34,7 +34,6 @@ import java.util.Map;
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/24 09:53
  */
 @Slf4j
 public final class MandrillUtil {
@@ -106,7 +105,7 @@ public final class MandrillUtil {
     /**
      * 设置邮件主题
      *
-     * @param subject
+     * @param subject 主题
      * @return this
      */
     public MandrillUtil subject(String subject) {

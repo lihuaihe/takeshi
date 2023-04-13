@@ -16,7 +16,6 @@ import java.time.Instant;
  * 在实体类字段上添加注解@TableField (fill = FieldFill.INSERT)
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2020/12/11 9:08
  */
 @Component
 public class DefaultMetaObjectHandler implements MetaObjectHandler {

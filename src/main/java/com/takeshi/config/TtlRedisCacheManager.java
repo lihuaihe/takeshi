@@ -35,7 +35,7 @@ public class TtlRedisCacheManager extends RedisCacheManager {
      *
      * @param name        must not be {@literal null}.
      * @param cacheConfig can be {@literal null}.
-     * @return
+     * @return RedisCache
      */
     @Override
     protected RedisCache createRedisCache(String name, @Nullable RedisCacheConfiguration cacheConfig) {
@@ -48,6 +48,12 @@ public class TtlRedisCacheManager extends RedisCacheManager {
         return super.createRedisCache(name, cacheConfig);
     }
 
+    /**
+     * TtlRedisCacheManager
+     *
+     * @param factory factory
+     * @return TtlRedisCacheManager
+     */
     public static TtlRedisCacheManager defaultInstance(RedisConnectionFactory factory) {
         ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);

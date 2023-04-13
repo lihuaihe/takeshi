@@ -26,11 +26,10 @@ import java.util.Locale;
 
 /**
  * Bean配置<br/>
- * {@link @EnableCaching} 启用 Spring 的注解驱动缓存管理功能<br/>
- * {@link @EnableRetry} 启用 Spring 的重试功能
+ * {@link EnableCaching} 启用 Spring 的注解驱动缓存管理功能<br/>
+ * {@link EnableRetry} 启用 Spring 的重试功能
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/05/18 10:39
  */
 @Configuration
 @EnableCaching
@@ -43,7 +42,7 @@ public class TakeshiConfig {
     /**
      * 跨域配置
      *
-     * @return
+     * @return FilterRegistrationBean
      */
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
@@ -63,6 +62,8 @@ public class TakeshiConfig {
 
     /**
      * HTTP请求的“accept-language”标头中区域设置，国际化默认解析器，默认设置为英语
+     *
+     * @return LocaleResolver
      */
     @Bean
     public LocaleResolver localeResolver() {
@@ -74,8 +75,8 @@ public class TakeshiConfig {
     /**
      * 统一配置，解决前后端交互大数值类型精度丢失的问题
      *
-     * @param builder
-     * @return
+     * @param builder builder
+     * @return ObjectMapper
      */
     @Bean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
@@ -85,8 +86,8 @@ public class TakeshiConfig {
     /**
      * 配置cache缓存到redis
      *
-     * @param factory
-     * @return
+     * @param factory factory
+     * @return CacheManager
      */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory factory) {
@@ -104,8 +105,8 @@ public class TakeshiConfig {
      * });
      * }</pre>
      *
-     * @param dataSource
-     * @return
+     * @param dataSource dataSource
+     * @return PlatformTransactionManager
      */
     @Bean
     public PlatformTransactionManager platformTransactionManager(DataSource dataSource) {

@@ -14,15 +14,20 @@ import java.time.ZonedDateTime;
  * ZonedDateTimeTakeshiDeserializer
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:00
  */
 @JacksonStdImpl
 public class ZonedDateTimeTakeshiDeserializer extends StdDeserializer<ZonedDateTime> {
 
+    /**
+     * 构造函数
+     */
     protected ZonedDateTimeTakeshiDeserializer() {
         super(ZonedDateTime.class);
     }
 
+    /**
+     * ZonedDateTimeTakeshiDeserializer Instance
+     */
     public static final ZonedDateTimeTakeshiDeserializer INSTANCE = new ZonedDateTimeTakeshiDeserializer();
 
     @Override

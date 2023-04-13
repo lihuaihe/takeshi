@@ -20,16 +20,21 @@ import org.springframework.web.bind.annotation.*;
  * SystemController
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/22 15:04
  */
 @Slf4j
 @RestController
 @RequestMapping("/system")
 @Hidden
 @Tag(name = "系统接口")
+@SystemSecurity(all = true)
 public class SystemController extends BaseController {
 
-    @SystemSecurity(all = true)
+    /**
+     * 使用公钥加密数据
+     *
+     * @param object object
+     * @return ResponseDataVO
+     */
     @Operation(summary = "使用公钥加密数据")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping("/encrypt")
@@ -39,7 +44,13 @@ public class SystemController extends BaseController {
         return success(StaticConfig.rsa.encryptBase64(data, KeyType.PublicKey));
     }
 
-    @SystemSecurity(all = true)
+    /**
+     * 使用公钥解密数据
+     *
+     * @param object object
+     * @return ResponseDataVO
+     * @throws JsonProcessingException JsonProcessingException
+     */
     @Operation(summary = "使用公钥解密数据")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping("/decrypt")
@@ -49,7 +60,12 @@ public class SystemController extends BaseController {
         return success(new ObjectMapper().readTree(StaticConfig.rsa.decryptStr(data, KeyType.PublicKey)));
     }
 
-    @SystemSecurity(all = true)
+    /**
+     * 测试生成sign值
+     *
+     * @param request request
+     * @return 测试生成sign值
+     */
     @Operation(summary = "测试生成sign值")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @RequestMapping(value = "/sign", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})

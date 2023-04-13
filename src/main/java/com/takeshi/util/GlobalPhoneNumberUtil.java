@@ -11,21 +11,26 @@ import lombok.SneakyThrows;
  * 全球手机号码工具类
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2023/3/21 12:01
  */
 public final class GlobalPhoneNumberUtil {
 
+    /**
+     * PhoneNumberUtil instance
+     */
     public static final PhoneNumberUtil instance = PhoneNumberUtil.getInstance();
 
+    /**
+     * 构造函数
+     */
     private GlobalPhoneNumberUtil() {
     }
 
     /**
      * 测试电话号码是否与有效模式匹配
      *
-     * @param countryCode
-     * @param number
-     * @return
+     * @param countryCode 区号
+     * @param number      电话号码
+     * @return boolean
      */
     @SneakyThrows
     public static boolean isValidNumber(String countryCode, String number) {
@@ -35,9 +40,8 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配，不匹配抛出异常
      *
-     * @param countryCode
-     * @param number
-     * @return
+     * @param countryCode 区号
+     * @param number      电话号码
      */
     public static void checkNumber(String countryCode, String number) {
         boolean validNumber;
@@ -54,11 +58,10 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param countryCode
-     * @param number
-     * @return
-     *
-     * @throws NumberParseException
+     * @param countryCode 区号
+     * @param number      电话号码
+     * @return PhoneNumber
+     * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String countryCode, String number) throws NumberParseException {
         return instance.parse(countryCode.concat(number), null);

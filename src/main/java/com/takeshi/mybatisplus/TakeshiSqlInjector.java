@@ -12,7 +12,6 @@ import java.util.List;
  * TakeshiSqlInjector
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/15 16:03
  */
 @Component
 public class TakeshiSqlInjector extends DefaultSqlInjector {

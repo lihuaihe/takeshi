@@ -33,7 +33,6 @@ import java.util.Map;
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/24 16:47
  */
 @Slf4j
 public final class PdfUtil {

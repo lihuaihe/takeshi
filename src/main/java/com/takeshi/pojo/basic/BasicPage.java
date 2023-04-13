@@ -24,11 +24,17 @@ public class BasicPage implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 当前页数
+     */
     @NotNull
     @Min(1)
     @Parameter(description = "当前页数", example = "1", schema = @Schema(description = "当前页数", example = "1"))
     private Long pageNum;
 
+    /**
+     * 每页数据条数
+     */
     @NotNull
     @Min(1)
     @Max(50000)

@@ -10,7 +10,6 @@ import java.time.MonthDay;
  * MonthDayTypeAdapter
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/14 14:54
  */
 public class MonthDayTypeAdapter implements JsonSerializer<MonthDay>, JsonDeserializer<MonthDay> {
 

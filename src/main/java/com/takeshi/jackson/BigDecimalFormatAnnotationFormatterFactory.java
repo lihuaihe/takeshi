@@ -17,7 +17,6 @@ import java.util.Set;
  * 格式化为数字，只适用于非json参数
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/5/18 14:55
  */
 public class BigDecimalFormatAnnotationFormatterFactory implements AnnotationFormatterFactory<BigDecimalFormat> {
 
@@ -36,6 +35,12 @@ public class BigDecimalFormatAnnotationFormatterFactory implements AnnotationFor
         return getFormatter(annotation);
     }
 
+    /**
+     * 格式
+     *
+     * @param annotation 注解
+     * @return 格式
+     */
     protected Formatter<BigDecimal> getFormatter(BigDecimalFormat annotation) {
         return new Formatter<>() {
             @Override

@@ -41,7 +41,6 @@ import java.util.Objects;
  * TakeshiInterceptor
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/09/27 10:15
  */
 @Slf4j
 public class TakeshiInterceptor implements HandlerInterceptor {
@@ -91,12 +90,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * 每次请求之前触发的方法
      *
-     * @param request
-     * @param response
-     * @param handler
-     * @return
-     *
-     * @throws Exception
+     * @param request  request
+     * @param response response
+     * @param handler  handler
+     * @return boolean
+     * @throws Exception Exception
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -141,8 +139,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * 校验一些值
      *
-     * @param request
-     * @param handlerMethod
+     * @param request       request
+     * @param handlerMethod handlerMethod
      * @return 是否需要执行token认证函数
      */
     private boolean verifySystemSecurity(HttpServletRequest request, HandlerMethod handlerMethod) {
@@ -159,6 +157,14 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    /**
+     * 自定义校验
+     *
+     * @param request   request
+     * @param all       all
+     * @param platform  platform
+     * @param signature signature
+     */
     private void saRouterBack(HttpServletRequest request, boolean all, boolean platform, boolean signature) {
         if (!all) {
             if (!platform && StaticConfig.takeshiProperties.isAppPlatform()

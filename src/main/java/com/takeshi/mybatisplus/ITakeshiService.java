@@ -28,24 +28,24 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * 扩展的mybatis-plus service 层接口
- * <p>
+ * 扩展的mybatis-plus service 层接口<br/>
+ * <pre>{@code
  * 自定义多表关联分页查询，在mapper层新建一个方法
  * //示例：
  * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
- * //Page<T> pageList(Page<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
- * </p>
+ * Page&lt;T&gt; pageList(Page&lt;T&gt; page, @Param(Constants.WRAPPER) Wrapper&lt;T&gt; queryWrapper);
+ * }
+ * </pre>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2020/12/11 15:17
  */
 public interface ITakeshiService<T> extends IService<T> {
 
     /**
      * 构建一个有排序的分页对象
      *
-     * @param basicSortPage
-     * @return
+     * @param basicSortPage basicSortPage
+     * @return Page
      */
     default Page<T> buildSortPage(BasicSortPage basicSortPage) {
         Page<T> page = Page.of(basicSortPage.getPageNum(), basicSortPage.getPageSize());
@@ -59,7 +59,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * 扩展的mybatis-plus分页接口
      *
      * @param basicSortPage 列表分页查询参数
-     * @return
+     * @return Page
      */
     default Page<T> page(BasicSortPage basicSortPage) {
         return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), Wrappers.emptyWrapper());
@@ -70,7 +70,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * <p>通用的列表分页查询接口</p>
      *
      * @param baseQuery 列表查询参数
-     * @return
+     * @return Page
      */
     default Page<T> listPage(BasicSortQuery baseQuery) {
         String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
@@ -87,7 +87,7 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param baseQuery 列表查询参数
      * @param columns   需要进行模糊搜索的数据库字段名
-     * @return
+     * @return Page
      */
     default Page<T> listPage(BasicSortQuery baseQuery, List<SFunction<T, ?>> columns) {
         String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
@@ -107,7 +107,7 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param basicSortPage 列表分页查询参数
      * @param consumer      item -> item.eq("user_id",1)
-     * @return
+     * @return Page
      */
     default Page<T> queryWrapperPage(BasicSortPage basicSortPage, Consumer<QueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), new QueryWrapper<T>().func(Objects.nonNull(consumer), consumer));
@@ -119,7 +119,7 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param basicSortPage 列表分页查询参数
      * @param consumer      item -> item.eq(User::getUserId,1)
-     * @return
+     * @return Page
      */
     default Page<T> lambdaQueryWrapperPage(BasicSortPage basicSortPage, Consumer<LambdaQueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), new QueryWrapper<T>().lambda().func(Objects.nonNull(consumer), consumer));
@@ -142,7 +142,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param column  查询的字段
      * @param val     查询的值
      * @param resBean 异常信息对象
-     * @param args
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     default void columnExists(SFunction<T, ?> column, Object val, ResponseDataVO.ResBean resBean, Object... args) {
         this.getBaseMapper().columnExists(column, val, resBean, args);
@@ -167,7 +167,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param val     查询的值
      * @param id      主键ID值
      * @param resBean 异常信息对象
-     * @param args
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     default void columnExists(SFunction<T, ?> column, Object val, Serializable id, ResponseDataVO.ResBean resBean, Object... args) {
         this.getBaseMapper().columnExists(column, val, id, resBean, args);
@@ -193,7 +193,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param id     主键ID值
      * @param column 需要更新的字段
      * @param val    更新后的值
-     * @return
+     * @return boolean
      */
     default boolean updateColumnById(Serializable id, SFunction<T, ?> column, Serializable val) {
         return this.getBaseMapper().updateColumnById(id, column, val);
@@ -202,8 +202,8 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 根据 TableId 逻辑删除
      *
-     * @param id
-     * @return
+     * @param id id
+     * @return boolean
      */
     default boolean logicDeleteById(Serializable id) {
         return this.getBaseMapper().logicDeleteById(id);
@@ -212,8 +212,8 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 根据主键ID查询（不区分是否已逻辑删除）
      *
-     * @param id
-     * @return
+     * @param id id
+     * @return T
      */
     default T getIncludeDelById(Serializable id) {
         return this.getBaseMapper().selectIncludeDelById(id);

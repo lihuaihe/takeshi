@@ -12,15 +12,20 @@ import java.time.OffsetTime;
  * OffsetTimeTakeshiSerializer
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/6/20 12:11
  */
 @JacksonStdImpl
 public class OffsetTimeTakeshiSerializer extends StdSerializer<OffsetTime> {
 
+    /**
+     * 构造函数
+     */
     protected OffsetTimeTakeshiSerializer() {
         super(OffsetTime.class);
     }
 
+    /**
+     * OffsetTimeTakeshiSerializer Instance
+     */
     public static final OffsetTimeTakeshiSerializer INSTANCE = new OffsetTimeTakeshiSerializer();
 
     @Override

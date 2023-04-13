@@ -7,7 +7,6 @@ import java.io.Serializable;
  * AbstractBasicSerializable
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2021/4/13 16:39
  */
 public abstract class AbstractBasicSerializable implements Serializable {
     @Serial

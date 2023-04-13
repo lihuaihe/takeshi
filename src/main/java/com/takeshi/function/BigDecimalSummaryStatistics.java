@@ -11,7 +11,6 @@ import java.util.function.Consumer;
  * {@code LongSummaryStatistics}, but for {@link BigDecimal}.
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2020/12/31 16:25
  */
 public class BigDecimalSummaryStatistics implements Consumer<BigDecimal> {
 
@@ -108,9 +107,6 @@ public class BigDecimalSummaryStatistics implements Consumer<BigDecimal> {
      * numerical sum} used to compute the average.
      *
      * @return the arithmetic mean of values, or zero if none
-     *
-     * @apiNote Values sorted by increasing absolute magnitude tend to yield
-     * more accurate results.
      */
     public final BigDecimal getAverage() {
         return getCount() > 0 ? getSum().divide(BigDecimal.valueOf(getCount()), RoundingMode.HALF_UP) : sum;
@@ -130,11 +126,8 @@ public class BigDecimalSummaryStatistics implements Consumer<BigDecimal> {
      * other technique to reduce the error bound in the {@link #getSum
      * numerical sum} used to compute the average.
      *
-     * @param roundingMode
+     * @param roundingMode 舍入模式
      * @return the arithmetic mean of values, or zero if none
-     *
-     * @apiNote Values sorted by increasing absolute magnitude tend to yield
-     * more accurate results.
      */
     public final BigDecimal getAverage(RoundingMode roundingMode) {
         return getCount() > 0 ? getSum().divide(BigDecimal.valueOf(getCount()), roundingMode) : sum;
@@ -154,11 +147,8 @@ public class BigDecimalSummaryStatistics implements Consumer<BigDecimal> {
      * other technique to reduce the error bound in the {@link #getSum
      * numerical sum} used to compute the average.
      *
-     * @param mc
+     * @param mc MathContext
      * @return the arithmetic mean of values, or zero if none
-     *
-     * @apiNote Values sorted by increasing absolute magnitude tend to yield
-     * more accurate results.
      */
     public final BigDecimal getAverage(MathContext mc) {
         return getCount() > 0 ? getSum().divide(BigDecimal.valueOf(getCount()), mc) : sum;

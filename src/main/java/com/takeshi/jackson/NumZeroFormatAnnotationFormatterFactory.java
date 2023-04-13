@@ -15,7 +15,6 @@ import java.util.Set;
  * 数字字符串去掉首位的零，注解格式化工厂方式，只适用于非json参数
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2022/5/18 14:55
  */
 
 public class NumZeroFormatAnnotationFormatterFactory implements AnnotationFormatterFactory<NumZeroFormat> {
@@ -35,6 +34,11 @@ public class NumZeroFormatAnnotationFormatterFactory implements AnnotationFormat
         return getFormatter();
     }
 
+    /**
+     * Formatter
+     *
+     * @return Formatter
+     */
     protected Formatter<String> getFormatter() {
         return new Formatter<>() {
             @Override

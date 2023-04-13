@@ -23,16 +23,30 @@ public @interface CheckNumber {
 
     /**
      * 提示信息,可以写死,可以填写国际化的key
+     *
+     * @return msg
      */
     String message() default SysCode.VALIDATION_LIST;
 
     /**
      * 下面这两个属性必须添加
+     *
+     * @return groups
      */
     Class<?>[] groups() default {};
 
+    /**
+     * payload
+     *
+     * @return payload
+     */
     Class<? extends Payload>[] payload() default {};
 
+    /**
+     * 要校验的值是否在该数组中
+     *
+     * @return 数组
+     */
     long[] value() default {1, 2};
 
 }

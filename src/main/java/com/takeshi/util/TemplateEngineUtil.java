@@ -9,10 +9,12 @@ import cn.hutool.extra.template.TemplateUtil;
  * 模板引擎
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2023/2/16 14:42
  */
 public final class TemplateEngineUtil {
 
+    /**
+     * TemplateEngine
+     */
     public static volatile TemplateEngine engine;
 
     static {

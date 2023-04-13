@@ -7,7 +7,6 @@ import com.takeshi.config.StaticConfig;
  * RedisKeyEnum
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2023/3/24 10:49
  */
 public enum RedisKeyEnum {
 

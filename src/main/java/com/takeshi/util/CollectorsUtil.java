@@ -22,7 +22,6 @@ import java.util.stream.Collector;
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
- * @date 2020/12/31 16:25
  */
 public final class CollectorsUtil {
 
@@ -96,7 +95,6 @@ public final class CollectorsUtil {
      * @param <T>    the type of the input elements
      * @param mapper a mapping function to apply to each element
      * @return a {@code Collector} implementing the summary-statistics reduction
-     *
      * @see java.util.stream.Collectors#summarizingDouble(ToDoubleFunction)
      * @see java.util.stream.Collectors#summarizingLong(ToLongFunction)
      */
@@ -114,9 +112,9 @@ public final class CollectorsUtil {
     /**
      * 求和方法
      *
-     * @param mapper
-     * @param <T>
-     * @return
+     * @param mapper a mapping function to apply to each element
+     * @param <T>    the type of the input elements
+     * @return a {@code Collector} implementing the summary-statistics reduction
      */
     public static <T> Collector<T, ?, BigDecimal> summingBigDecimal(ToBigDecimalFunction<? super T> mapper) {
         return new CollectorImpl<>(
@@ -132,9 +130,9 @@ public final class CollectorsUtil {
     /**
      * 求最大,这里的最小MIN值，作为初始条件判断值，如果某些数据范围超过百亿以后，可以根据需求换成Long.MIN_VALUE或者Double.MIN_VALUE
      *
-     * @param mapper
-     * @param <T>
-     * @return
+     * @param mapper a mapping function to apply to each element
+     * @param <T>    the type of the input elements
+     * @return a {@code Collector} implementing the summary-statistics reduction
      */
     public static <T> Collector<T, ?, BigDecimal> maxBy(ToBigDecimalFunction<? super T> mapper) {
         return new CollectorImpl<>(
@@ -150,9 +148,9 @@ public final class CollectorsUtil {
     /**
      * 求最小，这里的最大MAX值，作为初始条件判断值，如果某些数据范围超过百亿以后，可以根据需求换成Long.MAX_VALUE或者Double.MAX_VALUE
      *
-     * @param mapper
-     * @param <T>
-     * @return
+     * @param mapper a mapping function to apply to each element
+     * @param <T>    the type of the input elements
+     * @return a {@code Collector} implementing the summary-statistics reduction
      */
     public static <T> Collector<T, ?, BigDecimal> minBy(ToBigDecimalFunction<? super T> mapper) {
         return new CollectorImpl<>(
@@ -167,6 +165,10 @@ public final class CollectorsUtil {
 
     /**
      * 求平均，并且保留两位小数，返回一个平均值
+     *
+     * @param mapper a mapping function to apply to each element
+     * @param <T>    the type of the input elements
+     * @return a {@code Collector} implementing the summary-statistics reduction
      */
     public static <T> Collector<T, ?, BigDecimal> averagingBigDecimal(ToBigDecimalFunction<? super T> mapper) {
         return averagingBigDecimal(mapper, 2, RoundingMode.HALF_UP);
@@ -175,6 +177,7 @@ public final class CollectorsUtil {
     /**
      * 求平均，并且保留小数，返回一个平均值
      *
+     * @param mapper       a mapping function to apply to each element
      * @param newScale     保留小数位数
      * @param roundingMode 小数处理方式
      *                     #ROUND_UP 进1
@@ -185,6 +188,8 @@ public final class CollectorsUtil {
      *                     #ROUND_HALF_DOWN >0.5进1
      *                     #ROUND_HALF_EVEN
      *                     #ROUND_UNNECESSARY
+     * @param <T>          the type of the input elements
+     * @return a {@code Collector} implementing the summary-statistics reduction
      */
     public static <T> Collector<T, ?, BigDecimal> averagingBigDecimal(ToBigDecimalFunction<? super T> mapper, int newScale, RoundingMode roundingMode) {
         return new CollectorImpl<>(
