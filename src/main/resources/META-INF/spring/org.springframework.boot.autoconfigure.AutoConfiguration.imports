@@ -1,0 +1,15 @@
+com.takeshi.aop.ControllerAspect
+
+com.takeshi.component.RedisComponent
+com.takeshi.component.ShutdownManager
+
+com.takeshi.config.StaticConfig
+com.takeshi.config.ThreadPoolConfig
+com.takeshi.config.AsyncConfig
+com.takeshi.config.OpenApiConfig
+com.takeshi.config.TakeshiConfig
+com.takeshi.config.properties.TakeshiProperties
+com.takeshi.config.security.TakeshiFilter
+
+com.takeshi.mybatisplus.TakeshiSqlInjector
+com.takeshi.mybatisplus.MybatisPlusConfig

@@ -40,6 +40,7 @@ public class OpenApiConfig {
 
     /**
      * 配置
+     *
      * @return GroupedOpenApi
      */
     @Bean
