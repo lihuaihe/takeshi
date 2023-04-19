@@ -8,7 +8,6 @@ import com.amazonaws.regions.Regions;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * 自定义额外属性值
