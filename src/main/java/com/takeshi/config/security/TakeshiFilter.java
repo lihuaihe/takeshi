@@ -6,7 +6,7 @@ import com.takeshi.constants.SysConstants;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
@@ -17,7 +17,7 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 /**
  * TakeshiFilter
  */
-@Configuration
+@AutoConfiguration
 @Order(HIGHEST_PRECEDENCE)  // 优先级最高
 public class TakeshiFilter implements Filter {
 

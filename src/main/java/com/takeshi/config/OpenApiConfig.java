@@ -16,6 +16,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +31,7 @@ import java.util.Locale;
  * @author 七濑武【Nanase Takeshi】
  */
 @Primary
-@Configuration
+@AutoConfiguration
 @RequiredArgsConstructor
 public class OpenApiConfig {
 

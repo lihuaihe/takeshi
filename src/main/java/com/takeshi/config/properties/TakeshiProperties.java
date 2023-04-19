@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Regions;
 import lombok.Data;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@Configuration
+@AutoConfiguration
 @ConfigurationProperties(prefix = "takeshi")
 public class TakeshiProperties {
 
