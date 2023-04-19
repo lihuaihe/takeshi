@@ -89,9 +89,9 @@ public class TakeshiProperties {
          */
         private String bucketName;
         /**
-         * 设置客户端使用的区域（例如：us-west-1）
+         * 设置客户端使用的区域（例如：us-west-2）
          */
-        private String region;
+        private Regions region = Regions.DEFAULT_REGION;
 
         /**
          * getBucketName
@@ -101,15 +101,6 @@ public class TakeshiProperties {
         public String getBucketName() {
             Assert.isFalse(StrUtil.isBlank(this.bucketName), "Properties {takeshi.awsCredentials.bucketName} or {takeshi.projectName} is null");
             return this.bucketName;
-        }
-
-        /**
-         * getRegion
-         *
-         * @return {@link Regions}
-         */
-        public Regions getRegion() {
-            return StrUtil.isBlank(this.region) ? Regions.GovCloud : Regions.fromName(this.region);
         }
 
         @Override
@@ -150,7 +141,7 @@ public class TakeshiProperties {
         /**
          * jsonFileName
          */
-        private String jsonFileName;
+        private String jsonFileName = "firebase.json";
         /**
          * databaseUrl
          */

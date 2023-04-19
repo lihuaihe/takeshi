@@ -101,10 +101,10 @@ signing {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
-    api 'org.springframework.retry:spring-retry'
     api 'org.springframework.boot:spring-boot-starter-data-redis'
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    api 'org.springframework.retry:spring-retry'
     api 'org.redisson:redisson-spring-boot-starter:3.20.0'
     api 'org.xhtmlrenderer:flying-saucer-pdf-itext5:9.1.22'
     api 'org.apache.tika:tika-core:2.7.0'
