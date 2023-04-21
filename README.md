@@ -32,6 +32,7 @@ implementation 'life.725:takeshi:${version}'
 - [Maven中央库](https://central.sonatype.com/artifact/life.725/takeshi/)
 
 ### 🔔️<font color="#FFFF00">注意</font>
+
 使用本库需要Springboot3.0+和JDK17+支持
 
 ## 📝教程
@@ -60,6 +61,7 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 | [hutool-all](https://www.hutool.cn/docs/#/)                                                                                            | Hutool是一个小而全的Java工具类库         |
 
 ### 🚪代码
+
 controller包下的接口都有aop记录入参和返回值  
 书写自己的controller类时应继承一下`BaseController`类，里面有提供一些方法  
 默认已经有写好了两个上传文件的接口，上传至AWS的S3中，需要配置s3相关信息
@@ -68,10 +70,9 @@ controller包下的接口都有aop记录入参和返回值
 ### 🔧工具
 
 * `RedisComponent.java` redis的工具类，注入使用
-* `TakeshiCode.java` 返回给前端使用的国际化消息，如果项目中需要自定义消息，可继承该接口，例如：`SysCode extends TakeshiCode`
-* `TakeshiConstants.java` 一些常量值，建议使用时也定义一个接口继承该接口，例如：`SysConstants extends TakeshiConstants`
-* `TakeshiRedisKeyEnum.java`
-  存储一些redis使用的key，可以调用格式化方法给key加对应前缀，建议使用时也定义一个枚举类继承该类，例如：`RedisKeyEnum extends TakeshiRedisKeyEnum`
+* `TakeshiCode.java` 返回给前端使用的国际化消息，如果项目中需要自定义消息，可继承该接口，例如：`public interface SysCode extends TakeshiCode {}`
+* `TakeshiConstants.java` 一些常量值，建议使用时也定义一个接口继承该接口，例如：`public interface SysConstants extends TakeshiConstants {}`
+* `TakeshiRedisKeyEnum.java` 可以参考该类，创建一个枚举实现`TakeshiRedisKeyFormat`接口，存储一些redis使用的key，调用格式化方法给key加对应前缀
 * `TakeshiDatePattern.java` 日期格式常量值，继承自hutool的DatePattern
 
 ### 🎍注解
