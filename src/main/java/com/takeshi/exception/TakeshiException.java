@@ -1,6 +1,6 @@
 package com.takeshi.exception;
 
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import com.takeshi.util.GsonUtil;
 
@@ -21,7 +21,7 @@ public class TakeshiException extends RuntimeException {
      * 构造函数
      */
     public TakeshiException() {
-        super(GsonUtil.toJson(ResponseDataVO.success(SysCode.FAIL)));
+        super(GsonUtil.toJson(ResponseDataVO.success(TakeshiCode.FAIL)));
     }
 
     /**

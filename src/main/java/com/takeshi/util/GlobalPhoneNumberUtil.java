@@ -3,7 +3,7 @@ package com.takeshi.util;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import lombok.SneakyThrows;
 
@@ -51,7 +51,7 @@ public final class GlobalPhoneNumberUtil {
             validNumber = false;
         }
         if (!validNumber) {
-            throw new TakeshiException(SysCode.MOBILE_VALIDATION);
+            throw new TakeshiException(TakeshiCode.MOBILE_VALIDATION);
         }
     }
 

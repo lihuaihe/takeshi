@@ -1,6 +1,6 @@
 package com.takeshi.constraints;
 
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constraintvalidators.CheckSortColumnValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -23,7 +23,7 @@ public @interface CheckSortColumn {
      *
      * @return msg
      */
-    String message() default SysCode.PARAM_ERROR;
+    String message() default TakeshiCode.PARAM_ERROR;
 
     /**
      * 下面这两个属性必须添加

@@ -5,7 +5,7 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.takeshi.annotation.ApiVersion;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -58,9 +58,9 @@ public class OpenApiConfig {
                     Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(SpringBootApplication.class);
                     Class<?> mainClass = beansWithAnnotation.values().toArray()[0].getClass();
                     String mainPackageName = ClassUtil.getPackage(mainClass);
-                    // 查询启动类包名下SysCode子类集合
-                    Set<Class<?>> classSet = new HashSet<>(ClassUtil.scanPackageBySuper(mainPackageName, SysCode.class));
-                    classSet.add(SysCode.class);
+                    // 查询启动类包名下TakeshiCode子类集合
+                    Set<Class<?>> classSet = new HashSet<>(ClassUtil.scanPackageBySuper(mainPackageName, TakeshiCode.class));
+                    classSet.add(TakeshiCode.class);
                     classSet.stream()
                             .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item)))
                             .filter(item -> item.getType().isAssignableFrom(ResponseDataVO.ResBean.class))

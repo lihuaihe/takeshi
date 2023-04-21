@@ -4,11 +4,11 @@ import com.takeshi.config.StaticConfig;
 import com.takeshi.pojo.bo.SmsInfoBO;
 
 /**
- * SysConstants
+ * 常量池
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public interface SysConstants {
+public interface TakeshiConstants {
 
     /**
      * 签名参数名

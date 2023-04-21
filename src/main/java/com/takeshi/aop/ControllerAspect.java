@@ -15,8 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.constants.SysCode;
-import com.takeshi.constants.SysConstants;
+import com.takeshi.constants.TakeshiCode;
+import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import com.takeshi.util.GsonUtil;
@@ -69,16 +69,16 @@ public class ControllerAspect {
      * @param proceedingJoinPoint 程序加入点
      * @return Object
      */
-    @Around("execution(* com..*..controller..*(..))")
+    @Around("execution(* *..controller..*(..))")
     @AfterThrowing
     public Object around(ProceedingJoinPoint proceedingJoinPoint) {
-        StopWatch stopWatch = new StopWatch(MDC.get(SysConstants.TRACE_ID_KEY));
+        StopWatch stopWatch = new StopWatch(MDC.get(TakeshiConstants.TRACE_ID_KEY));
         stopWatch.start();
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         MethodSignature signature = (MethodSignature) proceedingJoinPoint.getSignature();
         String userAgent = request.getHeader(Header.USER_AGENT.getValue());
-        String timestamp = request.getHeader(SysConstants.TIMESTAMP_NAME);
+        String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
         log.info("请求开始, 请求时间: {}, 请求IP: {}, 请求工具: {}", timestamp, TakeshiUtil.getClientIp(request), userAgent);
         log.info("请求地址: {}, 请求方法: [{}] {}.{}", request.getRequestURL(), request.getMethod(), signature.getDeclaringTypeName(), signature.getName());
         Object loginId = StpUtil.getLoginIdDefaultNull();
@@ -122,7 +122,7 @@ public class ControllerAspect {
         log.info("请求报文: {} ", GsonUtil.toJson(list));
         RepeatSubmit repeatSubmit = signature.getMethod().getAnnotation(RepeatSubmit.class);
         if (ObjUtil.isNotEmpty(repeatSubmit)) {
-            ResponseDataVO.ResBean resBean = SysCode.REPEAT_SUBMIT;
+            ResponseDataVO.ResBean resBean = TakeshiCode.REPEAT_SUBMIT;
             long interval = repeatSubmit.interval();
             if (StrUtil.isNotBlank(repeatSubmit.msg())) {
                 resBean.setInfo(repeatSubmit.msg());

@@ -3,7 +3,7 @@ package com.takeshi.annotation;
 import java.lang.annotation.*;
 
 /**
- * 自定义注解防止表单重复提交
+ * 自定义注解防止重复提交
  *
  * @author 七濑武【Nanase Takeshi】
  */

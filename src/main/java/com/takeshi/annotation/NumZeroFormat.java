@@ -7,7 +7,7 @@ import com.takeshi.jackson.NumZeroFormatDeserializer;
 import java.lang.annotation.*;
 
 /**
- * 去掉字符串前面多余的零
+ * 去掉前端入参时数字字符串前面多余的零
  *
  * @author 七濑武【Nanase Takeshi】
  */
