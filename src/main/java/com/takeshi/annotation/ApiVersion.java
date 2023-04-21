@@ -3,9 +3,11 @@ package com.takeshi.annotation;
 import java.lang.annotation.*;
 
 /**
- * //@ApiVersion(ApiVersion.Version.v_1_1_0)
- * 自定义swagger接口上的版本分组注解
- * 需要新分组时在下面的Version枚举类中新增一个常量即可
+ * <pre>{@code
+ * // 自定义swagger接口上的版本分组注解
+ * // 需要新分组时在Version枚举类中新增一个常量即可
+ *  @ApiVersion(ApiVersion.Version.v_1_1_0)
+ * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
  */

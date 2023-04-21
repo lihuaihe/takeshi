@@ -1,7 +1,7 @@
 package com.takeshi.constraints;
 
 
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constraintvalidators.CheckNumberValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -26,7 +26,7 @@ public @interface CheckNumber {
      *
      * @return msg
      */
-    String message() default SysCode.VALIDATION_LIST;
+    String message() default TakeshiCode.VALIDATION_LIST;
 
     /**
      * 下面这两个属性必须添加

@@ -23,7 +23,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TakeshiProperties;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.bo.SecretInfoBO;
 import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
@@ -236,7 +236,7 @@ public final class AmazonS3Util {
             String mediaType = getMediaType(tikaInputStream, fileName);
             String extension = getMimeType(mediaType).getExtension();
             if (StrUtil.isBlank(extension)) {
-                throw new TakeshiException(SysCode.FILE_TYPE_ERROR);
+                throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
             }
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(tikaInputStream.getLength());

@@ -1,7 +1,7 @@
 package com.takeshi.constraints;
 
 
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constraintvalidators.NumberDigitsValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -24,7 +24,7 @@ public @interface NumberDigits {
      *
      * @return msg
      */
-    String message() default SysCode.NUMBER_DIGITS_STR;
+    String message() default TakeshiCode.NUMBER_DIGITS_STR;
 
     /**
      * 下面这两个属性必须添加

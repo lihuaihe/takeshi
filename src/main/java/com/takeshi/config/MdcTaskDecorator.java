@@ -2,7 +2,7 @@ package com.takeshi.config;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.takeshi.constants.SysConstants;
+import com.takeshi.constants.TakeshiConstants;
 import org.slf4j.MDC;
 import org.springframework.core.task.TaskDecorator;
 
@@ -21,14 +21,14 @@ public class MdcTaskDecorator implements TaskDecorator {
         return () -> {
             try {
                 MDC.setContextMap(copyOfContextMap);
-                String traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+                String traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
                 if (StrUtil.isBlank(traceId)) {
                     traceId = IdUtil.fastUUID();
-                    MDC.put(SysConstants.TRACE_ID_KEY, traceId);
+                    MDC.put(TakeshiConstants.TRACE_ID_KEY, traceId);
                 }
                 runnable.run();
             } finally {
-                MDC.remove(SysConstants.TRACE_ID_KEY);
+                MDC.remove(TakeshiConstants.TRACE_ID_KEY);
             }
         };
     }

@@ -6,7 +6,7 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.takeshi.config.properties.TakeshiProperties;
-import com.takeshi.enums.RedisKeyEnum;
+import com.takeshi.enums.TakeshiRedisKeyEnum;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -107,8 +107,8 @@ public class StaticConfig {
         StaticConfig.stringRedisTemplate = stringRedisTemplate;
         StaticConfig.takeshiProperties = takeshiProperties;
         // 保存rsa算法的公钥和私钥到redis中
-        String projectPrivateKey = RedisKeyEnum.PRIVATE_KEY_BASE64.formatProject();
-        String projectPublicKey = RedisKeyEnum.PUBLIC_KEY_BASE64.formatProject();
+        String projectPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.formatProject();
+        String projectPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.formatProject();
         BoundValueOperations<String, String> privateKeyBoundValue = stringRedisTemplate.boundValueOps(projectPrivateKey);
         BoundValueOperations<String, String> publicKeyBoundValue = stringRedisTemplate.boundValueOps(projectPublicKey);
         String privateKeyValue = privateKeyBoundValue.get();

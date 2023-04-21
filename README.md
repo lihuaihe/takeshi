@@ -2,7 +2,7 @@
 
 ## 📚简介
 
-takeshi是我自己为了快速开发一个项目发布的一个库
+takeshi是为了快速开发一个项目发布的一个库
 
 ## 📦安装
 
@@ -31,8 +31,8 @@ implementation 'life.725:takeshi:${version}'
 
 - [Maven中央库](https://central.sonatype.com/artifact/life.725/takeshi/)
 
-> 🔔️注意  
-> 使用本库需要Springboot3.0+和JDK17+支持
+### 🔔️<font color="#FFFF00">注意</font>
+使用本库需要Springboot3.0+和JDK17+支持
 
 ## 📝教程
 
@@ -49,7 +49,7 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 * spring-retry
 * redisson-spring-boot-starter
 
-| 模块                                                                                                                                     | 介绍                            |
+| 依赖                                                                                                                                     | 介绍                            |
 |:---------------------------------------------------------------------------------------------------------------------------------------|:------------------------------|
 | [sa-token](https://sa-token.cc/)                                                                                                       | 一个轻量级 java 权限认证框架，让鉴权变得简单、优雅！ |
 | [mybatis-plus-boot-starter](https://baomidou.com/)                                                                                     | 为简化开发而生                       |
@@ -59,12 +59,35 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 | [firebase-admin](https://firebase.google.com/docs/admin/setup?hl=zh-cn)                                                                | 读写 Realtime Database 数据       |
 | [hutool-all](https://www.hutool.cn/docs/#/)                                                                                            | Hutool是一个小而全的Java工具类库         |
 
+### 🚪代码
+controller包下的接口都有aop记录入参和返回值  
+书写自己的controller类时应继承一下`BaseController`类，里面有提供一些方法  
+默认已经有写好了两个上传文件的接口，上传至AWS的S3中，需要配置s3相关信息
+还有一个未展示在文档中的系统接口，`SystemController`中可使用公钥加密数据，使用公钥解密数据，测试生成sign值
+
 ### 🔧工具
 
 * `RedisComponent.java` redis的工具类，注入使用
-* `SysCode.java` 返回给前端使用的国际化消息，如果项目中需要自定义消息，可继承该类，例如：`ProjectCode extends SysCode`
-* `SysConstants.java` 一些常量值
-* `TakeshiDatePattern.java` 日期格式常量值，继承子hutool的DatePattern
+* `TakeshiCode.java` 返回给前端使用的国际化消息，如果项目中需要自定义消息，可继承该接口，例如：`SysCode extends TakeshiCode`
+* `TakeshiConstants.java` 一些常量值，建议使用时也定义一个接口继承该接口，例如：`SysConstants extends TakeshiConstants`
+* `TakeshiRedisKeyEnum.java`
+  存储一些redis使用的key，可以调用格式化方法给key加对应前缀，建议使用时也定义一个枚举类继承该类，例如：`RedisKeyEnum extends TakeshiRedisKeyEnum`
+* `TakeshiDatePattern.java` 日期格式常量值，继承自hutool的DatePattern
+
+### 🎍注解
+
+* `BigDecimalFormat` 格式化BigDecimal，解析字符串转BigDecimal，解析前端传过来的数字字符串，可配置指定数字格式放回给前端
+* `NumZeroFormat` 去掉前端入参时数字字符串前面多余的零
+* `RepeatSubmit` 防止重复提交
+* `SystemSecurity` 放弃某些类型的校验
+
+### 🍵格式校验
+
+* `CheckNumber` 接口参数校验固定值，null值也是有效的，校验数值，校验参数值是否在当前数组中
+* `CheckSortColumn` 数据库排序字段校验
+* `CheckString` 接口参数校验固定值，null值也是有效的，校验字符串，校验参数值是否在当前数组中
+* `CheckVersion` 版本号格式校验
+* `NumberDigits` 校验数字整数位和小数位的位数，null值也是有效的
 
 **_其他工具类可在util包中查询到_**
 

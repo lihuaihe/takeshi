@@ -4,11 +4,11 @@ import cn.hutool.core.util.StrUtil;
 import com.takeshi.config.StaticConfig;
 
 /**
- * RedisKeyEnum
+ * 存储一些redis使用的key，可以调用格式化方法给key加对应前缀
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public enum RedisKeyEnum {
+public enum TakeshiRedisKeyEnum {
 
     /**
      * 私钥
@@ -28,7 +28,7 @@ public enum RedisKeyEnum {
      */
     ACTIVE_USER_RECORD("active:{}:{}");
 
-    RedisKeyEnum(String key) {
+    TakeshiRedisKeyEnum(String key) {
         this.key = key;
     }
 

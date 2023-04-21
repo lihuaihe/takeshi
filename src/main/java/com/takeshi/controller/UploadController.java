@@ -2,7 +2,7 @@ package com.takeshi.controller;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.takeshi.annotation.SystemSecurity;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import com.takeshi.util.AmazonS3Util;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,7 +49,7 @@ public class UploadController extends BaseController {
     public ResponseDataVO<Object> uploadFile(@RequestPart MultipartFile file,
                                              @Parameter(description = "是否同步上传") boolean sync) throws IOException, InterruptedException, MimeTypeException {
         if (file.isEmpty()) {
-            return success(SysCode.FILE_IS_NULL);
+            return success(TakeshiCode.FILE_IS_NULL);
         }
         return success(AmazonS3Util.addFile(file, sync));
     }

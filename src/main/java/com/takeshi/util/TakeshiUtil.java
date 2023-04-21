@@ -22,7 +22,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,7 +75,7 @@ public final class TakeshiUtil {
         if (platform.isAndroid()) {
             return 2;
         }
-        throw new TakeshiException(SysCode.USERAGENT_ERROR);
+        throw new TakeshiException(TakeshiCode.USERAGENT_ERROR);
     }
 
     /**

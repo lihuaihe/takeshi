@@ -8,7 +8,7 @@ import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.takeshi.constants.SysCode;
+import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     public ResponseDataVO<Object> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
         if (exception.getCause().toString().startsWith(SQL_CAUSE)) {
-            return ResponseDataVO.success(SysCode.DB_ERROR);
+            return ResponseDataVO.success(TakeshiCode.DB_ERROR);
         } else {
             return ResponseDataVO.fail(exception.getMessage());
         }
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({SQLException.class, DataAccessException.class})
     public ResponseDataVO<Object> sqlExceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.sqlExceptionHandler --> SQLException: ", exception);
-        return ResponseDataVO.success(SysCode.DB_ERROR);
+        return ResponseDataVO.success(TakeshiCode.DB_ERROR);
     }
 
     /**
@@ -72,15 +72,15 @@ public class GlobalExceptionHandler {
         Throwable rootCause = ExceptionUtil.getRootCause(runtimeException);
         if (rootCause instanceof NullPointerException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NullPointerException: ", rootCause);
-            return ResponseDataVO.success(SysCode.SYS_NULL_POINT);
+            return ResponseDataVO.success(TakeshiCode.SYS_NULL_POINT);
         }
         if (rootCause instanceof SQLException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> SQLException: ", rootCause);
-            return ResponseDataVO.success(SysCode.DB_ERROR);
+            return ResponseDataVO.success(TakeshiCode.DB_ERROR);
         }
         if (rootCause instanceof NoSuchElementException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NoSuchElementException: ", rootCause);
-            return ResponseDataVO.success(SysCode.RESOURCE_DOES_NOT_EXIST);
+            return ResponseDataVO.success(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
         }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
         FieldError fieldError = bindingResult.getFieldError();
         assert fieldError != null;
         //TODO
-        return ResponseDataVO.success(SysCode.PARAMETER_ERROR.getCode(), StrUtil.BRACKET_START + fieldError.getField() + StrUtil.BRACKET_END + fieldError.getDefaultMessage());
+        return ResponseDataVO.success(TakeshiCode.PARAMETER_ERROR.getCode(), StrUtil.BRACKET_START + fieldError.getField() + StrUtil.BRACKET_END + fieldError.getDefaultMessage());
     }
 
     /**
@@ -118,22 +118,22 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler.notLoginExceptionHandler --> NotLoginException: ", notLoginException);
         if (notLoginException.getType().equals(NotLoginException.NOT_TOKEN)) {
             // 未提供token
-            return ResponseDataVO.success(SysCode.NOT_TOKEN);
+            return ResponseDataVO.success(TakeshiCode.NOT_TOKEN);
         } else if (notLoginException.getType().equals(NotLoginException.INVALID_TOKEN)) {
             // token无效
-            return ResponseDataVO.success(SysCode.INVALID_TOKEN);
+            return ResponseDataVO.success(TakeshiCode.INVALID_TOKEN);
         } else if (notLoginException.getType().equals(NotLoginException.TOKEN_TIMEOUT)) {
             // token已过期
-            return ResponseDataVO.success(SysCode.TOKEN_TIMEOUT);
+            return ResponseDataVO.success(TakeshiCode.TOKEN_TIMEOUT);
         } else if (notLoginException.getType().equals(NotLoginException.BE_REPLACED)) {
             // token已被顶下线
-            return ResponseDataVO.success(SysCode.BE_REPLACED);
+            return ResponseDataVO.success(TakeshiCode.BE_REPLACED);
         } else if (notLoginException.getType().equals(NotLoginException.KICK_OUT)) {
             // token已被踢下线
-            return ResponseDataVO.success(SysCode.KICK_OUT);
+            return ResponseDataVO.success(TakeshiCode.KICK_OUT);
         } else {
             // 当前会话未登录
-            return ResponseDataVO.success(SysCode.NOT_LOGGED);
+            return ResponseDataVO.success(TakeshiCode.NOT_LOGGED);
         }
     }
 
@@ -146,7 +146,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotRoleException.class)
     public ResponseDataVO<Object> notRoleExceptionHandler(NotRoleException notRoleException) {
         log.error("GlobalExceptionHandler.notRoleExceptionHandler --> NotRoleException: ", notRoleException);
-        return ResponseDataVO.success(SysCode.NOT_ROLE_EXCEPTION, new Object[]{notRoleException.getRole()});
+        return ResponseDataVO.success(TakeshiCode.NOT_ROLE_EXCEPTION, new Object[]{notRoleException.getRole()});
     }
 
     /**
@@ -158,7 +158,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotPermissionException.class)
     public ResponseDataVO<Object> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
         log.error("GlobalExceptionHandler.notPermissionExceptionHandler --> NotPermissionException: ", notPermissionException);
-        return ResponseDataVO.success(SysCode.NOT_PERMISSION_EXCEPTION, new Object[]{notPermissionException.getPermission()});
+        return ResponseDataVO.success(TakeshiCode.NOT_PERMISSION_EXCEPTION, new Object[]{notPermissionException.getPermission()});
     }
 
     /**
@@ -170,7 +170,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DisableServiceException.class)
     public ResponseDataVO<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> DisableLoginException: ", disableServiceException);
-        return ResponseDataVO.success(SysCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
+        return ResponseDataVO.success(TakeshiCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
     }
 
 }

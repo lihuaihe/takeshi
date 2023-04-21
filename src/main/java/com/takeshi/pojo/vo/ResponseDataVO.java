@@ -3,8 +3,8 @@ package com.takeshi.pojo.vo;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.constants.SysCode;
-import com.takeshi.constants.SysConstants;
+import com.takeshi.constants.TakeshiCode;
+import com.takeshi.constants.TakeshiConstants;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -259,7 +259,7 @@ public class ResponseDataVO<T> implements Serializable {
      * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail() {
-        return new ResponseDataVO<>(SysCode.FAIL);
+        return new ResponseDataVO<>(TakeshiCode.FAIL);
     }
 
     /**
@@ -270,7 +270,7 @@ public class ResponseDataVO<T> implements Serializable {
      * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail(String message) {
-        return new ResponseDataVO<>(SysCode.FAIL.getCode(), message);
+        return new ResponseDataVO<>(TakeshiCode.FAIL.getCode(), message);
     }
 
     /**
@@ -282,28 +282,28 @@ public class ResponseDataVO<T> implements Serializable {
      * @return {@link ResponseDataVO}
      */
     public static <T> ResponseDataVO<T> fail(String message, Object... args) {
-        return new ResponseDataVO<>(SysCode.FAIL.getCode(), message, args);
+        return new ResponseDataVO<>(TakeshiCode.FAIL.getCode(), message, args);
     }
 
     private ResponseDataVO() {
-        this.code = SysCode.SUCCESS.getCode();
-        this.message = this.formatMessage(SysCode.SUCCESS.getInfo());
+        this.code = TakeshiCode.SUCCESS.getCode();
+        this.message = this.formatMessage(TakeshiCode.SUCCESS.getInfo());
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(int code, String message) {
         this.code = code;
         this.message = this.formatMessage(message);
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(int code, String message, Object[] args) {
         this.code = code;
         this.message = this.formatMessage(message, args);
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(int code, String message, T data) {
@@ -311,7 +311,7 @@ public class ResponseDataVO<T> implements Serializable {
         this.message = this.formatMessage(message);
         this.data = data;
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(int code, String message, T data, Object... args) {
@@ -319,29 +319,29 @@ public class ResponseDataVO<T> implements Serializable {
         this.message = this.formatMessage(message, args);
         this.data = data;
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(T data) {
-        this.code = SysCode.SUCCESS.getCode();
-        this.message = this.formatMessage(SysCode.SUCCESS.getInfo());
+        this.code = TakeshiCode.SUCCESS.getCode();
+        this.message = this.formatMessage(TakeshiCode.SUCCESS.getInfo());
         this.data = data;
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(ResBean resCode) {
         this.code = resCode.getCode();
         this.message = this.formatMessage(resCode.getInfo());
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(ResBean resCode, Object[] args) {
         this.code = resCode.getCode();
         this.message = this.formatMessage(resCode.getInfo(), args);
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(ResBean resCode, T data) {
@@ -349,7 +349,7 @@ public class ResponseDataVO<T> implements Serializable {
         this.message = this.formatMessage(resCode.getInfo());
         this.data = data;
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     private ResponseDataVO(ResBean resCode, T data, Object... args) {
@@ -357,7 +357,7 @@ public class ResponseDataVO<T> implements Serializable {
         this.message = StrUtil.maxLength(this.formatMessage(resCode.getInfo(), args), 100);
         this.data = data;
         this.time = System.currentTimeMillis();
-        this.traceId = MDC.get(SysConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 
     /**
