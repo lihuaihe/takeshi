@@ -7,21 +7,24 @@ spring:
         enabled: true #springboot 2.2.x 高版本中此处开启才能正常接受到文件
   servlet:
     multipart:
-      max-file-size: 150MB
-      max-request-size: 150MB
+      max-file-size: 50MB
+      max-request-size: 100MB
   main:
     allow-bean-definition-overriding: true
   cache:
     # 缓存类型
     type: REDIS
   messages:
-    basename: ValidationMessages
+    basename: i18n/messages
 
 springdoc:
   default-flat-param-object: true
 
 server:
   shutdown: graceful
+  max-http-request-header-size: 10240000
+  tomcat:
+    uri-encoding: UTF-8
 
 knife4j:
   enable: true

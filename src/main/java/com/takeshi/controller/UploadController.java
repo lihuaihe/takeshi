@@ -46,7 +46,8 @@ public class UploadController extends BaseController {
     @Operation(summary = "上传文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping("/file")
-    public ResponseDataVO<Object> uploadFile(@RequestPart MultipartFile file, @Parameter(description = "是否同步上传") boolean sync) throws IOException, InterruptedException, MimeTypeException {
+    public ResponseDataVO<Object> uploadFile(@RequestPart MultipartFile file,
+                                             @Parameter(description = "是否同步上传") boolean sync) throws IOException, InterruptedException, MimeTypeException {
         if (file.isEmpty()) {
             return success(SysCode.FILE_IS_NULL);
         }

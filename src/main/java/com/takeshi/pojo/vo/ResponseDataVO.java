@@ -9,11 +9,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.MDC;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.annotation.Transient;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /**
  * @author 七濑武【Nanase Takeshi】
@@ -364,7 +368,13 @@ public class ResponseDataVO<T> implements Serializable {
      * @return 消息
      */
     private String formatMessage(String message, Object... args) {
-        return StaticConfig.messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
+        MessageSource messageSource = Optional.ofNullable(StaticConfig.messageSource).orElseGet(() -> {
+            ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
+            resourceBundleMessageSource.setBasenames("i18n/messages", "ValidationMessages");
+            resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+            return resourceBundleMessageSource;
+        });
+        return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
     /**

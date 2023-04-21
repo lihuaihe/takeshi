@@ -9,10 +9,10 @@ import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.enums.RedisKeyEnum;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -23,7 +23,7 @@ import java.security.KeyPair;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Component("StaticConfig")
+@AutoConfiguration
 public class StaticConfig {
 
     /**

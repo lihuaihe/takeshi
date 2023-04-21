@@ -4,7 +4,7 @@ import cn.hutool.core.util.ArrayUtil;
 import com.takeshi.exception.TakeshiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -18,7 +18,7 @@ import java.util.concurrent.Executor;
  * @author 七濑武【Nanase Takeshi】
  */
 @EnableAsync
-@Configuration
+@AutoConfiguration
 @RequiredArgsConstructor
 public class AsyncConfig implements AsyncConfigurer {
 

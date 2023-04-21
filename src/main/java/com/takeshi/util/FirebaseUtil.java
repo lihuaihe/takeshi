@@ -3,7 +3,6 @@ package com.takeshi.util;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -40,7 +39,7 @@ public final class FirebaseUtil {
                     try {
                         Assert.isTrue(ObjUtil.isNotNull(StaticConfig.takeshiProperties), StaticConfig.TAKESHI_PROPERTIES_MSG, "firebaseCredentials");
                         TakeshiProperties.FirebaseCredentials firebaseCredentials = StaticConfig.takeshiProperties.getFirebaseCredentials();
-                        String firebaseJsonFileName = StrUtil.blankToDefault(firebaseCredentials.getJsonFileName(), "firebase.json");
+                        String firebaseJsonFileName = firebaseCredentials.getJsonFileName();
                         // Firebase需要的JSON文件
                         InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
                         if (ObjUtil.isNull(inputStream)) {

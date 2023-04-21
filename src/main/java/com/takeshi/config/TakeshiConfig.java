@@ -4,11 +4,11 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.jackson.SimpleJavaTimeModule;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -31,7 +31,7 @@ import java.util.Locale;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Configuration
+@AutoConfiguration
 @EnableCaching
 @EnableRetry
 @RequiredArgsConstructor
