@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public final class TakeshiDatePattern extends DatePattern {
+public abstract class TakeshiDatePattern extends DatePattern {
 
     /**
      * MM-dd
