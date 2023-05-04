@@ -65,6 +65,19 @@ public abstract class TakeshiDatePattern extends DatePattern {
     public static final DateTimeFormatter SIMPLE_MONTH_REVERSE_FORMATTER = createFormatter(SIMPLE_MONTH_PATTERN_REVERSE);
 
     /**
+     * yyyy/MM/dd
+     */
+    public static final String SLASH_SEPARATOR_DATE_PATTERN = "yyyy/MM/dd";
+    /**
+     * yyyy/MM/dd
+     */
+    public static final FastDateFormat SLASH_SEPARATOR_DATE_PATTERN_FORMAT = FastDateFormat.getInstance(SLASH_SEPARATOR_DATE_PATTERN);
+    /**
+     * yyyy/MM/dd
+     */
+    public static final DateTimeFormatter SLASH_SEPARATOR_DATE_PATTERN_FORMATTER = createFormatter(SLASH_SEPARATOR_DATE_PATTERN);
+
+    /**
      * 构造函数
      */
     private TakeshiDatePattern() {

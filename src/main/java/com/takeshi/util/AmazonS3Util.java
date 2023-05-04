@@ -1,6 +1,5 @@
 package com.takeshi.util;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.img.Img;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
@@ -25,6 +24,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.constants.TakeshiCode;
+import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
 import org.apache.tika.config.TikaConfig;
@@ -41,9 +41,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -241,10 +241,11 @@ public final class AmazonS3Util {
             metadata.setContentLength(tikaInputStream.getLength());
             metadata.setContentType(mediaType);
             // 添加用户自定义元数据
-            metadata.addUserMetadata(ORIGINAL_NAME, FileNameUtil.mainName(fileName));
+            String mainName = FileNameUtil.mainName(fileName);
+            metadata.addUserMetadata(ORIGINAL_NAME, mainName);
             metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
             metadata.addUserMetadata(EXTENSION_NAME, extension);
-            String fileObjKeyName = getFileObjKeyName(extension);
+            String fileObjKeyName = getFileObjKeyName(mainName, extension);
             // withCannedAcl 设置对象可以公共读
             PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKeyName, tikaInputStream, metadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead);
@@ -359,11 +360,13 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径
      *
+     * @param mainName  文件名
      * @param extension 扩展名
      * @return 完整路径
      */
-    public static String getFileObjKeyName(String extension) {
-        return StrUtil.builder(extension, DateUtil.format(new Date(), "/yyyy/MM/dd/"), IdUtil.getSnowflakeNextIdStr(), extension).toString();
+    public static String getFileObjKeyName(String mainName, String extension) {
+        String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.DOT, mainName, extension).toString();
     }
 
     private static String getMediaType(InputStream stream, String fileName) throws IOException {
