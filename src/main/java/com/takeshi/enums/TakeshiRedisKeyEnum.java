@@ -16,7 +16,23 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
     /**
      * 公钥
      */
-    PUBLIC_KEY_BASE64("publicKeyBase64");
+    PUBLIC_KEY_BASE64("publicKeyBase64"),
+    /**
+     * IP黑名单{clientIp}
+     */
+    IP_BLACKLIST("ipBlacklist:{}"),
+    /**
+     * nonce限制{clientIp}{servletPath}
+     */
+    NONCE_RATE_LIMIT("rate:nonce:{}:{}"),
+    /**
+     * ip限制{clientIp}{servletPath}
+     */
+    IP_RATE_LIMIT("rate:ip:{}:{}"),
+    /**
+     * 重复提交{MD5后的值}
+     */
+    REPEAT_SUBMIT("repeatSubmit:{}");
 
     private final String key;
 

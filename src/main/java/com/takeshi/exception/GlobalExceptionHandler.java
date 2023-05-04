@@ -6,8 +6,10 @@ import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.lang.TypeReference;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.vo.ResponseDataVO;
 import lombok.extern.slf4j.Slf4j;
@@ -84,12 +86,14 @@ public class GlobalExceptionHandler {
         }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
-            return JSONUtil.toBean(rootCause.getMessage(), new TypeReference<ResponseDataVO<Object>>() {
+            return JSONUtil.toBean(rootCause.getMessage(), new TypeReference<>() {
             }, false);
         }
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", rootCause);
         return ResponseDataVO.fail(rootCause.getMessage());
     }
+
+    private final String PARAMETER_ERROR_MSG = "[{}] {}";
 
     /**
      * 参数校验异常
@@ -102,9 +106,12 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
-        assert fieldError != null;
-        //TODO
-        return ResponseDataVO.success(TakeshiCode.PARAMETER_ERROR.getCode(), StrUtil.BRACKET_START + fieldError.getField() + StrUtil.BRACKET_END + fieldError.getDefaultMessage());
+        ResponseDataVO.ResBean parameterError = TakeshiCode.PARAMETER_ERROR;
+        if (ObjUtil.isNotNull(fieldError)) {
+            String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName() ? StrUtil.format(PARAMETER_ERROR_MSG, fieldError.getField(), fieldError.getDefaultMessage()) : fieldError.getDefaultMessage();
+            parameterError.setInfo(msg);
+        }
+        return ResponseDataVO.success(parameterError);
     }
 
     /**

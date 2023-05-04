@@ -5,14 +5,14 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
 import cn.hutool.crypto.asymmetric.RSA;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeshi.component.RedisComponent;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.data.redis.core.BoundValueOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -27,9 +27,9 @@ import java.security.KeyPair;
 public class StaticConfig {
 
     /**
-     * takeshiProperties error msg
+     * ObjectMapper
      */
-    public static String TAKESHI_PROPERTIES_MSG = "StaticConfig.takeshiProperties is null. Please set StaticConfig.takeshiProperties and StaticConfig.takeshiProperties.{} property value";
+    public static ObjectMapper objectMapper;
 
     /**
      * 解析国际化消息
@@ -37,14 +37,9 @@ public class StaticConfig {
     public static MessageSource messageSource;
 
     /**
-     * Redisson
+     * RedisComponent
      */
-    public static RedissonClient redissonClient;
-
-    /**
-     * StringRedisTemplate
-     */
-    public static StringRedisTemplate stringRedisTemplate;
+    public static RedisComponent redisComponent;
 
     /**
      * 自定义额外属性值
@@ -84,33 +79,33 @@ public class StaticConfig {
     /**
      * 构造函数
      *
-     * @param applicationName     applicationName
-     * @param active              active
-     * @param serverPort          serverPort
-     * @param messageSource       messageSource
-     * @param redissonClient      redissonClient
-     * @param stringRedisTemplate stringRedisTemplate
-     * @param takeshiProperties   takeshiProperties
+     * @param applicationName   applicationName
+     * @param active            active
+     * @param serverPort        serverPort
+     * @param objectMapper      objectMapper
+     * @param messageSource     messageSource
+     * @param redisComponent    redisComponent
+     * @param takeshiProperties takeshiProperties
      */
     public StaticConfig(@Value("${spring.application.name}") String applicationName,
                         @Value("${spring.profiles.active}") String active,
                         @Value("${server.port}") String serverPort,
+                        ObjectMapper objectMapper,
                         MessageSource messageSource,
-                        RedissonClient redissonClient,
-                        StringRedisTemplate stringRedisTemplate,
+                        RedisComponent redisComponent,
                         TakeshiProperties takeshiProperties) {
         StaticConfig.applicationName = applicationName;
         StaticConfig.active = active;
         StaticConfig.serverPort = serverPort;
+        StaticConfig.objectMapper = objectMapper;
         StaticConfig.messageSource = messageSource;
-        StaticConfig.redissonClient = redissonClient;
-        StaticConfig.stringRedisTemplate = stringRedisTemplate;
+        StaticConfig.redisComponent = redisComponent;
         StaticConfig.takeshiProperties = takeshiProperties;
         // 保存rsa算法的公钥和私钥到redis中
-        String projectPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.formatProject();
-        String projectPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.formatProject();
-        BoundValueOperations<String, String> privateKeyBoundValue = stringRedisTemplate.boundValueOps(projectPrivateKey);
-        BoundValueOperations<String, String> publicKeyBoundValue = stringRedisTemplate.boundValueOps(projectPublicKey);
+        String projectPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
+        String projectPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
+        BoundValueOperations<String, String> privateKeyBoundValue = redisComponent.boundValueOps(projectPrivateKey);
+        BoundValueOperations<String, String> publicKeyBoundValue = redisComponent.boundValueOps(projectPublicKey);
         String privateKeyValue = privateKeyBoundValue.get();
         String publicKeyValue = publicKeyBoundValue.get();
         if (StrUtil.hasBlank(privateKeyValue, publicKeyValue)) {

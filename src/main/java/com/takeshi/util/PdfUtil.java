@@ -106,7 +106,7 @@ public final class PdfUtil {
      */
     private static void generatePdf(String templateName, Map<?, ?> bindingMap,
                                     OutputStream out) throws DocumentException, IOException {
-        Template template = TemplateEngineUtil.engine.getTemplate(templateName + ".html");
+        Template template = TakeshiUtil.getTemplateEngine().getTemplate(templateName + ".html");
         String render = template.render(bindingMap);
         ITextRenderer renderer = new ITextRenderer();
         // 添加字体

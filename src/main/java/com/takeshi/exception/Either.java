@@ -141,7 +141,7 @@ public class Either<L, R> {
      * @param <R>      R
      * @return 函数
      */
-    public static <T, R> Function<T, Either<?, R>> lift(CheckedFunction<T, R> function) {
+    public static <T, R> Function<T, Either<?, R>> left(CheckedFunction<T, R> function) {
         return t -> {
             try {
                 return Either.Right(function.apply(t));
@@ -161,7 +161,7 @@ public class Either<L, R> {
      * @param <R>      R
      * @return 函数
      */
-    public static <T, R> Function<T, Either<?, R>> liftWithValue(CheckedFunction<T, R> function) {
+    public static <T, R> Function<T, Either<?, R>> leftWithValue(CheckedFunction<T, R> function) {
         return t -> {
             try {
                 return Either.Right(function.apply(t));

@@ -4,7 +4,6 @@ import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-import org.springframework.util.StreamUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -29,20 +28,9 @@ public class TakeshiHttpRequestWrapper extends HttpServletRequestWrapper {
      * @param request request
      * @throws IOException IOException
      */
-    private TakeshiHttpRequestWrapper(HttpServletRequest request) throws IOException {
+    public TakeshiHttpRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        bodyByte = StreamUtils.copyToByteArray(request.getInputStream());
-    }
-
-    /**
-     * 构建
-     *
-     * @param request request
-     * @return TakeshiHttpRequestWrapper
-     * @throws IOException IOException
-     */
-    public static TakeshiHttpRequestWrapper build(HttpServletRequest request) throws IOException {
-        return new TakeshiHttpRequestWrapper(request);
+        bodyByte = request.getInputStream().readAllBytes();
     }
 
     @Override

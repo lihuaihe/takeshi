@@ -170,7 +170,7 @@ public class RedisComponent {
     }
 
     /**
-     * 写入缓存设置失效时间到当天晚上凌晨
+     * 写入缓存设置失效时间到当天结束时间，例如：2023-04-23 23:59:59
      *
      * @param key   key
      * @param value value
@@ -181,7 +181,7 @@ public class RedisComponent {
     }
 
     /**
-     * 写入缓存设置失效时间到本周日晚上凌晨
+     * 写入缓存设置失效时间到本周日的结束时间，例如周日时间是：2023-04-23，那么周日结束时间就是 2023-04-23 23:59:59
      *
      * @param key   key
      * @param value value

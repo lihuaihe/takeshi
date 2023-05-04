@@ -38,7 +38,8 @@ public final class GsonUtil {
                             .registerTypeAdapter(YearMonth.class, new YearMonthTypeAdapter())
                             .registerTypeAdapter(MonthDay.class, new MonthDayTypeAdapter())
                             .registerTypeAdapter(OffsetTime.class, new OffsetTimeTypeAdapter())
-                            .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter());
+                            .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                            ;
                     GSON = gsonBuilder.create();
                     GSON_LONG_TO_STRING = gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING).create();
                     GSON_INCLUDE_NULL = gsonBuilder.serializeNulls().create();

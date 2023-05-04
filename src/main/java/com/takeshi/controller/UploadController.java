@@ -7,6 +7,7 @@ import com.takeshi.pojo.vo.ResponseDataVO;
 import com.takeshi.util.AmazonS3Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -45,9 +46,9 @@ public class UploadController extends BaseController {
     @SystemSecurity(all = true)
     @Operation(summary = "上传文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
-    @PostMapping("/file")
+    @PostMapping(value = "/file", consumes = "multipart/form-data")
     public ResponseDataVO<Object> uploadFile(@RequestPart MultipartFile file,
-                                             @Parameter(description = "是否同步上传") boolean sync) throws IOException, InterruptedException, MimeTypeException {
+                                             @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws IOException, InterruptedException, MimeTypeException {
         if (file.isEmpty()) {
             return success(TakeshiCode.FILE_IS_NULL);
         }
@@ -67,9 +68,9 @@ public class UploadController extends BaseController {
     @SystemSecurity(all = true)
     @Operation(summary = "上传多个文件", description = "上传多个文件，最多同时上传9个文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
-    @PostMapping("/multi-file")
+    @PostMapping(value = "/multi-file", consumes = "multipart/form-data")
     public ResponseDataVO<List<String>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
-                                                   @Parameter(description = "是否同步上传") boolean sync) throws InterruptedException, IOException, MimeTypeException {
+                                                   @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
         return success(AmazonS3Util.addFile(files, sync));
     }
 

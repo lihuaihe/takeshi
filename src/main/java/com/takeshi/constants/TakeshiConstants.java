@@ -1,8 +1,5 @@
 package com.takeshi.constants;
 
-import com.takeshi.config.StaticConfig;
-import com.takeshi.pojo.bo.SmsInfoBO;
-
 /**
  * 常量池
  *
@@ -11,14 +8,24 @@ import com.takeshi.pojo.bo.SmsInfoBO;
 public interface TakeshiConstants {
 
     /**
+     * multipart request attribute name
+     */
+    String MULTIPART_REQUEST = "multipartRequest";
+
+    /**
      * 签名参数名
      */
-    String SIGN_NAME = "sign";
+    String SIGN_NAME = "x-sign";
 
     /**
      * 调用接口header里面传的时间戳字段（毫秒级）
      */
-    String TIMESTAMP_NAME = "timestamp";
+    String TIMESTAMP_NAME = "x-timestamp";
+
+    /**
+     * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
+     */
+    String NONCE_NAME = "x-nonce";
 
     /**
      * 日志追踪ID
@@ -29,26 +36,6 @@ public interface TakeshiConstants {
      * 需要过滤的swagger页面路径
      */
     String[] EXCLUDE_SWAGGER_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error"};
-
-    /**
-     * APP的header参数名：经度
-     */
-    String LONGITUDE = "Longitude";
-
-    /**
-     * APP的header参数名：纬度
-     */
-    String LATITUDE = "Latitude";
-
-    /**
-     * APP的header参数名：timezone
-     */
-    String TIMEZONE = "timezone";
-
-    /**
-     * APP的header参数名：app-version
-     */
-    String APP_VERSION = "app-version";
 
     /**
      * 版本号校验正则
@@ -88,14 +75,5 @@ public interface TakeshiConstants {
      * STRINGS
      */
     String[] STRINGS = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
-
-    /**
-     * 短信（0：登录，1：注册，2：忘记密码）
-     */
-    SmsInfoBO[] SMS_INFOS = {
-            new SmsInfoBO(StaticConfig.applicationName + ":login:code:", "Login Verification Code: "),
-            new SmsInfoBO(StaticConfig.applicationName + ":register:code:", "Register verification code: "),
-            new SmsInfoBO(StaticConfig.applicationName + ":forgetPwd:code:", "Password reset verification code: ")
-    };
 
 }

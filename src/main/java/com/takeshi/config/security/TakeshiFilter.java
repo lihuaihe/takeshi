@@ -1,35 +1,54 @@
 package com.takeshi.config.security;
 
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.StrUtil;
 import com.takeshi.constants.TakeshiConstants;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
 /**
  * TakeshiFilter
  */
+@Slf4j
 @AutoConfiguration
-@Order(HIGHEST_PRECEDENCE)  // 优先级最高
+@Order(HIGHEST_PRECEDENCE)
 public class TakeshiFilter implements Filter {
+
+    List<String> excludeUrlList;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        excludeUrlList = List.of(TakeshiConstants.EXCLUDE_SWAGGER_URL);
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        // 填充traceId
-        MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastSimpleUUID());
-        if (request instanceof HttpServletRequest httpServletRequest) {
-            if (StrUtil.contains(httpServletRequest.getContentType(), "multipart/form-data")) {
-                httpServletRequest = new StandardServletMultipartResolver().resolveMultipart(httpServletRequest);
+        if (request instanceof HttpServletRequest httpServletRequest && !excludeUrlList.contains(httpServletRequest.getServletPath())) {
+            String uuid = IdUtil.fastSimpleUUID();
+            // 填充traceId
+            MDC.put(TakeshiConstants.TRACE_ID_KEY, uuid);
+            StopWatch stopWatch = new StopWatch(uuid);
+            stopWatch.start();
+            StandardServletMultipartResolver standardServletMultipartResolver = new StandardServletMultipartResolver();
+            if (standardServletMultipartResolver.isMultipart(httpServletRequest)) {
+                request = standardServletMultipartResolver.resolveMultipart(httpServletRequest);
+                request.setAttribute(TakeshiConstants.MULTIPART_REQUEST, request);
+            } else {
+                request = new TakeshiHttpRequestWrapper(httpServletRequest);
             }
-            chain.doFilter(TakeshiHttpRequestWrapper.build(httpServletRequest), response);
+            chain.doFilter(request, response);
+            stopWatch.stop();
+            log.info("响应结束,耗时: {} ms", stopWatch.getTotalTimeMillis());
             return;
         }
         chain.doFilter(request, response);
