@@ -14,12 +14,11 @@ configurations {
 }
 
 group = 'life.725'
-version = '1.0.2'
+version = '1.0.3'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 ext {
-    mavenUrl = project.hasProperty('mavenUrl') ? project.mavenUrl : ''
     mavenUsername = project.hasProperty('mavenUsername') ? project.mavenUsername : ''
     mavenPassword = project.hasProperty('mavenPassword') ? project.mavenPassword : ''
 }
