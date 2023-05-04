@@ -308,7 +308,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                     Map.Entry::getKey,
                                     entry -> entry.getValue()
                                             .stream()
-                                            .map(multipartFile -> StrUtil.strBuilder(multipartFile.getOriginalFilename(), StrUtil.BRACKET_START, DataSizeUtil.format(multipartFile.getSize()), StrUtil.BRACKET_END))
+                                            .map(multipartFile -> StrUtil.builder(multipartFile.getOriginalFilename(), StrUtil.BRACKET_START, DataSizeUtil.format(multipartFile.getSize()), StrUtil.BRACKET_END))
                                             .collect(Collectors.joining(StrUtil.COMMA))
                             )
                     );
