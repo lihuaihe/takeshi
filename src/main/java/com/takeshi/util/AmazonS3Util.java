@@ -4,11 +4,12 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.img.Img;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -22,10 +23,9 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
-import com.takeshi.pojo.bo.SecretInfoBO;
 import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
@@ -70,7 +70,7 @@ public final class AmazonS3Util {
     /**
      * 获取到的密钥信息
      */
-    public static volatile SecretInfoBO SECRET;
+    public static volatile JSONObject SECRET;
 
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
@@ -82,24 +82,23 @@ public final class AmazonS3Util {
             synchronized (AmazonS3Util.class) {
                 if (ObjUtil.isNull(transferManager)) {
                     // 获取密钥
-                    Assert.isTrue(ObjUtil.isNotNull(StaticConfig.takeshiProperties), StaticConfig.TAKESHI_PROPERTIES_MSG, "awsCredentials");
-                    TakeshiProperties.AWSSecretsManagerCredentials awsCredentials = StaticConfig.takeshiProperties.getAwsCredentials();
-                    BUCKET_NAME = awsCredentials.getBucketName();
+                    AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
+                    BUCKET_NAME = awsSecrets.getBucketName();
                     AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
-                            .withRegion(awsCredentials.getRegion())
-                            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                            .withRegion(awsSecrets.getRegion())
+                            .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))
                             .build();
                     GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest();
                     getSecretValueRequest.setSecretId("Sharpish-key");
                     GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                     String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                    SECRET = GsonUtil.fromJson(secret, SecretInfoBO.class);
-                    String accessKey = SECRET.getAwsS3AccessKeyId();
-                    String secretKey = SECRET.getAwsS3SecretAccessKey();
+                    SECRET = JSONUtil.parseObj(secret);
+                    String accessKey = SECRET.getStr(awsSecrets.getAccessKeyName());
+                    String secretKey = SECRET.getStr(awsSecrets.getSecretKeyName());
                     // S3
                     AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                            .withRegion(awsCredentials.getRegion())
+                            .withRegion(awsSecrets.getRegion())
                             .build();
                     if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                         // 创建桶

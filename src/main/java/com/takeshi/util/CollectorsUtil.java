@@ -2,7 +2,7 @@ package com.takeshi.util;
 
 
 import cn.hutool.core.util.NumberUtil;
-import com.takeshi.annotation.ToBigDecimalFunction;
+import com.takeshi.function.ToBigDecimalFunction;
 import com.takeshi.function.BigDecimalSummaryStatistics;
 
 import java.math.BigDecimal;

@@ -1,19 +1,21 @@
 package com.takeshi.util;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.impl.CollectionConverter;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.lang.TypeReference;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.net.NetUtil;
-import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
-import cn.hutool.core.util.ZipUtil;
+import cn.hutool.core.util.*;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.digest.DigestAlgorithm;
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.extra.template.TemplateConfig;
+import cn.hutool.extra.template.TemplateEngine;
+import cn.hutool.extra.template.TemplateUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.useragent.Platform;
@@ -22,17 +24,25 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeshi.config.security.TakeshiHttpRequestWrapper;
 import com.takeshi.constants.TakeshiCode;
+import com.takeshi.exception.Either;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
-import org.springframework.http.HttpMethod;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 工具类
@@ -48,6 +58,15 @@ public final class TakeshiUtil {
      * 构造函数
      */
     private TakeshiUtil() {
+    }
+
+    /**
+     * 获取单例的模版引擎
+     *
+     * @return TemplateEngine
+     */
+    public static TemplateEngine getTemplateEngine() {
+        return Singleton.get(TemplateEngine.class.getName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
     }
 
     /**
@@ -106,28 +125,23 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 将URL的参数和body参数合并，path参数不参与
+     * 将URL的参数和body参数合并，path参数不参与，如果有上传文件，则，key使用参数名，value使用文件流进行MD5加密
      *
      * @param request request
      * @return 按key排序后的map
      */
-    public static Map<String, String> getAllParams(HttpServletRequest request) {
+    public static Map<String, Object> getAllParams(HttpServletRequest request) {
         // 获取参数
-        Map<String, String> map = JakartaServletUtil.getParamMap(request);
-        // GET请求不需要拿body参数
-        if (!HttpMethod.GET.name().equals(request.getMethod())) {
-            String bodyString = JakartaServletUtil.getBody(request);
-            if (JSONUtil.isTypeJSON(bodyString)) {
-                // 将URL的参数和body参数进行合并
-                map.putAll(JSONUtil.toBean(bodyString, new TypeReference<Map<String, String>>() {
-                }, false));
-            }
+        Map<String, String> paramMap = JakartaServletUtil.getParamMap(request);
+        Map<String, Object> map = new HashMap<>(paramMap);
+        if (JakartaServletUtil.isGetMethod(request)) {
+            return map;
         }
         return map;
     }
 
     /**
-     * 对参数做Sha256签名<br>
+     * 对参数做MD5签名<br>
      * 参数签名为对Map参数按照key的顺序排序后拼接为字符串，然后根据提供的签名算法生成签名字符串<br>
      * 拼接后的字符串键值对之间无符号，键值对之间无符号，忽略null值
      *
@@ -136,11 +150,8 @@ public final class TakeshiUtil {
      * @return 签名后的值
      */
     public static String signParams(HttpServletRequest request, String... otherParams) {
-        Map<String, String> allParams = getAllParams(request);
-        if (CollUtil.isEmpty(allParams)) {
-            return null;
-        }
-        return SecureUtil.signParamsSha256(allParams, otherParams);
+        Map<String, Object> allParams = getAllParams(request);
+        return SecureUtil.signParamsMd5(allParams, otherParams);
     }
 
     /**
@@ -239,7 +250,7 @@ public final class TakeshiUtil {
      * 解析lambda获取属性名
      *
      * @param func func
-     * @param <T> T
+     * @param <T>  T
      * @return 属性名
      */
     public static <T> String getPropertyName(SFunction<T, ?> func) {
@@ -250,7 +261,7 @@ public final class TakeshiUtil {
      * 解析lambda获取字段名
      *
      * @param func func
-     * @param <T> T
+     * @param <T>  T
      * @return 字段名
      */
     public static <T> String getColumnName(SFunction<T, ?> func) {

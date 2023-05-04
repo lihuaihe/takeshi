@@ -3,7 +3,6 @@ package com.takeshi.util;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -12,7 +11,7 @@ import com.microtripit.mandrillapp.lutung.model.MandrillApiError;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.config.properties.MandrillCredentials;
 import com.takeshi.exception.TakeshiException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,11 +67,10 @@ public final class MandrillUtil {
         if (ObjUtil.isNull(MANDRILL_API)) {
             synchronized (MandrillUtil.class) {
                 if (ObjUtil.isNull(MANDRILL_API)) {
-                    Assert.isTrue(ObjUtil.isNotNull(StaticConfig.takeshiProperties), StaticConfig.TAKESHI_PROPERTIES_MSG, "mandrillCredentials");
-                    TakeshiProperties.MandrillCredentials mandrillCredentials = StaticConfig.takeshiProperties.getMandrillCredentials();
-                    FROM_EMAIL = mandrillCredentials.getFromEmail();
-                    FROM_NAME = mandrillCredentials.getFromName();
-                    MANDRILL_API = new MandrillApi(mandrillCredentials.getApiKey());
+                    MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
+                    FROM_EMAIL = mandrill.getFromEmail();
+                    FROM_NAME = mandrill.getFromName();
+                    MANDRILL_API = new MandrillApi(mandrill.getApiKey());
                 }
             }
         }
@@ -170,7 +168,7 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil generateHtmlContent(String templateName, Map<?, ?> bindingMap) {
-        String htmlStr = TemplateEngineUtil.engine.getTemplate(templateName + ".html").render(bindingMap);
+        String htmlStr = TakeshiUtil.getTemplateEngine().getTemplate(templateName + ".html").render(bindingMap);
         return this.content(htmlStr, true);
     }
 

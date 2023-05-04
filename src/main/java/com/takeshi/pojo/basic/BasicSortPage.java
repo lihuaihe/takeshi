@@ -2,7 +2,6 @@ package com.takeshi.pojo.basic;
 
 import cn.hutool.core.util.StrUtil;
 import com.takeshi.constraints.CheckSortColumn;
-import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -28,9 +27,9 @@ public class BasicSortPage extends BasicPage {
     private String sortColumn;
 
     /**
-     * 是否是生序排序
+     * 是否是升序排序
      */
-    @Parameter(description = "是否是生序排序", schema = @Schema(description = "是否是生序排序"))
+    @Parameter(description = "是否是升序排序", schema = @Schema(description = "是否是升序排序", allowableValues = {"false", "true"}))
     private Boolean sortAsc;
 
     /**
@@ -40,7 +39,7 @@ public class BasicSortPage extends BasicPage {
      * @return BasicSortPage
      */
     public BasicSortPage setSortColumn(String sortColumn) {
-        this.sortColumn = StrUtil.isBlank(sortColumn) ? TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime) : StrUtil.toUnderlineCase(sortColumn);
+        this.sortColumn = StrUtil.isBlank(sortColumn) ? "create_time" : StrUtil.toUnderlineCase(sortColumn);
         return this;
     }
 

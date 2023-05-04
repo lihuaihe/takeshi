@@ -25,7 +25,7 @@ public interface TakeshiRedisKeyFormat {
      * @param params 参数值
      * @return 格式化后的文本
      */
-    default String formatModule(Object... params) {
+    default String moduleKey(Object... params) {
         return StaticConfig.applicationName.concat(StrUtil.addPrefixIfNot(StrUtil.format(this.getKey(), params), StrUtil.COLON));
     }
 
@@ -35,7 +35,7 @@ public interface TakeshiRedisKeyFormat {
      * @param params 参数值
      * @return 格式化后的文本
      */
-    default String formatProject(Object... params) {
+    default String projectKey(Object... params) {
         return StaticConfig.takeshiProperties.getProjectName().concat(StrUtil.addPrefixIfNot(StrUtil.format(this.getKey(), params), StrUtil.COLON));
     }
 

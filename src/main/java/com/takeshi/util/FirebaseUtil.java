@@ -1,23 +1,22 @@
 package com.takeshi.util;
 
 import cn.hutool.core.io.resource.ResourceUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.*;
 import com.google.firebase.messaging.*;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.config.properties.FirebaseCredentials;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * FirebaseUtil
@@ -37,9 +36,8 @@ public final class FirebaseUtil {
             synchronized (FirebaseUtil.class) {
                 if (ObjUtil.isNull(FIREBASE_APP)) {
                     try {
-                        Assert.isTrue(ObjUtil.isNotNull(StaticConfig.takeshiProperties), StaticConfig.TAKESHI_PROPERTIES_MSG, "firebaseCredentials");
-                        TakeshiProperties.FirebaseCredentials firebaseCredentials = StaticConfig.takeshiProperties.getFirebaseCredentials();
-                        String firebaseJsonFileName = firebaseCredentials.getJsonFileName();
+                        FirebaseCredentials firebase = StaticConfig.takeshiProperties.getFirebase();
+                        String firebaseJsonFileName = firebase.getJsonFileName();
                         // Firebase需要的JSON文件
                         InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
                         if (ObjUtil.isNull(inputStream)) {
@@ -48,7 +46,7 @@ public final class FirebaseUtil {
                             FirebaseOptions options = FirebaseOptions.builder()
                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
                                     // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                                    .setDatabaseUrl(firebaseCredentials.getDatabaseUrl())
+                                    .setDatabaseUrl(firebase.getDatabaseUrl())
                                     .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
                             log.info("FirebaseUtil.static --> FirebaseApp 初始化成功");
@@ -78,6 +76,79 @@ public final class FirebaseUtil {
         public static final DatabaseReference DATABASE_REFERENCE = FirebaseDatabase.getInstance(FIREBASE_APP).getReference();
 
         private Database() {
+        }
+
+        /**
+         * 获取指定位置的的值
+         *
+         * @param pathString 子路径
+         * @return 数据库位置的数据
+         */
+        public static DataSnapshot getValue(String pathString) {
+            CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
+            DATABASE_REFERENCE.child(pathString)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
+                            completableFuture.complete(snapshot);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            completableFuture.completeExceptionally(error.toException());
+                        }
+                    });
+            return completableFuture.join();
+        }
+
+        /**
+         * 对路径下的值自增1
+         *
+         * @param pathString 子路径
+         * @return 数据库位置的数据
+         */
+        public static DataSnapshot runTransactionOfSelfChange(String pathString) {
+            return runTransactionOfSelfChange(pathString, 1L);
+        }
+
+        /**
+         * 对路径下的值自减1
+         *
+         * @param pathString 子路径
+         * @return 数据库位置的数据
+         */
+        public static DataSnapshot decrement(String pathString) {
+            return runTransactionOfSelfChange(pathString, -1L);
+        }
+
+        /**
+         * 对路径下的值自增delta
+         *
+         * @param pathString 子路径
+         * @param delta      值
+         * @return 数据库位置的数据
+         */
+        public static DataSnapshot runTransactionOfSelfChange(String pathString, long delta) {
+            CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
+            DATABASE_REFERENCE.child(pathString)
+                    .runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData currentData) {
+                            Long currentValue = ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L);
+                            currentData.setValue(currentValue + delta);
+                            return Transaction.success(currentData);
+                        }
+
+                        @Override
+                        public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
+                            if (error != null) {
+                                log.error("Database.onComplete --> error: ", error.toException());
+                            } else {
+                                completableFuture.complete(currentData);
+                            }
+                        }
+                    });
+            return completableFuture.join();
         }
 
         /**

@@ -57,7 +57,7 @@ publishing {
             from components.java
             pom {
                 name = 'takeshi'
-                description = '一个可以快速构建SpringBoot框架的库'
+                description = '一个集成了各种库的，可以快速构建SpringBoot项目框架的库，GitHub地址：https://github.com/lihuaihe/takeshi'
                 url = 'https://github.com/lihuaihe/takeshi'
                 licenses {
                     license {
@@ -124,8 +124,10 @@ dependencies {
     api 'cn.dev33:sa-token-dao-redis-jackson:1.34.0'
 
     api 'ognl:ognl:3.3.4'
-    api 'io.netty:netty-all:4.1.87.Final'
+    api 'io.netty:netty-all:4.1.91.Final'
 //    api 'javax.xml.bind:jaxb-api:2.3.1'
+
+    implementation 'com.twilio.sdk:twilio:9.5.0'
 
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor("net.dreamlu:mica-auto:3.0.1")

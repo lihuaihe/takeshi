@@ -1,13 +1,11 @@
 package com.takeshi.config.properties;
 
-import cn.hutool.core.lang.Assert;
-import cn.hutool.core.text.NamingCase;
-import cn.hutool.core.util.StrUtil;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Regions;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * 自定义额外属性值
@@ -17,12 +15,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @AutoConfiguration
 @ConfigurationProperties(prefix = "takeshi")
+@Validated
 public class TakeshiProperties {
 
     /**
      * 项目名称
      */
+    @NotBlank
     private String projectName;
+
+    /**
+     * 参数签名使用的key，随便设定一个与前端约定的值即可，有值则开启参数签名限制
+     */
+    private String signatureKey;
 
     /**
      * 是否开启移动端请求工具限制
@@ -30,122 +35,44 @@ public class TakeshiProperties {
     private boolean appPlatform;
 
     /**
-     * 是否开启参数签名限制
+     * 是否Controller方法参数绑定错误时错误信息包含字段名
      */
-    private boolean signature;
+    private boolean includeErrorFieldName = true;
 
     /**
-     * AWS凭证
+     * 接口速率限制配置
      */
-    private AWSSecretsManagerCredentials awsCredentials = new AWSSecretsManagerCredentials();
+    @Resource
+    private RateLimitProperties rate;
+
+    /**
+     * AWS密钥管理凭证
+     */
+    @Resource
+    private AWSSecretsManagerCredentials awsSecrets;
 
     /**
      * Mandrill凭证
      */
-    private MandrillCredentials mandrillCredentials = new MandrillCredentials();
+    @Resource
+    private MandrillCredentials mandrill;
 
     /**
      * Firebase凭证
      */
-    private FirebaseCredentials firebaseCredentials = new FirebaseCredentials();
+    @Resource
+    private FirebaseCredentials firebase;
 
     /**
-     * getProjectName
-     *
-     * @return String
+     * smsBroadcast配置
      */
-    public String getProjectName() {
-        Assert.isFalse(StrUtil.isBlank(this.projectName), "Properties {takeshi.projectName} is null");
-        return this.projectName;
-    }
+    @Resource
+    private SmsBroadcastProperties smsBroadcast;
 
     /**
-     * setProjectName
-     *
-     * @param projectName projectName
+     * Twilio配置
      */
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-        if (StrUtil.isNotBlank(projectName) && StrUtil.isBlank(this.getAwsCredentials().bucketName)) {
-            this.getAwsCredentials().setBucketName(NamingCase.toKebabCase(projectName) + "-bucket");
-        }
-    }
-
-    /**
-     * AWSSecretsManagerCredentials
-     */
-    @Data
-    public static class AWSSecretsManagerCredentials implements AWSCredentials {
-        /**
-         * accessKey
-         */
-        private String accessKey;
-        /**
-         * secretKey
-         */
-        private String secretKey;
-        /**
-         * 存储桶名称，默认使用{takeshi.projectName}-bucket
-         */
-        private String bucketName;
-        /**
-         * 设置客户端使用的区域（例如：us-west-2）
-         */
-        private Regions region = Regions.DEFAULT_REGION;
-
-        /**
-         * getBucketName
-         *
-         * @return String
-         */
-        public String getBucketName() {
-            Assert.isFalse(StrUtil.isBlank(this.bucketName), "Properties {takeshi.awsCredentials.bucketName} or {takeshi.projectName} is null");
-            return this.bucketName;
-        }
-
-        @Override
-        public String getAWSAccessKeyId() {
-            return accessKey;
-        }
-
-        @Override
-        public String getAWSSecretKey() {
-            return secretKey;
-        }
-    }
-
-    /**
-     * MandrillCredentials
-     */
-    @Data
-    public static class MandrillCredentials {
-        /**
-         * apiKey
-         */
-        private String apiKey;
-        /**
-         * 发送人邮箱
-         */
-        private String fromEmail;
-        /**
-         * 发送人名称
-         */
-        private String fromName;
-    }
-
-    /**
-     * FirebaseCredentials
-     */
-    @Data
-    public static class FirebaseCredentials {
-        /**
-         * jsonFileName
-         */
-        private String jsonFileName = "firebase.json";
-        /**
-         * databaseUrl
-         */
-        private String databaseUrl;
-    }
+    @Resource
+    private TwilioProperties twilio;
 
 }

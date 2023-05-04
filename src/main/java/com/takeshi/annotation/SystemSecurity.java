@@ -37,7 +37,7 @@ public @interface SystemSecurity {
     boolean signature() default false;
 
     /**
-     * 放弃上述所有类型的校验，此属性优先级别最高
+     * 放弃上述token,platform,signature的校验，此属性优先级别最高
      *
      * @return boolean
      */
