@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -27,37 +27,37 @@ import org.springframework.web.bind.annotation.*;
 @Hidden
 @Tag(name = "系统接口")
 @SystemSecurity(all = true)
-public class SystemController extends BaseController {
+public class SystemController extends AbstractBaseController {
 
     /**
      * 使用公钥加密数据
      *
      * @param object object
-     * @return ResponseDataVO
+     * @return ResponseData
      */
     @Operation(summary = "使用公钥加密数据")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping("/encrypt")
-    public ResponseDataVO<Object> encrypt(@RequestBody Object object) {
+    public ResponseData<Object> encrypt(@RequestBody Object object) {
         String data = GsonUtil.toJson(object);
         log.info("SystemController.encrypt --> data: {}", data);
-        return success(StaticConfig.rsa.encryptBase64(data, KeyType.PublicKey));
+        return retData(StaticConfig.rsa.encryptBase64(data, KeyType.PublicKey));
     }
 
     /**
      * 使用公钥解密数据
      *
      * @param object object
-     * @return ResponseDataVO
+     * @return ResponseData
      * @throws JsonProcessingException JsonProcessingException
      */
     @Operation(summary = "使用公钥解密数据")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping("/decrypt")
-    public ResponseDataVO<Object> decrypt(@RequestBody Object object) throws JsonProcessingException {
+    public ResponseData<Object> decrypt(@RequestBody Object object) throws JsonProcessingException {
         String data = GsonUtil.toJson(object);
         log.info("SystemController.decrypt --> data: {}", data);
-        return success(new ObjectMapper().readTree(StaticConfig.rsa.decryptStr(data, KeyType.PublicKey)));
+        return retData(new ObjectMapper().readTree(StaticConfig.rsa.decryptStr(data, KeyType.PublicKey)));
     }
 
     /**
@@ -69,8 +69,8 @@ public class SystemController extends BaseController {
     @Operation(summary = "测试生成sign值")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @RequestMapping(value = "/sign", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
-    public ResponseDataVO<Object> generate(HttpServletRequest request) {
-        return success(TakeshiUtil.signParams(request));
+    public ResponseData<Object> generate(HttpServletRequest request) {
+        return retData(TakeshiUtil.signParams(request));
     }
 
 }

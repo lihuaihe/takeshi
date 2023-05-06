@@ -197,8 +197,8 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveSmsCode(String key, String value) {
-        this.boundValueOps(key).set(value, 5, TimeUnit.MINUTES);
+    public void saveSmsCaptcha(String key, String value) {
+        this.boundValueOps(key).set(value, 5L, TimeUnit.MINUTES);
     }
 
     /**

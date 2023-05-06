@@ -29,8 +29,9 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.Either;
+import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.ParamBO;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -140,8 +141,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             response.setContentType(ContentType.JSON.getValue());
             response.setStatus(HttpStatus.HTTP_OK);
             String str;
-            if (e.result instanceof ResponseDataVO.ResBean resBean) {
-                str = GsonUtil.toJson(ResponseDataVO.success(resBean));
+            if (e.result instanceof RetBO retBO) {
+                str = GsonUtil.toJson(ResponseData.retData(retBO));
             } else {
                 str = e.getMessage();
             }
@@ -248,10 +249,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         }
 
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
-            ResponseDataVO.ResBean resBean = TakeshiCode.REPEAT_SUBMIT;
+            RetBO retBO = TakeshiCode.REPEAT_SUBMIT;
             long rateInterval = repeatSubmit.rateInterval();
             if (StrUtil.isNotBlank(repeatSubmit.msg())) {
-                resBean.setInfo(repeatSubmit.msg());
+                retBO.setMessage(repeatSubmit.msg());
             }
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatUrl", servletPath);
@@ -271,7 +272,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             // 限制xx毫秒1次
             rateLimiter.trySetRate(RateType.PER_CLIENT, 1, rateInterval, repeatSubmit.rateIntervalUnit());
             if (!rateLimiter.tryAcquire()) {
-                SaRouter.back(resBean);
+                SaRouter.back(retBO);
             }
         }
     }

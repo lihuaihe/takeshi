@@ -2,7 +2,7 @@ package com.takeshi.constraints;
 
 
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constraintvalidators.CheckVersionValidator;
+import com.takeshi.constraintvalidators.VerifyVersionValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -15,9 +15,9 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = CheckVersionValidator.class)
+@Constraint(validatedBy = VerifyVersionValidator.class)
 @Documented
-public @interface CheckVersion {
+public @interface VerifyVersion {
 
     /**
      * 提示信息,可以写死,可以填写国际化的key

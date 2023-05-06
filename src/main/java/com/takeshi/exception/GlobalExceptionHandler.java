@@ -11,7 +11,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.basic.ResponseData;
+import com.takeshi.pojo.bo.RetBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.validation.BindException;
@@ -39,15 +40,15 @@ public class GlobalExceptionHandler {
      * 异常处理
      *
      * @param exception 异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(Exception.class)
-    public ResponseDataVO<Object> exceptionHandler(Exception exception) {
+    public ResponseData<Object> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
         if (exception.getCause().toString().startsWith(SQL_CAUSE)) {
-            return ResponseDataVO.success(TakeshiCode.DB_ERROR);
+            return ResponseData.retData(TakeshiCode.DB_ERROR);
         } else {
-            return ResponseDataVO.fail(exception.getMessage());
+            return ResponseData.fail(exception.getMessage());
         }
     }
 
@@ -55,34 +56,34 @@ public class GlobalExceptionHandler {
      * sql异常处理
      *
      * @param exception 异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler({SQLException.class, DataAccessException.class})
-    public ResponseDataVO<Object> sqlExceptionHandler(Exception exception) {
+    public ResponseData<Object> sqlExceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.sqlExceptionHandler --> SQLException: ", exception);
-        return ResponseDataVO.success(TakeshiCode.DB_ERROR);
+        return ResponseData.retData(TakeshiCode.DB_ERROR);
     }
 
     /**
      * 运行时异常处理
      *
      * @param runtimeException 异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(RuntimeException.class)
-    public ResponseDataVO<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
+    public ResponseData<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
         Throwable rootCause = ExceptionUtil.getRootCause(runtimeException);
         if (rootCause instanceof NullPointerException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NullPointerException: ", rootCause);
-            return ResponseDataVO.success(TakeshiCode.SYS_NULL_POINT);
+            return ResponseData.retData(TakeshiCode.SYS_NULL_POINT);
         }
         if (rootCause instanceof SQLException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> SQLException: ", rootCause);
-            return ResponseDataVO.success(TakeshiCode.DB_ERROR);
+            return ResponseData.retData(TakeshiCode.DB_ERROR);
         }
         if (rootCause instanceof NoSuchElementException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NoSuchElementException: ", rootCause);
-            return ResponseDataVO.success(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
+            return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
         }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
@@ -90,7 +91,7 @@ public class GlobalExceptionHandler {
             }, false);
         }
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", rootCause);
-        return ResponseDataVO.fail(rootCause.getMessage());
+        return ResponseData.fail(rootCause.getMessage());
     }
 
     private final String PARAMETER_ERROR_MSG = "[{}] {}";
@@ -99,48 +100,48 @@ public class GlobalExceptionHandler {
      * 参数校验异常
      *
      * @param bindException 异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
-    public ResponseDataVO<Object> parameterBindHandler(BindException bindException) {
+    public ResponseData<Object> parameterBindHandler(BindException bindException) {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
-        ResponseDataVO.ResBean parameterError = TakeshiCode.PARAMETER_ERROR;
+        RetBO parameterError = TakeshiCode.PARAMETER_ERROR;
         if (ObjUtil.isNotNull(fieldError)) {
             String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName() ? StrUtil.format(PARAMETER_ERROR_MSG, fieldError.getField(), fieldError.getDefaultMessage()) : fieldError.getDefaultMessage();
-            parameterError.setInfo(msg);
+            parameterError.setMessage(msg);
         }
-        return ResponseDataVO.success(parameterError);
+        return ResponseData.retData(parameterError);
     }
 
     /**
      * 全局异常拦截（拦截项目中的NotLoginException异常）
      *
      * @param notLoginException 登录异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(NotLoginException.class)
-    public ResponseDataVO<Object> notLoginExceptionHandler(NotLoginException notLoginException) {
+    public ResponseData<Object> notLoginExceptionHandler(NotLoginException notLoginException) {
         log.error("GlobalExceptionHandler.notLoginExceptionHandler --> NotLoginException: ", notLoginException);
         if (notLoginException.getType().equals(NotLoginException.NOT_TOKEN)) {
             // 未提供token
-            return ResponseDataVO.success(TakeshiCode.NOT_TOKEN);
+            return ResponseData.retData(TakeshiCode.NOT_TOKEN);
         } else if (notLoginException.getType().equals(NotLoginException.INVALID_TOKEN)) {
             // token无效
-            return ResponseDataVO.success(TakeshiCode.INVALID_TOKEN);
+            return ResponseData.retData(TakeshiCode.INVALID_TOKEN);
         } else if (notLoginException.getType().equals(NotLoginException.TOKEN_TIMEOUT)) {
             // token已过期
-            return ResponseDataVO.success(TakeshiCode.TOKEN_TIMEOUT);
+            return ResponseData.retData(TakeshiCode.TOKEN_TIMEOUT);
         } else if (notLoginException.getType().equals(NotLoginException.BE_REPLACED)) {
             // token已被顶下线
-            return ResponseDataVO.success(TakeshiCode.BE_REPLACED);
+            return ResponseData.retData(TakeshiCode.BE_REPLACED);
         } else if (notLoginException.getType().equals(NotLoginException.KICK_OUT)) {
             // token已被踢下线
-            return ResponseDataVO.success(TakeshiCode.KICK_OUT);
+            return ResponseData.retData(TakeshiCode.KICK_OUT);
         } else {
             // 当前会话未登录
-            return ResponseDataVO.success(TakeshiCode.NOT_LOGGED);
+            return ResponseData.retData(TakeshiCode.NOT_LOGGED);
         }
     }
 
@@ -148,36 +149,36 @@ public class GlobalExceptionHandler {
      * 全局异常拦截（拦截项目中的NotRoleException异常）
      *
      * @param notRoleException 角色异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(NotRoleException.class)
-    public ResponseDataVO<Object> notRoleExceptionHandler(NotRoleException notRoleException) {
+    public ResponseData<Object> notRoleExceptionHandler(NotRoleException notRoleException) {
         log.error("GlobalExceptionHandler.notRoleExceptionHandler --> NotRoleException: ", notRoleException);
-        return ResponseDataVO.success(TakeshiCode.NOT_ROLE_EXCEPTION, new Object[]{notRoleException.getRole()});
+        return ResponseData.retData(TakeshiCode.NOT_ROLE_EXCEPTION, new Object[]{notRoleException.getRole()});
     }
 
     /**
      * 全局异常拦截（拦截项目中的NotPermissionException异常）
      *
      * @param notPermissionException 权限异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(NotPermissionException.class)
-    public ResponseDataVO<Object> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
+    public ResponseData<Object> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
         log.error("GlobalExceptionHandler.notPermissionExceptionHandler --> NotPermissionException: ", notPermissionException);
-        return ResponseDataVO.success(TakeshiCode.NOT_PERMISSION_EXCEPTION, new Object[]{notPermissionException.getPermission()});
+        return ResponseData.retData(TakeshiCode.NOT_PERMISSION_EXCEPTION, new Object[]{notPermissionException.getPermission()});
     }
 
     /**
      * 全局异常拦截（拦截项目中的DisableServiceException异常）
      *
      * @param disableServiceException 禁用异常
-     * @return {@link ResponseDataVO}
+     * @return {@link ResponseData}
      */
     @ExceptionHandler(DisableServiceException.class)
-    public ResponseDataVO<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
+    public ResponseData<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> DisableLoginException: ", disableServiceException);
-        return ResponseDataVO.success(TakeshiCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
+        return ResponseData.retData(TakeshiCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
     }
 
 }

@@ -1,7 +1,7 @@
 package com.takeshi.pojo.basic;
 
 import cn.hutool.core.util.StrUtil;
-import com.takeshi.constraints.CheckSortColumn;
+import com.takeshi.constraints.VerifySortColumn;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class BasicSortPage extends BasicPage {
     /**
      * 排序字段
      */
-    @CheckSortColumn
+    @VerifySortColumn
     @Parameter(description = "排序字段", schema = @Schema(description = "排序字段"))
     private String sortColumn;
 
