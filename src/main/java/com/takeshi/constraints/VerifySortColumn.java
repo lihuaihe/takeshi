@@ -1,32 +1,29 @@
 package com.takeshi.constraints;
 
-
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constraintvalidators.CheckNumberValidator;
+import com.takeshi.constraintvalidators.VerifySortColumnValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
 /**
- * 接口参数校验固定值，null值也是有效的
- * <p>
- * 参数上使用注解,校验参数值是否在当前数组中 --- @CheckNumber({1, 2})
+ * 数据库排序字段校验
  *
  * @author 七濑武【Nanase Takeshi】
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = CheckNumberValidator.class)
+@Constraint(validatedBy = VerifySortColumnValidator.class)
 @Documented
-public @interface CheckNumber {
+public @interface VerifySortColumn {
 
     /**
      * 提示信息,可以写死,可以填写国际化的key
      *
      * @return msg
      */
-    String message() default TakeshiCode.VALIDATION_LIST;
+    String message() default TakeshiCode.PARAM_ERROR;
 
     /**
      * 下面这两个属性必须添加
@@ -41,12 +38,5 @@ public @interface CheckNumber {
      * @return payload
      */
     Class<? extends Payload>[] payload() default {};
-
-    /**
-     * 要校验的值是否在该数组中
-     *
-     * @return 数组
-     */
-    long[] value() default {1, 2};
 
 }

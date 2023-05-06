@@ -6,7 +6,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.takeshi.annotation.ApiVersion;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.bo.RetBO;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -63,12 +63,12 @@ public class OpenApiConfig {
                     classSet.add(TakeshiCode.class);
                     classSet.stream()
                             .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item)))
-                            .filter(item -> item.getType().isAssignableFrom(ResponseDataVO.ResBean.class))
+                            .filter(item -> item.getType().isAssignableFrom(RetBO.class))
                             .forEach(item -> {
-                                ResponseDataVO.ResBean resBean = (ResponseDataVO.ResBean) ReflectUtil.getStaticFieldValue(item);
+                                RetBO retBO = (RetBO) ReflectUtil.getStaticFieldValue(item);
                                 // swagger文档中的响应状态码信息
-                                String message = messageSource.getMessage(resBean.getInfo(), null, resBean.getInfo(), Locale.SIMPLIFIED_CHINESE);
-                                String name = String.valueOf(resBean.getCode());
+                                String message = messageSource.getMessage(retBO.getMessage(), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
+                                String name = String.valueOf(retBO.getCode());
                                 ApiResponse response = apiResponses.get(name);
                                 if (ObjUtil.isNotNull(response)) {
                                     apiResponses.addApiResponse(name, response.description(message));

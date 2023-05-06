@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.config.StaticConfig;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.util.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
@@ -26,7 +26,7 @@ import java.util.Objects;
  */
 @Slf4j
 @RestControllerAdvice
-public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseDataVO<Object>> {
+public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData<Object>> {
 
     @Override
     public boolean supports(MethodParameter methodParameter, Class aClass) {
@@ -42,7 +42,7 @@ public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData
     }
 
     @Override
-    public ResponseDataVO<Object> beforeBodyWrite(@Nullable ResponseDataVO<Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+    public ResponseData<Object> beforeBodyWrite(@Nullable ResponseData<Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         if (ObjUtil.isNotNull(body) && ObjUtil.isNotNull(body.getData())) {
             // 这里使用rsa私钥加密，前端使用rsa公钥解密
             String str = CharSequence.class.isAssignableFrom(body.getData().getClass()) ? (String) body.getData() : GsonUtil.toJson(body.getData());

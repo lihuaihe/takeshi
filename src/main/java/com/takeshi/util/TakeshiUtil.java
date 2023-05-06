@@ -7,11 +7,12 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.lang.TypeReference;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.net.NetUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
+import cn.hutool.core.util.ZipUtil;
 import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.digest.DigestAlgorithm;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
@@ -24,25 +25,21 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takeshi.config.security.TakeshiHttpRequestWrapper;
+import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.exception.Either;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 工具类
@@ -266,6 +263,24 @@ public final class TakeshiUtil {
      */
     public static <T> String getColumnName(SFunction<T, ?> func) {
         return StrUtil.toUnderlineCase(PropertyNamer.methodToProperty(LambdaUtils.extract(func).getImplMethodName()));
+    }
+
+    /**
+     * 尝试解决该消息。如果未找到消息，则返回默认消息
+     *
+     * @param message 要查找的消息代码，例如“calculator.noRateSet”。鼓励 MessageSource 用户将消息名称基于合格的类或包名称，避免潜在的冲突并确保最大程度的清晰度
+     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @return 消息
+     */
+    public static String formatMessage(String message, Object... args) {
+        MessageSource messageSource = Optional.ofNullable(StaticConfig.messageSource)
+                .orElseGet(() -> {
+                    ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
+                    resourceBundleMessageSource.setBasenames("i18n/messages", "ValidationMessages");
+                    resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+                    return resourceBundleMessageSource;
+                });
+        return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
     /**

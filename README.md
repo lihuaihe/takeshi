@@ -119,10 +119,10 @@ controller
 
 ### 🍵格式校验
 
-* `CheckNumber` 接口参数校验固定值，null值也是有效的，校验数值，校验参数值是否在当前数组中
-* `CheckSortColumn` 数据库排序字段校验
-* `CheckString` 接口参数校验固定值，null值也是有效的，校验字符串，校验参数值是否在当前数组中
-* `CheckVersion` 版本号格式校验
+* `VerifyNumber` 接口参数校验固定值，null值也是有效的，校验数值，校验参数值是否在当前数组中
+* `VerifySortColumn` 数据库排序字段校验
+* `VerifyString` 接口参数校验固定值，null值也是有效的，校验字符串，校验参数值是否在当前数组中
+* `VerifyVersion` 版本号格式校验
 * `NumberDigits` 校验数字整数位和小数位的位数，null值也是有效的
 
 **_其他工具类可在util包中查询到_**

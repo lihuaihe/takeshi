@@ -1,7 +1,7 @@
 package com.takeshi.constraintvalidators;
 
 import cn.hutool.core.util.StrUtil;
-import com.takeshi.constraints.CheckString;
+import com.takeshi.constraints.VerifyString;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -14,12 +14,12 @@ import java.util.Set;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public class CheckStringValidator implements ConstraintValidator<CheckString, String> {
+public class VerifyStringValidator implements ConstraintValidator<VerifyString, String> {
 
     private final Set<String> values = new HashSet<>();
 
     @Override
-    public void initialize(CheckString constraintAnnotation) {
+    public void initialize(VerifyString constraintAnnotation) {
         values.clear();
         values.addAll(Arrays.asList(constraintAnnotation.value()));
     }

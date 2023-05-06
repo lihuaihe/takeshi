@@ -3,7 +3,7 @@ package com.takeshi.controller;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.util.AmazonS3Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,16 +29,16 @@ import java.util.List;
  */
 @Validated
 @RestController
-@RequestMapping("/common/upload")
+@RequestMapping("/upload")
 @Tag(name = "上传文件")
-public class UploadController extends BaseController {
+public class UploadController extends AbstractBaseController {
 
     /**
      * 上传文件
      *
      * @param file file
      * @param sync sync
-     * @return ResponseDataVO
+     * @return ResponseData
      * @throws IOException          IOException
      * @throws InterruptedException InterruptedException
      * @throws MimeTypeException    MimeTypeException
@@ -47,12 +47,12 @@ public class UploadController extends BaseController {
     @Operation(summary = "上传文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping(value = "/file", consumes = "multipart/form-data")
-    public ResponseDataVO<Object> uploadFile(@RequestPart MultipartFile file,
-                                             @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws IOException, InterruptedException, MimeTypeException {
+    public ResponseData<Object> uploadFile(@RequestPart MultipartFile file,
+                                           @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws IOException, InterruptedException, MimeTypeException {
         if (file.isEmpty()) {
-            return success(TakeshiCode.FILE_IS_NULL);
+            return retData(TakeshiCode.FILE_IS_NULL);
         }
-        return success(AmazonS3Util.addFile(file, sync));
+        return retData(AmazonS3Util.addFile(file, sync));
     }
 
     /**
@@ -60,7 +60,7 @@ public class UploadController extends BaseController {
      *
      * @param files files
      * @param sync  sync
-     * @return ResponseDataVO
+     * @return ResponseData
      * @throws InterruptedException InterruptedException
      * @throws IOException          IOException
      * @throws MimeTypeException    MimeTypeException
@@ -69,9 +69,9 @@ public class UploadController extends BaseController {
     @Operation(summary = "上传多个文件", description = "上传多个文件，最多同时上传9个文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping(value = "/multi-file", consumes = "multipart/form-data")
-    public ResponseDataVO<List<String>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
-                                                   @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
-        return success(AmazonS3Util.addFile(files, sync));
+    public ResponseData<List<String>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
+                                                 @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
+        return retData(AmazonS3Util.addFile(files, sync));
     }
 
 }

@@ -43,7 +43,7 @@ public final class GlobalPhoneNumberUtil {
      * @param countryCode 区号
      * @param number      电话号码
      */
-    public static void checkNumber(String countryCode, String number) {
+    public static void verifyNumber(String countryCode, String number) {
         boolean validNumber;
         try {
             validNumber = instance.isValidNumber(parse(countryCode, number));

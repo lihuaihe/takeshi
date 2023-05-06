@@ -18,7 +18,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.takeshi.pojo.basic.AbstractBasicEntity;
 import com.takeshi.pojo.basic.BasicSortPage;
 import com.takeshi.pojo.basic.BasicSortQuery;
-import com.takeshi.pojo.vo.ResponseDataVO;
+import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 
 import java.io.Serializable;
@@ -139,13 +139,13 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 判断当前实体对象中某个字段值是否已存在，已存在时抛出异常
      *
-     * @param column  查询的字段
-     * @param val     查询的值
-     * @param resBean 异常信息对象
-     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param column 查询的字段
+     * @param val    查询的值
+     * @param retBO  异常信息对象
+     * @param args   将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
-    default void columnExists(SFunction<T, ?> column, Object val, ResponseDataVO.ResBean resBean, Object... args) {
-        this.getBaseMapper().columnExists(column, val, resBean, args);
+    default void columnExists(SFunction<T, ?> column, Object val, RetBO retBO, Object... args) {
+        this.getBaseMapper().columnExists(column, val, retBO, args);
     }
 
     /**
@@ -163,14 +163,14 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 判断当前实体对象中某个字段值是否已存在，不包括本身，已存在时抛出异常
      *
-     * @param column  查询的字段
-     * @param val     查询的值
-     * @param id      主键ID值
-     * @param resBean 异常信息对象
-     * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param column 查询的字段
+     * @param val    查询的值
+     * @param id     主键ID值
+     * @param retBO  结果对象
+     * @param args   将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
-    default void columnExists(SFunction<T, ?> column, Object val, Serializable id, ResponseDataVO.ResBean resBean, Object... args) {
-        this.getBaseMapper().columnExists(column, val, id, resBean, args);
+    default void columnExists(SFunction<T, ?> column, Object val, Serializable id, RetBO retBO, Object... args) {
+        this.getBaseMapper().columnExists(column, val, id, retBO, args);
     }
 
     /**
