@@ -19,8 +19,8 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 ext {
-    mavenUsername = project.hasProperty('mavenUsername') ? project.mavenUsername : ''
-    mavenPassword = project.hasProperty('mavenPassword') ? project.mavenPassword : ''
+    mavenUsername = project.findProperty('mavenUsername')
+    mavenPassword = project.findProperty('mavenPassword')
 }
 
 javadoc.options.encoding = 'UTF-8'
