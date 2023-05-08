@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "经纬度对象")
+@Schema(description = "经纬度对象")
 public class GeoPointVO extends AbstractBasicSerializable {
     /**
      * 经度

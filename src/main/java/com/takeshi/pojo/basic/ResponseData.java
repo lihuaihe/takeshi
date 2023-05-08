@@ -18,7 +18,7 @@ import java.time.Instant;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@Schema(name = "接口返回值对象")
+@Schema(description = "接口返回值对象")
 public class ResponseData<T> implements Serializable {
 
     @Serial

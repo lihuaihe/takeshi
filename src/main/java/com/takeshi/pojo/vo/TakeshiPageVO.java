@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(name = "列表分页对象")
+@Schema(description = "列表分页对象")
 public class TakeshiPageVO<T> extends Page<T> {
 
     /**

@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @author 83565
  */
 @Data
-@Schema(name = "AbstractBasicEntity")
+@Schema(description = "AbstractBasicEntity")
 @Accessors(chain = true)
 public abstract class AbstractBasicEntity implements Serializable {
 
