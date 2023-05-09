@@ -4,11 +4,14 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.jackson.SimpleJavaTimeModule;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -22,6 +25,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -70,6 +74,20 @@ public class TakeshiConfig {
         AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
         localeResolver.setDefaultLocale(Locale.US);
         return localeResolver;
+    }
+
+    /**
+     * 消息的参数化和国际化
+     *
+     * @param basename basename
+     * @return MessageSource
+     */
+    @Bean
+    public MessageSource messageSource(@Value("${spring.messages.basename:ValidationMessages}") String basename) {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames("i18n/messages", basename);
+        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        return messageSource;
     }
 
     /**

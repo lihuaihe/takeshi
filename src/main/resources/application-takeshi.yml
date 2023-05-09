@@ -14,8 +14,6 @@ spring:
   cache:
     # 缓存类型
     type: REDIS
-  messages:
-    basename: i18n/messages
 
 springdoc:
   default-flat-param-object: true
@@ -34,7 +32,6 @@ knife4j:
       locations: classpath:markdown/*
   setting:
     language: zh_cn
-    swagger-model-name: 实体类列表
     enable-version: true
     enable-open-api: false
     enable-footer: false

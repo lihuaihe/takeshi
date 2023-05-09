@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(name = "列表分页条件自定义排序查询参数")
+@Schema(description = "列表分页条件自定义排序查询参数")
 @Accessors(chain = true)
 public class BasicSortQuery extends BasicSortPage {
 

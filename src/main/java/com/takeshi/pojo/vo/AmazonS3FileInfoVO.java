@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-@Schema(name = "AmazonS3文件对象")
+@Schema(description = "AmazonS3文件对象")
 @AllArgsConstructor
 @NoArgsConstructor
 public class AmazonS3FileInfoVO extends AbstractBasicSerializable {

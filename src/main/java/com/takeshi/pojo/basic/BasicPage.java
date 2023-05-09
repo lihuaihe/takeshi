@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@Schema(name = "列表分页查询参数")
+@Schema(description = "列表分页查询参数")
 @Accessors(chain = true)
 public class BasicPage implements Serializable {
 

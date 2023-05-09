@@ -37,7 +37,6 @@ import java.util.*;
 public class OpenApiConfig {
 
     private final MessageSource messageSource;
-
     private final SaTokenConfig saTokenConfig;
     private final ApplicationContext context;
 
@@ -95,7 +94,7 @@ public class OpenApiConfig {
                 // 设置接口描述
                 .description(StaticConfig.applicationName + "通用框架接口")
                 // 设置联系方式
-                .contact(new Contact().name("七濑武【Nanase Takeshi】"));
+                .contact(new Contact().name("七濑武【Nanase Takeshi】").email("takeshi@725.life").url("https://github.com/lihuaihe/takeshi"));
         SecurityScheme securityScheme = new SecurityScheme()
                 .name(tokenName)
                 .type(SecurityScheme.Type.APIKEY)
