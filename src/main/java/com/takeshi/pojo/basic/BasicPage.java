@@ -2,9 +2,9 @@ package com.takeshi.pojo.basic;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -28,7 +28,7 @@ public class BasicPage implements Serializable {
      * 当前页数
      */
     @NotNull
-    @Min(1)
+    @Positive
     @Parameter(description = "当前页数", example = "1", schema = @Schema(description = "当前页数", example = "1"))
     private Long pageNum;
 
@@ -36,9 +36,8 @@ public class BasicPage implements Serializable {
      * 每页数据条数
      */
     @NotNull
-    @Min(1)
-    @Max(50000)
-    @Parameter(description = "每页数据条数", example = "10", schema = @Schema(description = "每页数据条数", example = "10"))
+    @Min(-1)
+    @Parameter(description = "每页数据条数，传-1则不分页", example = "10", schema = @Schema(description = "每页数据条数，传-1则不分页", example = "10"))
     private Long pageSize;
 
 }
