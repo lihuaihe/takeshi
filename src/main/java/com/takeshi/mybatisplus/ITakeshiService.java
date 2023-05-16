@@ -11,11 +11,11 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.takeshi.pojo.basic.AbstractBasicEntity;
+import com.takeshi.pojo.basic.BasicPage;
 import com.takeshi.pojo.basic.BasicSortPage;
 import com.takeshi.pojo.basic.BasicSortQuery;
 import com.takeshi.pojo.bo.RetBO;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * 自定义多表关联分页查询，在mapper层新建一个方法
  * //示例：
  * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
- * Page&lt;T&gt; pageList(Page&lt;T&gt; page, @Param(Constants.WRAPPER) Wrapper&lt;T&gt; queryWrapper);
+ * Page<T> pageList(Page<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
  * }
  * </pre>
  *
@@ -44,40 +44,18 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 构建一个有排序的分页对象
      *
-     * @param basicSortPage basicSortPage
+     * @param basicPage basicPage
+     * @param <P>       p
      * @return Page
      */
-    default Page<T> buildSortPage(BasicSortPage basicSortPage) {
-        Page<T> page = Page.of(basicSortPage.getPageNum(), basicSortPage.getPageSize());
-        if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
-            page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
+    default <P extends BasicPage> Page<T> buildPage(P basicPage) {
+        Page<T> page = Page.of(basicPage.getPageNum(), basicPage.getPageSize());
+        if (basicPage instanceof BasicSortPage basicSortPage) {
+            if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
+                page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
+            }
         }
         return page;
-    }
-
-    /**
-     * 扩展的mybatis-plus分页接口
-     *
-     * @param basicSortPage 列表分页查询参数
-     * @return Page
-     */
-    default Page<T> page(BasicSortPage basicSortPage) {
-        return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), Wrappers.emptyWrapper());
-    }
-
-    /**
-     * 扩展的mybatis-plus分页接口
-     * <p>通用的列表分页查询接口</p>
-     *
-     * @param baseQuery 列表查询参数
-     * @return Page
-     */
-    default Page<T> listPage(BasicSortQuery baseQuery) {
-        String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
-        QueryWrapper<T> queryWrapper = new QueryWrapper<T>()
-                .ge(ObjUtil.isNotNull(baseQuery.getStartTime()), createTime, baseQuery.getStartTime())
-                .le(ObjUtil.isNotNull(baseQuery.getEndTime()), createTime, baseQuery.getEndTime());
-        return this.getBaseMapper().selectPage(this.buildSortPage(baseQuery), queryWrapper);
     }
 
     /**
@@ -85,44 +63,60 @@ public interface ITakeshiService<T> extends IService<T> {
      * <p>通用的列表分页查询接口</p>
      * <p>columns 示例："user_name"</p>
      *
-     * @param baseQuery 列表查询参数
-     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param basicPage 列表查询参数
+     * @param <P>       p
      * @return Page
      */
-    default Page<T> listPage(BasicSortQuery baseQuery, List<SFunction<T, ?>> columns) {
-        String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
-        QueryWrapper<T> queryWrapper = new QueryWrapper<T>()
-                .ge(ObjUtil.isNotNull(baseQuery.getStartTime()), createTime, baseQuery.getStartTime())
-                .le(ObjUtil.isNotNull(baseQuery.getEndTime()), createTime, baseQuery.getEndTime());
-        if (StrUtil.isNotBlank(baseQuery.getKeyword()) && CollUtil.isNotEmpty(columns)) {
-            String sql = "CONCAT_WS(' '," + columns.stream().map(TakeshiUtil::getColumnName).collect(Collectors.joining(StrUtil.COMMA)) + ") like '%" + baseQuery.getKeyword() + "%'";
-            queryWrapper.apply(sql);
+    default <P extends BasicPage> Page<T> listPage(P basicPage) {
+        return this.listPage(basicPage, null);
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例："user_name"</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param <P>       p
+     * @return Page
+     */
+    default <P extends BasicPage> Page<T> listPage(P basicPage, List<SFunction<T, ?>> columns) {
+        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        if (basicPage instanceof BasicSortQuery basicSortQuery) {
+            String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
+            queryWrapper.ge(ObjUtil.isNotNull(basicSortQuery.getStartTime()), createTime, basicSortQuery.getStartTime())
+                    .le(ObjUtil.isNotNull(basicSortQuery.getEndTime()), createTime, basicSortQuery.getEndTime());
+            String sql = "CONCAT_WS(' '," + columns.stream().map(TakeshiUtil::getColumnName).collect(Collectors.joining(StrUtil.COMMA)) + ") like '%" + basicSortQuery.getKeyword() + "%'";
+            queryWrapper.apply(StrUtil.isNotBlank(basicSortQuery.getKeyword()) && CollUtil.isNotEmpty(columns), sql);
         }
-        return this.getBaseMapper().selectPage(this.buildSortPage(baseQuery), queryWrapper);
+        return this.getBaseMapper().selectPage(this.buildPage(basicPage), queryWrapper);
     }
 
     /**
      * 扩展的mybatis-plus分页接口
      * 示例：xxxService.queryWrapperPage([basePage类或集成了BasePage的类], item -> item.eq(User::getUserId,1));
      *
-     * @param basicSortPage 列表分页查询参数
-     * @param consumer      item -> item.eq("user_id",1)
+     * @param basicPage 列表分页查询参数
+     * @param consumer  item -> item.eq("user_id",1)
+     * @param <P>       p
      * @return Page
      */
-    default Page<T> queryWrapperPage(BasicSortPage basicSortPage, Consumer<QueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), new QueryWrapper<T>().func(Objects.nonNull(consumer), consumer));
+    default <P extends BasicPage> Page<T> queryWrapperPage(P basicPage, Consumer<QueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
      * 扩展的mybatis-plus分页接口
      * 示例：xxxService.queryWrapperPage([basePage类或继承了BasePage的类], item -> item.eq(User::getUserId,1));
      *
-     * @param basicSortPage 列表分页查询参数
-     * @param consumer      item -> item.eq(User::getUserId,1)
+     * @param basicPage 列表分页查询参数
+     * @param consumer  item -> item.eq(User::getUserId,1)
+     * @param <P>       p
      * @return Page
      */
-    default Page<T> lambdaQueryWrapperPage(BasicSortPage basicSortPage, Consumer<LambdaQueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(this.buildSortPage(basicSortPage), new QueryWrapper<T>().lambda().func(Objects.nonNull(consumer), consumer));
+    default <P extends BasicPage> Page<T> lambdaQueryWrapperPage(P basicPage, Consumer<LambdaQueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().lambda().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
