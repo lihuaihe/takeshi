@@ -1,5 +1,8 @@
 package com.takeshi.pojo.basic;
 
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -241,6 +244,37 @@ public class TakeshiPage<T> extends Page<T> {
      */
     public static <T> TakeshiPage<T> of(long current, long size, long total, boolean searchCount, Class<T> resultClass) {
         return new TakeshiPage<>(current, size, total, searchCount, resultClass);
+    }
+
+    /**
+     * 分页构造函数
+     *
+     * @param basicPage basicPage
+     * @param <E>       e
+     * @param <T>       t
+     * @return TakeshiPage
+     */
+    public static <E extends BasicPage, T> TakeshiPage<T> of(E basicPage) {
+        return of(basicPage, null);
+    }
+
+    /**
+     * 分页构造函数
+     *
+     * @param basicPage   basicPage
+     * @param resultClass 泛型类型
+     * @param <E>         e
+     * @param <T>         t
+     * @return TakeshiPage
+     */
+    public static <E extends BasicPage, T> TakeshiPage<T> of(E basicPage, Class<T> resultClass) {
+        TakeshiPage<T> page = TakeshiPage.of(basicPage.getPageNum(), basicPage.getPageSize(), resultClass);
+        if (basicPage instanceof BasicSortPage basicSortPage) {
+            if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
+                page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
+            }
+        }
+        return page;
     }
 
     /**

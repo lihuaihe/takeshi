@@ -57,23 +57,6 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 构建一个有排序的分页对象
-     *
-     * @param basicPage basicPage
-     * @param <E>       p
-     * @return Page
-     */
-    default <E extends BasicPage> TakeshiPage<T> buildTakeshiPage(E basicPage) {
-        TakeshiPage<T> page = TakeshiPage.of(basicPage.getPageNum(), basicPage.getPageSize());
-        if (basicPage instanceof BasicSortPage basicSortPage) {
-            if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
-                page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
-            }
-        }
-        return page;
-    }
-
-    /**
      * 扩展的mybatis-plus分页接口
      * <p>通用的列表分页查询接口</p>
      * <p>columns 示例："user_name"</p>
@@ -124,7 +107,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return Page
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage, List<SFunction<T, ?>> columns) {
-        return this.getBaseMapper().selectPage(this.buildTakeshiPage(basicPage), this.queryWrapper(basicPage, columns));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns));
     }
 
     /**
