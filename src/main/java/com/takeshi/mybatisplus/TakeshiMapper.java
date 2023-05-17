@@ -21,7 +21,9 @@ import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.parsing.ParsingException;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -40,9 +42,9 @@ import java.util.stream.Collectors;
 public interface TakeshiMapper<T> extends BaseMapper<T> {
 
     /**
-     * 获取com.takeshi.mapper包下且继承了TakeshiMapper接口的所有接口类
+     * 获取继承了TakeshiMapper接口的所有接口类
      */
-    Set<Class<?>> MAPPER_SET = ClassScanner.scanPackageBySuper(TakeshiMapper.class.getPackage().getName().replace("mybatisplus", "mapper"), TakeshiMapper.class);
+    Set<Class<?>> MAPPER_SET = ClassScanner.scanPackageBySuper(null, TakeshiMapper.class);
 
     /**
      * 默认批次提交数量
@@ -420,7 +422,15 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @return Class
      */
     default Class<?> getMapperClass() {
-        return MAPPER_SET.stream().filter(item -> TypeUtil.getTypeArgument(item).equals(this.getEntityClass())).findFirst().orElseThrow(() -> new TakeshiException("Mapped Statements collection does not exist"));
+        Class<T> entityClass = this.getEntityClass();
+        List<Class<?>> list = MAPPER_SET.stream().filter(item -> TypeUtil.getTypeArgument(item).equals(entityClass)).toList();
+        if (CollUtil.isEmpty(list)) {
+            throw new ParsingException("The Mapper corresponding to this entity does not exist");
+        }
+        if (list.size() > 1) {
+            throw new TooManyResultsException("Expected one result to be returned by getMapperClass(), but found: " + list.size());
+        }
+        return list.get(0);
     }
 
     /**
