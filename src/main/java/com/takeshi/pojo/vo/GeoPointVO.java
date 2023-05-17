@@ -3,6 +3,7 @@ package com.takeshi.pojo.vo;
 import cn.hutool.core.lang.Assert;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,11 +19,13 @@ public class GeoPointVO extends AbstractBasicSerializable {
     /**
      * 经度
      */
+    @NotNull
     @Schema(description = "经度")
     private Double lon;
     /**
      * 纬度
      */
+    @NotNull
     @Schema(description = "纬度")
     private Double lat;
 
