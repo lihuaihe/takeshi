@@ -44,6 +44,11 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     private Regions region = Regions.DEFAULT_REGION;
 
     /**
+     * secret字段的Class
+     */
+    private Class<?> secretClass;
+
+    /**
      * 存储在AWS Secrets Manager中的 AWS s3 密钥ID名称
      */
     private String accessKeyName = "AWS-S3-Access-key-ID";

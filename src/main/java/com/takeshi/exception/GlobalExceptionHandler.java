@@ -98,8 +98,6 @@ public class GlobalExceptionHandler {
         return ResponseData.fail(rootCause.getMessage());
     }
 
-    private final String PARAMETER_ERROR_MSG = "[{}] {}";
-
     /**
      * 参数校验异常
      *
@@ -113,7 +111,9 @@ public class GlobalExceptionHandler {
         FieldError fieldError = bindingResult.getFieldError();
         RetBO parameterError = TakeshiCode.PARAMETER_ERROR;
         if (ObjUtil.isNotNull(fieldError)) {
-            String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName() ? StrUtil.format(PARAMETER_ERROR_MSG, fieldError.getField(), fieldError.getDefaultMessage()) : fieldError.getDefaultMessage();
+            String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName()
+                    ? StrUtil.format("[{}] {}", fieldError.getField(), fieldError.getDefaultMessage())
+                    : fieldError.getDefaultMessage();
             parameterError.setMessage(msg);
         }
         return ResponseData.retData(parameterError);

@@ -27,6 +27,7 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
+import lombok.SneakyThrows;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -71,6 +72,10 @@ public final class AmazonS3Util {
      * 获取到的密钥信息
      */
     public static volatile JSONObject SECRET;
+    /**
+     * 获取到的密钥信息
+     */
+    public static volatile Object SECRET2;
 
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
@@ -93,6 +98,7 @@ public final class AmazonS3Util {
                     GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                     String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
                     SECRET = JSONUtil.parseObj(secret);
+                    SECRET2 = GsonUtil.fromJson(secret, awsSecrets.getSecretClass());
                     String accessKey = SECRET.getStr(awsSecrets.getAccessKeyName());
                     String secretKey = SECRET.getStr(awsSecrets.getSecretKeyName());
                     // S3
@@ -141,11 +147,8 @@ public final class AmazonS3Util {
      * @param file    要上传的图片文件
      * @param quality 压缩比例，必须为0~1
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addCompressImg(File file, float quality) throws InterruptedException, IOException, MimeTypeException {
+    public static String addCompressImg(File file, float quality) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Img.from(file).setQuality(quality).write(byteArrayOutputStream);
         return addFile(FileUtil.readBytes(file), file.getName());
@@ -156,11 +159,8 @@ public final class AmazonS3Util {
      *
      * @param file 要上传的文件
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(File file) throws InterruptedException, IOException, MimeTypeException {
+    public static String addFile(File file) {
         return addFile(file, false);
     }
 
@@ -169,11 +169,9 @@ public final class AmazonS3Util {
      *
      * @param multipartFile 要上传的文件
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(MultipartFile multipartFile) throws InterruptedException, IOException, MimeTypeException {
+    @SneakyThrows
+    public static String addFile(MultipartFile multipartFile) {
         return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename());
     }
 
@@ -183,11 +181,8 @@ public final class AmazonS3Util {
      * @param file 要上传的文件
      * @param sync 是否等待传输完成再返回URL
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(File file, boolean sync) throws InterruptedException, IOException, MimeTypeException {
+    public static String addFile(File file, boolean sync) {
         return addFile(FileUtil.readBytes(file), file.getName(), sync);
     }
 
@@ -197,11 +192,9 @@ public final class AmazonS3Util {
      * @param multipartFile 要上传的文件
      * @param sync          是否等待传输完成再返回URL
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(MultipartFile multipartFile, boolean sync) throws InterruptedException, IOException, MimeTypeException {
+    @SneakyThrows
+    public static String addFile(MultipartFile multipartFile, boolean sync) {
         return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename(), sync);
     }
 
@@ -211,11 +204,8 @@ public final class AmazonS3Util {
      * @param data     要上传的文件字节数组
      * @param fileName 完整的文件名
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(byte[] data, String fileName) throws IOException, InterruptedException, MimeTypeException {
+    public static String addFile(byte[] data, String fileName) {
         return addFile(data, fileName, false);
     }
 
@@ -226,11 +216,9 @@ public final class AmazonS3Util {
      * @param fileName 完整的文件名
      * @param sync     是否等待传输完成再返回URL
      * @return S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static String addFile(byte[] data, String fileName, boolean sync) throws InterruptedException, IOException, MimeTypeException {
+    @SneakyThrows
+    public static String addFile(byte[] data, String fileName, boolean sync) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
             String mediaType = getMediaType(tikaInputStream, fileName);
             String extension = getMimeType(mediaType).getExtension();
@@ -265,11 +253,8 @@ public final class AmazonS3Util {
      * @param multipartFiles 要上传的多文件数组
      * @param sync           是否等待传输完成再返回URL
      * @return 多个S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static List<String> addFile(MultipartFile[] multipartFiles, boolean sync) throws InterruptedException, IOException, MimeTypeException {
+    public static List<String> addFile(MultipartFile[] multipartFiles, boolean sync) {
         ArrayList<String> list = new ArrayList<>();
         for (MultipartFile item : multipartFiles) {
             list.add(addFile(item, sync));
@@ -282,11 +267,8 @@ public final class AmazonS3Util {
      *
      * @param files 要上传的多文件数组
      * @return 多个S3文件访问URL
-     * @throws InterruptedException 中断异常
-     * @throws IOException          IO异常
-     * @throws MimeTypeException    Mime 类型异常
      */
-    public static List<String> addFileList(File[] files) throws InterruptedException, IOException, MimeTypeException {
+    public static List<String> addFileList(File[] files) {
         ArrayList<String> list = new ArrayList<>();
         for (File file : files) {
             list.add(addFile(file));
