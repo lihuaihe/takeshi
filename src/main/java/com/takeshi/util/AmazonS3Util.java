@@ -89,7 +89,7 @@ public final class AmazonS3Util {
                             .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))
                             .build();
                     GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest();
-                    getSecretValueRequest.setSecretId("Sharpish-key");
+                    getSecretValueRequest.setSecretId(awsSecrets.getSecretId());
                     GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                     String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
                     SECRET = JSONUtil.parseObj(secret);
