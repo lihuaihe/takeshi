@@ -28,6 +28,11 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     private String secretKey;
 
     /**
+     * 密钥名称
+     */
+    private String secretId;
+
+    /**
      * 存储桶名称，默认使用{takeshi.projectName}-bucket
      */
     @Value("${takeshi.aws-secrets.bucket-name:#{T(cn.hutool.core.text.NamingCase).toKebabCase('${takeshi.project-name}').concat('-bucket')}}")

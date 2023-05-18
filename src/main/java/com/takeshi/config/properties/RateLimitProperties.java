@@ -1,6 +1,7 @@
 package com.takeshi.config.properties;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import org.redisson.api.RateIntervalUnit;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -20,7 +21,7 @@ public class RateLimitProperties {
      * 接口header里传递的timestamp最多只能早于系统当前时间{maxTimeDiff}秒<br/>
      * 设置0则不校验
      */
-    @Min(0)
+    @PositiveOrZero
     private int maxTimeDiff = 60;
 
     /**
@@ -42,13 +43,13 @@ public class RateLimitProperties {
         /**
          * 率
          */
-        @Min(1)
+        @Positive
         private int rate = 1;
 
         /**
          * 速率时间间隔，设置0则不对nonce限制
          */
-        @Min(0)
+        @PositiveOrZero
         private int rateInterval = 60;
 
         /**
@@ -67,13 +68,13 @@ public class RateLimitProperties {
         /**
          * 率
          */
-        @Min(1)
+        @Positive
         private int rate = 5;
 
         /**
          * 速率时间间隔，设置0则不对接口IP限制
          */
-        @Min(0)
+        @PositiveOrZero
         private int rateInterval = 1;
 
         /**

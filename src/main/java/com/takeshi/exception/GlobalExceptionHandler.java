@@ -85,6 +85,10 @@ public class GlobalExceptionHandler {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NoSuchElementException: ", rootCause);
             return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
         }
+        if (rootCause instanceof IllegalArgumentException) {
+            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> IllegalArgumentException: ", rootCause);
+            return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
+        }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
             return JSONUtil.toBean(rootCause.getMessage(), new TypeReference<>() {

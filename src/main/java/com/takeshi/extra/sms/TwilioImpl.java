@@ -1,8 +1,10 @@
 package com.takeshi.extra.sms;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.StaticLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TwilioProperties;
+import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.GsonUtil;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
@@ -24,8 +26,10 @@ public class TwilioImpl implements SmsInterface {
      */
     public TwilioImpl() {
         TwilioProperties twilio = StaticConfig.takeshiProperties.getTwilio();
-        messagingServiceSid = twilio.getMessagingServiceSid();
-        Twilio.init(twilio.getAccountSid(), twilio.getAuthToken());
+        String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : AmazonS3Util.SECRET.getStr(twilio.getAccountSidSecrets());
+        String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : AmazonS3Util.SECRET.getStr(twilio.getAuthTokenSecrets());
+        Twilio.init(accountSid, authToken);
+        messagingServiceSid = StrUtil.isBlank(twilio.getMessagingServiceSidSecrets()) ? twilio.getMessagingServiceSid() : AmazonS3Util.SECRET.getStr(twilio.getMessagingServiceSidSecrets());
     }
 
     /**

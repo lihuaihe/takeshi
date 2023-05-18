@@ -1,5 +1,6 @@
 package com.takeshi.mybatisplus;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.ClassScanner;
 import cn.hutool.core.util.ObjUtil;
@@ -16,14 +17,18 @@ import com.baomidou.mybatisplus.core.toolkit.*;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.takeshi.exception.TakeshiException;
+import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.binding.MapperMethod;
+import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.parsing.ParsingException;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -37,9 +42,9 @@ import java.util.stream.Collectors;
 public interface TakeshiMapper<T> extends BaseMapper<T> {
 
     /**
-     * 获取com.takeshi.mapper包下且继承了TakeshiMapper接口的所有接口类
+     * 获取继承了TakeshiMapper接口的所有接口类
      */
-    Set<Class<?>> MAPPER_SET = ClassScanner.scanPackageBySuper(TakeshiMapper.class.getPackage().getName().replace("mybatisplus", "mapper"), TakeshiMapper.class);
+    Set<Class<?>> MAPPER_SET = ClassScanner.scanPackageBySuper(null, TakeshiMapper.class);
 
     /**
      * 默认批次提交数量
@@ -66,6 +71,23 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @return T
      */
     T selectIncludeDelById(Serializable id);
+
+    /**
+     * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass
+     *
+     * @param page         分页查询条件（可以为 RowBounds.DEFAULT）
+     * @param queryWrapper 实体对象封装操作类（可以为 null）
+     * @param <P>          p
+     * @param <V>          V
+     * @return TakeshiPage
+     */
+    default <P extends TakeshiPage<V>, V> TakeshiPage<V> selectPojoPage(P page, Wrapper<T> queryWrapper) {
+        // TODO 暂时使用这种方法
+        Assert.notNull(page.getResultClass(), "error: can not execute. because can not find resultClass of page!");
+        TakeshiPage<Map<String, Object>> of = TakeshiPage.of(page.getCurrent(), page.getSize());
+        of.setOrders(page.orders());
+        return this.selectMapsPage(of, queryWrapper).convert(map -> BeanUtil.toBean(map, page.getResultClass()));
+    }
 
     /**
      * <p>新增记录时更新排序</p>
@@ -400,7 +422,15 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @return Class
      */
     default Class<?> getMapperClass() {
-        return MAPPER_SET.stream().filter(item -> TypeUtil.getTypeArgument(item).equals(this.getEntityClass())).findFirst().orElseThrow(() -> new TakeshiException("Mapped Statements collection does not exist"));
+        Class<T> entityClass = this.getEntityClass();
+        List<Class<?>> list = MAPPER_SET.stream().filter(item -> TypeUtil.getTypeArgument(item).equals(entityClass)).toList();
+        if (CollUtil.isEmpty(list)) {
+            throw new ParsingException("The Mapper corresponding to this entity does not exist");
+        }
+        if (list.size() > 1) {
+            throw new TooManyResultsException("Expected one result to be returned by getMapperClass(), but found: " + list.size());
+        }
+        return list.get(0);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.takeshi.annotation;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.redisson.api.RateIntervalUnit;
 
 import java.lang.annotation.*;
@@ -21,7 +22,7 @@ public @interface RepeatSubmit {
      *
      * @return 时间
      */
-    @Min(0)
+    @PositiveOrZero
     int rateInterval() default 0;
 
     /**
@@ -50,7 +51,7 @@ public @interface RepeatSubmit {
      *
      * @return int
      */
-    @Min(1)
+    @Positive
     int ipRate() default 5;
 
     /**
@@ -58,7 +59,7 @@ public @interface RepeatSubmit {
      *
      * @return int
      */
-    @Min(0)
+    @PositiveOrZero
     int ipRateInterval() default 0;
 
     /**

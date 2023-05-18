@@ -29,4 +29,19 @@ public class TwilioProperties {
      */
     private String messagingServiceSid;
 
+    /**
+     * AWSSecrets里面的key，此优先级高于accountSid
+     */
+    private String accountSidSecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于authToken
+     */
+    private String authTokenSecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于messagingServiceSid
+     */
+    private String messagingServiceSidSecrets;
+
 }

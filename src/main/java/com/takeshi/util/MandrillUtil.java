@@ -68,9 +68,10 @@ public final class MandrillUtil {
             synchronized (MandrillUtil.class) {
                 if (ObjUtil.isNull(MANDRILL_API)) {
                     MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
-                    FROM_EMAIL = mandrill.getFromEmail();
-                    FROM_NAME = mandrill.getFromName();
-                    MANDRILL_API = new MandrillApi(mandrill.getApiKey());
+                    FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : AmazonS3Util.SECRET.getStr(mandrill.getFromEmailSecrets());
+                    FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : AmazonS3Util.SECRET.getStr(mandrill.getFromNameSecrets());
+                    String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : AmazonS3Util.SECRET.getStr(mandrill.getApiKeySecrets());
+                    MANDRILL_API = new MandrillApi(apiKey);
                 }
             }
         }

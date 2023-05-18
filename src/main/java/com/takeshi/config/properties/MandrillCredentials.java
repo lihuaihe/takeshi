@@ -29,4 +29,19 @@ public class MandrillCredentials {
      */
     private String fromName;
 
+    /**
+     * AWSSecrets里面的key，此优先级高于apiKey
+     */
+    private String apiKeySecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于fromEmail
+     */
+    private String fromEmailSecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于fromName
+     */
+    private String fromNameSecrets;
+
 }

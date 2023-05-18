@@ -29,4 +29,19 @@ public class SmsBroadcastProperties {
      */
     private String from;
 
+    /**
+     * AWSSecrets里面的key，此优先级高于userName
+     */
+    private String userNameSecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于password
+     */
+    private String passwordSecrets;
+
+    /**
+     * AWSSecrets里面的key，此优先级高于fromSecrets
+     */
+    private String fromSecrets;
+
 }

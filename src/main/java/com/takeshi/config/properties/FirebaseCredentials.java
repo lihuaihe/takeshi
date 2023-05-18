@@ -24,4 +24,9 @@ public class FirebaseCredentials {
      */
     private String databaseUrl;
 
+    /**
+     * AWSSecrets里面的key，此优先级高于databaseUrl
+     */
+    private String databaseUrlSecrets;
+
 }

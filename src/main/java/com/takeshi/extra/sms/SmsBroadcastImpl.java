@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.log.StaticLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.SmsBroadcastProperties;
+import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.GsonUtil;
 import net.dreamlu.mica.auto.annotation.AutoService;
 
@@ -29,9 +30,9 @@ public class SmsBroadcastImpl implements SmsInterface {
      */
     public SmsBroadcastImpl() {
         SmsBroadcastProperties smsBroadcast = StaticConfig.takeshiProperties.getSmsBroadcast();
-        userName = smsBroadcast.getUserName();
-        password = smsBroadcast.getPassword();
-        from = smsBroadcast.getFrom();
+        userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : AmazonS3Util.SECRET.getStr(smsBroadcast.getUserNameSecrets());
+        password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : AmazonS3Util.SECRET.getStr(smsBroadcast.getPasswordSecrets());
+        from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : AmazonS3Util.SECRET.getStr(smsBroadcast.getFromSecrets());
     }
 
     /**
