@@ -280,6 +280,7 @@ public final class TakeshiUtil {
                     resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
                     return resourceBundleMessageSource;
                 });
+        message = StrUtil.strip(message, StrUtil.DELIM_START, StrUtil.DELIM_END);
         return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
