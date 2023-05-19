@@ -32,7 +32,7 @@ public class SmsBroadcastImpl implements SmsInterface {
      */
     public SmsBroadcastImpl() {
         SmsBroadcastProperties smsBroadcast = StaticConfig.takeshiProperties.getSmsBroadcast();
-        JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+        JsonNode jsonNode = AmazonS3Util.JSON_NODE;
         userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
         password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();
         from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : jsonNode.get(smsBroadcast.getFromSecrets()).asText();

@@ -70,7 +70,7 @@ public final class MandrillUtil {
             synchronized (MandrillUtil.class) {
                 if (ObjUtil.isNull(MANDRILL_API)) {
                     MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
-                    JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+                    JsonNode jsonNode = AmazonS3Util.JSON_NODE;
                     FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : jsonNode.get(mandrill.getFromEmailSecrets()).asText();
                     FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : jsonNode.get(mandrill.getFromNameSecrets()).asText();
                     String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : jsonNode.get(mandrill.getApiKeySecrets()).asText();

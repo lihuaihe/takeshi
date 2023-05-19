@@ -72,6 +72,10 @@ public final class AmazonS3Util {
      * 获取到的密钥信息
      */
     public static volatile Object SECRET;
+    /**
+     * 获取到的密钥信息
+     */
+    public static volatile JsonNode JSON_NODE;
 
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
@@ -94,9 +98,9 @@ public final class AmazonS3Util {
                     GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                     String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
                     SECRET = GsonUtil.fromJson(secret, awsSecrets.getSecretClass());
-                    JsonNode jsonNode = new ObjectMapper().valueToTree(SECRET);
-                    String accessKey = jsonNode.get(awsSecrets.getAccessKeyName()).asText();
-                    String secretKey = jsonNode.get(awsSecrets.getSecretKeyName()).asText();
+                    JSON_NODE = new ObjectMapper().valueToTree(secret);
+                    String accessKey = JSON_NODE.get(awsSecrets.getAccessKeyName()).asText();
+                    String secretKey = JSON_NODE.get(awsSecrets.getSecretKeyName()).asText();
                     // S3
                     AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))

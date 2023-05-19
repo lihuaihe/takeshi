@@ -28,7 +28,7 @@ public class TwilioImpl implements SmsInterface {
      */
     public TwilioImpl() {
         TwilioProperties twilio = StaticConfig.takeshiProperties.getTwilio();
-        JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+        JsonNode jsonNode = AmazonS3Util.JSON_NODE;
         String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : jsonNode.get(twilio.getAccountSidSecrets()).asText();
         String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : jsonNode.get(twilio.getAuthTokenSecrets()).asText();
         Twilio.init(accountSid, authToken);
