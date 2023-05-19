@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Map;
+
 /**
  * AWS密钥管理凭证
  *
@@ -46,7 +48,7 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     /**
      * secret字段的Class
      */
-    private Class<?> secretClass;
+    private Class<?> secretClass = Map.class;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS s3 密钥ID名称

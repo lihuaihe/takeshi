@@ -6,6 +6,8 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microtripit.mandrillapp.lutung.MandrillApi;
 import com.microtripit.mandrillapp.lutung.model.MandrillApiError;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage;
@@ -68,9 +70,10 @@ public final class MandrillUtil {
             synchronized (MandrillUtil.class) {
                 if (ObjUtil.isNull(MANDRILL_API)) {
                     MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
-                    FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : AmazonS3Util.SECRET.getStr(mandrill.getFromEmailSecrets());
-                    FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : AmazonS3Util.SECRET.getStr(mandrill.getFromNameSecrets());
-                    String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : AmazonS3Util.SECRET.getStr(mandrill.getApiKeySecrets());
+                    JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+                    FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : jsonNode.get(mandrill.getFromEmailSecrets()).asText();
+                    FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : jsonNode.get(mandrill.getFromNameSecrets()).asText();
+                    String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : jsonNode.get(mandrill.getApiKeySecrets()).asText();
                     MANDRILL_API = new MandrillApi(apiKey);
                 }
             }

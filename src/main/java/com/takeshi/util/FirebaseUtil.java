@@ -3,6 +3,7 @@ package com.takeshi.util;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -45,7 +46,9 @@ public final class FirebaseUtil {
                             log.error("FirebaseUtil.static --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
                         } else {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                            String databaseUrl = StrUtil.isBlank(firebase.getDatabaseUrlSecrets()) ? firebase.getDatabaseUrl() : AmazonS3Util.SECRET.getStr(firebase.getDatabaseUrlSecrets());
+                            String databaseUrl = StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
+                                    ? firebase.getDatabaseUrl()
+                                    : new ObjectMapper().valueToTree(AmazonS3Util.SECRET).get(firebase.getDatabaseUrlSecrets()).asText();
                             FirebaseOptions options = FirebaseOptions.builder()
                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
                                     .setDatabaseUrl(databaseUrl)

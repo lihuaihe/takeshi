@@ -2,6 +2,8 @@ package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.StaticLog;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TwilioProperties;
 import com.takeshi.util.AmazonS3Util;
@@ -26,10 +28,11 @@ public class TwilioImpl implements SmsInterface {
      */
     public TwilioImpl() {
         TwilioProperties twilio = StaticConfig.takeshiProperties.getTwilio();
-        String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : AmazonS3Util.SECRET.getStr(twilio.getAccountSidSecrets());
-        String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : AmazonS3Util.SECRET.getStr(twilio.getAuthTokenSecrets());
+        JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+        String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : jsonNode.get(twilio.getAccountSidSecrets()).asText();
+        String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : jsonNode.get(twilio.getAuthTokenSecrets()).asText();
         Twilio.init(accountSid, authToken);
-        messagingServiceSid = StrUtil.isBlank(twilio.getMessagingServiceSidSecrets()) ? twilio.getMessagingServiceSid() : AmazonS3Util.SECRET.getStr(twilio.getMessagingServiceSidSecrets());
+        messagingServiceSid = StrUtil.isBlank(twilio.getMessagingServiceSidSecrets()) ? twilio.getMessagingServiceSid() : jsonNode.get(twilio.getMessagingServiceSidSecrets()).asText();
     }
 
     /**

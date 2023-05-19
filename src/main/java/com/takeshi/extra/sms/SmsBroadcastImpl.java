@@ -3,6 +3,8 @@ package com.takeshi.extra.sms;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.log.StaticLog;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.SmsBroadcastProperties;
 import com.takeshi.util.AmazonS3Util;
@@ -30,9 +32,10 @@ public class SmsBroadcastImpl implements SmsInterface {
      */
     public SmsBroadcastImpl() {
         SmsBroadcastProperties smsBroadcast = StaticConfig.takeshiProperties.getSmsBroadcast();
-        userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : AmazonS3Util.SECRET.getStr(smsBroadcast.getUserNameSecrets());
-        password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : AmazonS3Util.SECRET.getStr(smsBroadcast.getPasswordSecrets());
-        from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : AmazonS3Util.SECRET.getStr(smsBroadcast.getFromSecrets());
+        JsonNode jsonNode = new ObjectMapper().valueToTree(AmazonS3Util.SECRET);
+        userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
+        password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();
+        from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : jsonNode.get(smsBroadcast.getFromSecrets()).asText();
     }
 
     /**
