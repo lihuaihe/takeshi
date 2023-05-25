@@ -116,11 +116,12 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             if (handler instanceof HandlerMethod handlerMethod) {
                 String userAgent = request.getHeader(Header.USER_AGENT.getValue());
                 String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
+                String nonce = request.getHeader(TakeshiConstants.NONCE_NAME);
                 String geoPoint = request.getHeader(TakeshiConstants.GEO_POINT_NAME);
                 String clientIp = TakeshiUtil.getClientIp(request);
                 Object loginId = StpUtil.getLoginIdDefaultNull();
                 Method method = handlerMethod.getMethod();
-                log.info("请求开始, 请求IP: {}, 请求工具: {}, timestamp: {}, geoPoint: {}", clientIp, userAgent, timestamp, geoPoint);
+                log.info("请求开始, 请求IP: {}, 请求工具: {}, timestamp: {}, nonce: {}, geoPoint: {}", clientIp, userAgent, timestamp, nonce, geoPoint);
                 log.info("请求的用户ID: {}, 请求地址: {}, 请求方法: [{}] {}.{}", loginId, request.getRequestURL(), request.getMethod(), method.getDeclaringClass().getName(), method.getName());
 
                 SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
@@ -168,13 +169,13 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     private void rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, String userAgent,
                            String clientIp, Object loginId, SystemSecurity systemSecurity) throws IOException {
         TakeshiProperties takeshiProperties = StaticConfig.takeshiProperties;
-        boolean platform = false;
-        boolean signature = false;
+        boolean passPlatform = false;
+        boolean passSignature = false;
         if (ObjUtil.isNotNull(systemSecurity)) {
-            platform = systemSecurity.all() || systemSecurity.platform();
-            signature = systemSecurity.all() || systemSecurity.signature();
+            passPlatform = systemSecurity.all() || systemSecurity.platform();
+            passSignature = systemSecurity.all() || systemSecurity.signature();
         }
-        if (takeshiProperties.isAppPlatform() && !platform && !UserAgentUtil.parse(userAgent).isMobile()) {
+        if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(userAgent).isMobile()) {
             // 移动端请求工具校验
             SaRouter.back(TakeshiCode.USERAGENT_ERROR);
         }
@@ -199,9 +200,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 SaRouter.back(TakeshiCode.SIGN_ERROR);
             }
         }
-
+        String signatureKey = takeshiProperties.getSignatureKey();
+        // 开启了sign校验
+        boolean signVerify = StrUtil.isNotBlank(signatureKey) && !passSignature;
         RateLimitProperties.NonceRate nonceRate = rate.getNonce();
-        if (nonceRate.getRateInterval() > 0) {
+        if (signVerify && nonceRate.getRateInterval() > 0) {
             String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(clientIp, servletPath);
             RRateLimiter nonceRateLimiter = StaticConfig.redisComponent.getRateLimiter(nonceRateLimitKey);
             nonceRateLimiter.trySetRate(RateType.PER_CLIENT, nonceRate.getRate(), nonceRate.getRateInterval(), nonceRate.getRateIntervalUnit());
@@ -238,8 +241,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String paramBOJsonString = paramBO.toJsonString();
         log.info("请求参数: {}", paramBOJsonString);
 
-        String signatureKey = takeshiProperties.getSignatureKey();
-        if (StrUtil.isNotBlank(signatureKey) && !signature) {
+        if (signVerify) {
             // 校验参数签名，如果body参数是非JsonObject值，则直接将值与其他值直接拼接
             String sign = request.getHeader(TakeshiConstants.SIGN_NAME);
             String signParamsMd5 = SecureUtil.signParamsMd5(paramBO.getParamMap(), StrUtil.toStringOrNull(paramBO.getBodyOther()), signatureKey, nonce, timestamp);
