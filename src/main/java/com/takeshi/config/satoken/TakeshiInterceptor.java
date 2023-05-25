@@ -116,10 +116,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             if (handler instanceof HandlerMethod handlerMethod) {
                 String userAgent = request.getHeader(Header.USER_AGENT.getValue());
                 String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
+                String geoPoint = request.getHeader(TakeshiConstants.GEO_POINT_NAME);
                 String clientIp = TakeshiUtil.getClientIp(request);
                 Object loginId = StpUtil.getLoginIdDefaultNull();
                 Method method = handlerMethod.getMethod();
-                log.info("请求开始, 请求IP: {}, 请求工具: {}, timestamp: {}", clientIp, userAgent, timestamp);
+                log.info("请求开始, 请求IP: {}, 请求工具: {}, timestamp: {}, geoPoint: {}", clientIp, userAgent, timestamp, geoPoint);
                 log.info("请求的用户ID: {}, 请求地址: {}, 请求方法: [{}] {}.{}", loginId, request.getRequestURL(), request.getMethod(), method.getDeclaringClass().getName(), method.getName());
 
                 SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
