@@ -276,7 +276,7 @@ public final class TakeshiUtil {
         MessageSource messageSource = Optional.ofNullable(StaticConfig.messageSource)
                 .orElseGet(() -> {
                     ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
-                    resourceBundleMessageSource.setBasenames("i18n/messages", "ValidationMessages");
+                    resourceBundleMessageSource.setBasenames("ValidationMessages", "i18n/messages");
                     resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
                     return resourceBundleMessageSource;
                 });

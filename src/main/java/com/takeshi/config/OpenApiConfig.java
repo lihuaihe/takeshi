@@ -4,6 +4,7 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.takeshi.annotation.ApiVersion;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
@@ -66,7 +67,7 @@ public class OpenApiConfig {
                             .forEach(item -> {
                                 RetBO retBO = (RetBO) ReflectUtil.getStaticFieldValue(item);
                                 // swagger文档中的响应状态码信息
-                                String message = messageSource.getMessage(retBO.getMessage(), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
+                                String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
                                 String name = String.valueOf(retBO.getCode());
                                 ApiResponse response = apiResponses.get(name);
                                 if (ObjUtil.isNotNull(response)) {
