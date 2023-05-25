@@ -1,14 +1,13 @@
 package com.takeshi.pojo.basic;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.slf4j.MDC;
-import org.springframework.data.annotation.Transient;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -18,6 +17,7 @@ import java.time.Instant;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
+@Accessors(chain = true)
 @Schema(description = "接口返回值对象")
 public class ResponseData<T> implements Serializable {
 
@@ -39,16 +39,20 @@ public class ResponseData<T> implements Serializable {
     /**
      * 为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
-    @Transient
-    @JsonIgnore
     @Schema(hidden = true)
     private Object[] args;
 
     /**
-     * 附加对象
+     * 数据
      */
-    @Schema(description = "附加对象")
+    @Schema(description = "数据")
     private T data;
+
+    /**
+     * 附加数据
+     */
+    @Schema(description = "附加数据")
+    private Object mateData;
 
     /**
      * 返回时间，毫秒级别
