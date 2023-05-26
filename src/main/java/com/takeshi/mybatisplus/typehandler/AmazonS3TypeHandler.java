@@ -16,7 +16,6 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
@@ -72,8 +71,10 @@ public class AmazonS3TypeHandler extends BaseTypeHandler<String> {
                     if (StrUtil.isBlank(url)) {
                         URL presignedUrl = AmazonS3Util.getPresignedUrl(key);
                         url = presignedUrl.toString();
-                        CharSequence date = UrlQuery.of(presignedUrl.getQuery(), StandardCharsets.UTF_8).get("X-Amz-Date");
-                        redisComponent.saveToDateTime(redisKey, url, Instant.from(formatter.parse(date)).toEpochMilli());
+                        UrlQuery urlQuery = UrlQuery.of(presignedUrl.getQuery(), StandardCharsets.UTF_8);
+                        // 减掉代码执行时间
+                        long expires = Long.parseLong((String) urlQuery.get("X-Amz-Expires")) - 1L;
+                        redisComponent.save(redisKey, url, expires);
                     }
                 }
             } catch (InterruptedException e) {
