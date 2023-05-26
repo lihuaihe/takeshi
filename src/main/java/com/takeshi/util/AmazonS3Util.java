@@ -375,7 +375,7 @@ public final class AmazonS3Util {
      */
     public static String getFileObjKey(String mainName, String extension) {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.DOT, mainName, extension).toString();
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, extension).toString();
     }
 
     private static String getMediaType(InputStream stream, String fileName) throws IOException {
