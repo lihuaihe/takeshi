@@ -10,9 +10,7 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +84,17 @@ public class RedisComponent {
     }
 
     /**
+     * 写入缓存设置失效时间和时间单位
+     *
+     * @param key     key
+     * @param value   value
+     * @param timeout 失效时间
+     */
+    public void save(String key, String value, Duration timeout) {
+        this.boundValueOps(key).set(value, timeout);
+    }
+
+    /**
      * 如果绑定键不存在，则设置绑定键以保存字符串写入缓存
      *
      * @param key   key
@@ -119,6 +128,18 @@ public class RedisComponent {
      */
     public Boolean saveIfAbsent(String key, String value, long expireTime, TimeUnit timeUnit) {
         return this.boundValueOps(key).setIfAbsent(value, expireTime, timeUnit);
+    }
+
+    /**
+     * 如果绑定键不存在，则设置绑定键以保存字符串写入缓存设置失效时间和时间单位
+     *
+     * @param key     key
+     * @param value   value
+     * @param timeout 失效时间
+     * @return boolean
+     */
+    public Boolean saveIfAbsent(String key, String value, Duration timeout) {
+        return this.boundValueOps(key).setIfAbsent(value, timeout);
     }
 
     /**
@@ -158,6 +179,18 @@ public class RedisComponent {
     }
 
     /**
+     * 如果绑定键存在，则设置绑定键以保存字符串写入缓存设置失效时间和时间单位
+     *
+     * @param key     key
+     * @param value   value
+     * @param timeout 失效时间
+     * @return boolean
+     */
+    public Boolean saveIfPresent(String key, String value, Duration timeout) {
+        return this.boundValueOps(key).setIfPresent(value, timeout);
+    }
+
+    /**
      * 写入缓存设置失效时间到指定时间
      *
      * @param key      key
@@ -165,7 +198,7 @@ public class RedisComponent {
      * @param dateTime 希望在哪个时间失效，毫秒数
      */
     public void saveToDateTime(String key, String value, long dateTime) {
-        long timeout = dateTime - ZonedDateTime.now().toInstant().toEpochMilli();
+        long timeout = dateTime - Instant.now().toEpochMilli();
         this.boundValueOps(key).set(value, timeout, TimeUnit.MILLISECONDS);
     }
 

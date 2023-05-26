@@ -32,7 +32,17 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
     /**
      * 重复提交{MD5后的值}
      */
-    REPEAT_SUBMIT("repeatSubmit:{}");
+    REPEAT_SUBMIT("repeatSubmit:{}"),
+
+    /**
+     * S3临时URL的锁
+     */
+    LOCK_S3_PRESIGNED_URL("lock:s3:presignedUrl:{}"),
+
+    /**
+     * S3临时URL
+     */
+    S3_PRESIGNED_URL("s3:presignedUrl:{}");
 
     private final String key;
 

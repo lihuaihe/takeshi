@@ -69,7 +69,6 @@ public class TtlRedisCacheManager extends RedisCacheManager {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(om, Object.class)))
                 // Do not cache null values
                 .disableCachingNullValues();
-
         return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);
     }
 

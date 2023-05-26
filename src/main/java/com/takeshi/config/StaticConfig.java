@@ -11,7 +11,9 @@ import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.MessageSource;
+import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.BoundValueOperations;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +26,7 @@ import java.security.KeyPair;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
 
     /**

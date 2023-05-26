@@ -4,6 +4,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
+import com.takeshi.pojo.vo.AmazonS3VO;
 import com.takeshi.util.AmazonS3Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,8 +48,8 @@ public class UploadController extends AbstractBaseController {
     @Operation(summary = "上传文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping(value = "/file", consumes = "multipart/form-data")
-    public ResponseData<Object> uploadFile(@RequestPart MultipartFile file,
-                                           @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws IOException, InterruptedException, MimeTypeException {
+    public ResponseData<AmazonS3VO> uploadFile(@RequestPart MultipartFile file,
+                                               @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws IOException, InterruptedException, MimeTypeException {
         if (file.isEmpty()) {
             return retData(TakeshiCode.FILE_IS_NULL);
         }
@@ -69,8 +70,8 @@ public class UploadController extends AbstractBaseController {
     @Operation(summary = "上传多个文件", description = "上传多个文件，最多同时上传9个文件")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping(value = "/multi-file", consumes = "multipart/form-data")
-    public ResponseData<List<String>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
-                                                 @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
+    public ResponseData<List<AmazonS3VO>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
+                                                     @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
         return retData(AmazonS3Util.addFile(files, sync));
     }
 

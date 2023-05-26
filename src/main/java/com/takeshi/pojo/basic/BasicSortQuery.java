@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * BasicSortQuery
@@ -17,6 +18,7 @@ import lombok.experimental.Accessors;
 @Data
 @Schema(description = "列表分页条件自定义排序查询参数")
 @Accessors(chain = true)
+@ParameterObject
 public class BasicSortQuery extends BasicSortPage {
 
     /**

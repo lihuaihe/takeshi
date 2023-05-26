@@ -6,7 +6,6 @@ import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -26,7 +25,7 @@ import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.exception.TakeshiException;
-import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
+import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
@@ -41,10 +40,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -66,6 +68,8 @@ public final class AmazonS3Util {
     private static final String CREATE_TIME = "Create-Time";
 
     private static String BUCKET_NAME;
+    // 默认1天（单位：秒）
+    private static Long EXPIRATION_TIME = 86400L;
     private static final MimeTypes MIME_REPOSITORY = TikaConfig.getDefaultConfig().getMimeRepository();
 
     /**
@@ -90,6 +94,7 @@ public final class AmazonS3Util {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
                         BUCKET_NAME = awsSecrets.getBucketName();
+                        EXPIRATION_TIME = awsSecrets.getExpirationTime();
                         AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
                                 .withRegion(awsSecrets.getRegion())
                                 .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))
@@ -100,8 +105,8 @@ public final class AmazonS3Util {
                         String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
                         SECRET = GsonUtil.fromJson(secret, awsSecrets.getSecretClass());
                         JSON_NODE = new ObjectMapper().readValue(secret, JsonNode.class);
-                        String accessKey = JSON_NODE.get(awsSecrets.getAccessKeyName()).asText();
-                        String secretKey = JSON_NODE.get(awsSecrets.getSecretKeyName()).asText();
+                        String accessKey = JSON_NODE.get(awsSecrets.getAccessKeySecrets()).asText();
+                        String secretKey = JSON_NODE.get(awsSecrets.getSecretKeySecrets()).asText();
                         // S3
                         AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
@@ -152,7 +157,7 @@ public final class AmazonS3Util {
      * @param quality 压缩比例，必须为0~1
      * @return S3文件访问URL
      */
-    public static String addCompressImg(File file, float quality) {
+    public static AmazonS3VO addCompressImg(File file, float quality) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Img.from(file).setQuality(quality).write(byteArrayOutputStream);
         return addFile(FileUtil.readBytes(file), file.getName());
@@ -164,7 +169,7 @@ public final class AmazonS3Util {
      * @param file 要上传的文件
      * @return S3文件访问URL
      */
-    public static String addFile(File file) {
+    public static AmazonS3VO addFile(File file) {
         return addFile(file, false);
     }
 
@@ -175,7 +180,7 @@ public final class AmazonS3Util {
      * @return S3文件访问URL
      */
     @SneakyThrows
-    public static String addFile(MultipartFile multipartFile) {
+    public static AmazonS3VO addFile(MultipartFile multipartFile) {
         return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename());
     }
 
@@ -186,7 +191,7 @@ public final class AmazonS3Util {
      * @param sync 是否等待传输完成再返回URL
      * @return S3文件访问URL
      */
-    public static String addFile(File file, boolean sync) {
+    public static AmazonS3VO addFile(File file, boolean sync) {
         return addFile(FileUtil.readBytes(file), file.getName(), sync);
     }
 
@@ -198,7 +203,7 @@ public final class AmazonS3Util {
      * @return S3文件访问URL
      */
     @SneakyThrows
-    public static String addFile(MultipartFile multipartFile, boolean sync) {
+    public static AmazonS3VO addFile(MultipartFile multipartFile, boolean sync) {
         return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename(), sync);
     }
 
@@ -209,7 +214,7 @@ public final class AmazonS3Util {
      * @param fileName 完整的文件名
      * @return S3文件访问URL
      */
-    public static String addFile(byte[] data, String fileName) {
+    public static AmazonS3VO addFile(byte[] data, String fileName) {
         return addFile(data, fileName, false);
     }
 
@@ -222,7 +227,7 @@ public final class AmazonS3Util {
      * @return S3文件访问URL
      */
     @SneakyThrows
-    public static String addFile(byte[] data, String fileName, boolean sync) {
+    public static AmazonS3VO addFile(byte[] data, String fileName, boolean sync) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
             String mediaType = getMediaType(tikaInputStream, fileName);
             String extension = getMimeType(mediaType).getExtension();
@@ -237,17 +242,15 @@ public final class AmazonS3Util {
             metadata.addUserMetadata(ORIGINAL_NAME, mainName);
             metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
             metadata.addUserMetadata(EXTENSION_NAME, extension);
-            String fileObjKeyName = getFileObjKeyName(mainName, extension);
-            // withCannedAcl 设置对象可以公共读
-            PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKeyName, tikaInputStream, metadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead);
+            String fileObjKey = getFileObjKey(mainName, extension);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
             // TransferManager 异步处理所有传输,所以这个调用立即返回
             Upload upload = transferManager.upload(putObjectRequest);
             if (sync) {
                 // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
                 upload.waitForCompletion();
             }
-            return transferManager.getAmazonS3Client().getUrl(BUCKET_NAME, fileObjKeyName).toString();
+            return new AmazonS3VO(fileObjKey, transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plusSeconds(EXPIRATION_TIME))));
         }
     }
 
@@ -258,8 +261,8 @@ public final class AmazonS3Util {
      * @param sync           是否等待传输完成再返回URL
      * @return 多个S3文件访问URL
      */
-    public static List<String> addFile(MultipartFile[] multipartFiles, boolean sync) {
-        ArrayList<String> list = new ArrayList<>();
+    public static List<AmazonS3VO> addFile(MultipartFile[] multipartFiles, boolean sync) {
+        ArrayList<AmazonS3VO> list = new ArrayList<>();
         for (MultipartFile item : multipartFiles) {
             list.add(addFile(item, sync));
         }
@@ -272,8 +275,8 @@ public final class AmazonS3Util {
      * @param files 要上传的多文件数组
      * @return 多个S3文件访问URL
      */
-    public static List<String> addFileList(File[] files) {
-        ArrayList<String> list = new ArrayList<>();
+    public static List<AmazonS3VO> addFileList(File[] files) {
+        ArrayList<AmazonS3VO> list = new ArrayList<>();
         for (File file : files) {
             list.add(addFile(file));
         }
@@ -281,32 +284,54 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 根据S3文件的访问URL删除文件
+     * 根据S3文件的key删除文件
      *
-     * @param url s3文件的访问URL
+     * @param key S3对象的键
      */
-    public static void deleteFile(String url) {
-        transferManager.getAmazonS3Client().deleteObject(BUCKET_NAME, StrUtil.removePrefix(URLUtil.getPath(url), StrUtil.SLASH));
+    public static void deleteFile(String key) {
+        transferManager.getAmazonS3Client().deleteObject(BUCKET_NAME, key);
     }
 
     /**
-     * 根据S3文件的访问URL下载文件
+     * 根据S3文件的key下载到指定目录文件
      *
-     * @param url s3文件的访问URL
-     * @return 输入流
-     */
-    public static S3ObjectInputStream download(String url) {
-        return transferManager.getAmazonS3Client().download(new PresignedUrlDownloadRequest(URLUtil.url(url))).getS3Object().getObjectContent();
-    }
-
-    /**
-     * 根据S3文件的访问URL下载到指定目录文件
-     *
-     * @param url     s3文件的访问URL
+     * @param key     S3对象的键
      * @param outFile 存储的目录文件
      */
-    public static void download(String url, File outFile) {
-        transferManager.download(new PresignedUrlDownloadRequest(URLUtil.url(url)), outFile);
+    public static void download(String key, File outFile) {
+        transferManager.download(BUCKET_NAME, key, outFile);
+    }
+
+    /**
+     * 返回用于访问 Amazon S3 资源的预签名 URL
+     *
+     * @param key S3对象的键
+     * @return URL
+     */
+    public static URL getPresignedUrl(String key) {
+        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plusSeconds(EXPIRATION_TIME)));
+    }
+
+    /**
+     * 返回用于访问 Amazon S3 资源的预签名 URL
+     *
+     * @param key            S3对象的键
+     * @param expirationTime 预签名 URL 将过期的时间
+     * @return URL
+     */
+    public static URL getPresignedUrl(String key, Long expirationTime) {
+        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plusSeconds(expirationTime)));
+    }
+
+    /**
+     * 返回用于访问 Amazon S3 资源的预签名 URL
+     *
+     * @param key            S3对象的键
+     * @param expirationTime 预签名 URL 将过期的时间
+     * @return URL
+     */
+    public static URL getPresignedUrl(String key, Duration expirationTime) {
+        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(expirationTime)));
     }
 
     /**
@@ -314,43 +339,41 @@ public final class AmazonS3Util {
      * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
      * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
      *
-     * @param url s3文件的访问URL
+     * @param key S3对象的键
      * @return ObjectMetadata
      */
-    public static ObjectMetadata getObjectMetadata(String url) {
-        // 文件访问URL（https://xxxx.amazonaws.com/png/2022/12/16/1603647146821951488/6906feb925d949928818655764be315a.png）中去掉（https://xxxx.amazonaws.com/）则是key
-        String key = StrUtil.removePrefix(URLUtil.getPath(url), StrUtil.SLASH);
+    public static ObjectMetadata getObjectMetadata(String key) {
         return transferManager.getAmazonS3Client().getObjectMetadata(BUCKET_NAME, key);
     }
 
-    /**
-     * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
-     * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
-     * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
-     *
-     * @param url s3文件的访问URL
-     * @return 封装后的文件对象
-     */
-    public static AmazonS3FileInfoVO getAmazonS3FileInfo(String url) {
-        try {
-            if (StrUtil.isBlank(url)) {
-                return null;
-            }
-            ObjectMetadata objectMetadata = getObjectMetadata(url);
-            return new AmazonS3FileInfoVO(url, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME), objectMetadata.getContentType(), objectMetadata.getUserMetaDataOf(EXTENSION_NAME), objectMetadata.getUserMetaDataOf(CREATE_TIME), objectMetadata.getContentLength());
-        } catch (Exception e) {
-            return null;
-        }
-    }
+    // /**
+    //  * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
+    //  * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
+    //  * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
+    //  *
+    //  * @param key S3对象的键
+    //  * @return 封装后的文件对象
+    //  */
+    // public static AmazonS3FileInfoVO getAmazonS3FileInfo(String key) {
+    //     try {
+    //         if (StrUtil.isBlank(key)) {
+    //             return null;
+    //         }
+    //         ObjectMetadata objectMetadata = getObjectMetadata(key);
+    //         return new AmazonS3FileInfoVO(url, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME), objectMetadata.getContentType(), objectMetadata.getUserMetaDataOf(EXTENSION_NAME), objectMetadata.getUserMetaDataOf(CREATE_TIME), objectMetadata.getContentLength());
+    //     } catch (Exception e) {
+    //         return null;
+    //     }
+    // }
 
     /**
-     * 获取文件存储的完整路径
+     * 获取文件存储的完整路径（Key）
      *
      * @param mainName  文件名
      * @param extension 扩展名
      * @return 完整路径
      */
-    public static String getFileObjKeyName(String mainName, String extension) {
+    public static String getFileObjKey(String mainName, String extension) {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
         return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.DOT, mainName, extension).toString();
     }

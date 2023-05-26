@@ -19,11 +19,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
 
 import java.util.*;
 
@@ -34,6 +36,7 @@ import java.util.*;
  */
 @Primary
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class OpenApiConfig {
 

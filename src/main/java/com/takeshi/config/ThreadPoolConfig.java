@@ -3,7 +3,9 @@ package com.takeshi.config;
 import cn.hutool.core.thread.ThreadUtil;
 import com.takeshi.util.TakeshiThreadUtil;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,6 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Lion Li
  **/
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ThreadPoolConfig {
 
     /**

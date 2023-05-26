@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 
 /**
  * MybatisPlusConfig
@@ -12,6 +14,7 @@ import org.springframework.context.annotation.Bean;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class MybatisPlusConfig {
 
     /**
@@ -38,6 +41,11 @@ public class MybatisPlusConfig {
      * ZonedDateTimeTypeHandler的typeHandler路径
      */
     public static final String MAPPING_ZONED_DATE_TIME_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.ZonedDateTimeTypeHandler";
+
+    /**
+     * AmazonS3TypeHandler的typeHandler路径
+     */
+    public static final String MAPPING_AMAZON_S3_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.AmazonS3TypeHandler";
 
     /**
      * 新的分页插件,一缓和二缓遵循mybatis的规则,需要设置 MybatisConfiguration useDeprecatedExecutor = false 避免缓存出现问题

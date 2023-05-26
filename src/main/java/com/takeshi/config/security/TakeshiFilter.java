@@ -8,11 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
@@ -21,19 +24,14 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
  */
 @Slf4j
 @AutoConfiguration
-@Order(HIGHEST_PRECEDENCE)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class TakeshiFilter implements Filter {
-
-    List<String> excludeUrlList;
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        excludeUrlList = List.of(TakeshiConstants.EXCLUDE_SWAGGER_URL);
-    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request instanceof HttpServletRequest httpServletRequest && !excludeUrlList.contains(httpServletRequest.getServletPath())) {
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        if (request instanceof HttpServletRequest httpServletRequest
+                && Arrays.stream(TakeshiConstants.EXCLUDE_SWAGGER_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
             String uuid = IdUtil.fastSimpleUUID();
             // 填充traceId
             MDC.put(TakeshiConstants.TRACE_ID_KEY, uuid);
@@ -48,7 +46,7 @@ public class TakeshiFilter implements Filter {
             }
             chain.doFilter(request, response);
             stopWatch.stop();
-            log.info("响应结束,耗时: {} ms", stopWatch.getTotalTimeMillis());
+            log.info("响应结束, 耗时: {} ms", stopWatch.getTotalTimeMillis());
             return;
         }
         chain.doFilter(request, response);

@@ -2,6 +2,7 @@ package com.takeshi.config.properties;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Regions;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -46,6 +47,12 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     private Regions region = Regions.DEFAULT_REGION;
 
     /**
+     * S3临时URL的有效时间（单位：秒），默认1天
+     */
+    @Positive
+    private long expirationTime = 86400L;
+
+    /**
      * secret字段的Class
      */
     private Class<?> secretClass = Map.class;
@@ -53,12 +60,12 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     /**
      * 存储在AWS Secrets Manager中的 AWS s3 密钥ID名称
      */
-    private String accessKeyName = "AWS-S3-Access-key-ID";
+    private String accessKeySecrets = "AWS-S3-Access-key-ID";
 
     /**
      * 存储在AWS Secrets Manager中的 AWS s3 密钥名称
      */
-    private String secretKeyName = "AWS-S3-Secret-access-key";
+    private String secretKeySecrets = "AWS-S3-Secret-access-key";
 
     @Override
     public String getAWSAccessKeyId() {
