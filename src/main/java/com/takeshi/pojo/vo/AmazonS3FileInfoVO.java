@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.net.URL;
+
 /**
  * AmazonS3FileInfoVO
  *
@@ -21,10 +23,10 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class AmazonS3FileInfoVO extends AbstractBasicSerializable {
     /**
-     * 文件URL
+     * 预签名URL
      */
-    @Schema(description = "文件URL")
-    private String url;
+    @Schema(description = "预签名URL")
+    private URL url;
     /**
      * 文件名称
      */

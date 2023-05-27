@@ -20,11 +20,14 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeshi.component.RedisComponent;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
+import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.TakeshiException;
+import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
 import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
 import org.apache.tika.config.TikaConfig;
@@ -34,6 +37,7 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
+import org.redisson.api.RLock;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -48,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * AmazonS3Util
@@ -68,8 +73,8 @@ public final class AmazonS3Util {
     private static final String CREATE_TIME = "Create-Time";
 
     private static String BUCKET_NAME;
-    // 默认1天（单位：秒）
-    private static Long EXPIRATION_TIME = 86400L;
+    // 预签名URL的过期时间
+    private static Duration EXPIRATION_TIME;
     private static final MimeTypes MIME_REPOSITORY = TikaConfig.getDefaultConfig().getMimeRepository();
 
     /**
@@ -94,7 +99,7 @@ public final class AmazonS3Util {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
                         BUCKET_NAME = awsSecrets.getBucketName();
-                        EXPIRATION_TIME = awsSecrets.getExpirationTime();
+                        EXPIRATION_TIME = Duration.ofSeconds(awsSecrets.getExpirationTime());
                         AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
                                 .withRegion(awsSecrets.getRegion())
                                 .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))
@@ -250,7 +255,7 @@ public final class AmazonS3Util {
                 // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
                 upload.waitForCompletion();
             }
-            return new AmazonS3VO(fileObjKey, transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plusSeconds(EXPIRATION_TIME))));
+            return new AmazonS3VO(fileObjKey, transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plus(EXPIRATION_TIME))));
         }
     }
 
@@ -309,29 +314,60 @@ public final class AmazonS3Util {
      * @return URL
      */
     public static URL getPresignedUrl(String key) {
-        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plusSeconds(EXPIRATION_TIME)));
+        return getPresignedUrl(key, EXPIRATION_TIME);
     }
 
     /**
      * 返回用于访问 Amazon S3 资源的预签名 URL
      *
      * @param key            S3对象的键
-     * @param expirationTime 预签名 URL 将过期的时间
+     * @param expirationTime 预签名 URL 将过期的时间（单位：秒）
      * @return URL
      */
     public static URL getPresignedUrl(String key, Long expirationTime) {
-        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plusSeconds(expirationTime)));
+        return getPresignedUrl(key, Duration.ofSeconds(expirationTime));
     }
 
     /**
      * 返回用于访问 Amazon S3 资源的预签名 URL
      *
-     * @param key            S3对象的键
-     * @param expirationTime 预签名 URL 将过期的时间
+     * @param key      S3对象的键
+     * @param duration 预签名 URL 将过期的时间
      * @return URL
      */
-    public static URL getPresignedUrl(String key, Duration expirationTime) {
-        return transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(expirationTime)));
+    public static URL getPresignedUrl(String key, Duration duration) {
+        RedisComponent redisComponent = StaticConfig.redisComponent;
+        String redisKey = TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(key, duration);
+        URL presignedUrl = toUrl(redisComponent.get(redisKey));
+        if (ObjUtil.isNull(presignedUrl)) {
+            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(key, duration));
+            try {
+                if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
+                    presignedUrl = toUrl(redisComponent.get(redisKey));
+                    if (ObjUtil.isNull(presignedUrl)) {
+                        presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)));
+                        // 减掉代码执行时间
+                        redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(3L));
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                lock.unlock();
+            }
+        }
+        return presignedUrl;
+    }
+
+    /**
+     * 获取URL对象
+     *
+     * @param url url字符串
+     * @return URL
+     */
+    @SneakyThrows
+    private static URL toUrl(String url) {
+        return StrUtil.isBlank(url) ? null : new URL(url);
     }
 
     /**
@@ -346,25 +382,27 @@ public final class AmazonS3Util {
         return transferManager.getAmazonS3Client().getObjectMetadata(BUCKET_NAME, key);
     }
 
-    // /**
-    //  * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
-    //  * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
-    //  * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
-    //  *
-    //  * @param key S3对象的键
-    //  * @return 封装后的文件对象
-    //  */
-    // public static AmazonS3FileInfoVO getAmazonS3FileInfo(String key) {
-    //     try {
-    //         if (StrUtil.isBlank(key)) {
-    //             return null;
-    //         }
-    //         ObjectMetadata objectMetadata = getObjectMetadata(key);
-    //         return new AmazonS3FileInfoVO(url, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME), objectMetadata.getContentType(), objectMetadata.getUserMetaDataOf(EXTENSION_NAME), objectMetadata.getUserMetaDataOf(CREATE_TIME), objectMetadata.getContentLength());
-    //     } catch (Exception e) {
-    //         return null;
-    //     }
-    // }
+    /**
+     * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
+     * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
+     * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
+     *
+     * @param key S3对象的键
+     * @return 封装后的文件对象
+     */
+    @Deprecated
+    public static AmazonS3FileInfoVO getAmazonS3FileInfo(String key) {
+        try {
+            if (StrUtil.isBlank(key)) {
+                return null;
+            }
+            URL presignedUrl = getPresignedUrl(key);
+            ObjectMetadata objectMetadata = getObjectMetadata(key);
+            return new AmazonS3FileInfoVO(presignedUrl, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME), objectMetadata.getContentType(), objectMetadata.getUserMetaDataOf(EXTENSION_NAME), objectMetadata.getUserMetaDataOf(CREATE_TIME), objectMetadata.getContentLength());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * 获取文件存储的完整路径（Key）

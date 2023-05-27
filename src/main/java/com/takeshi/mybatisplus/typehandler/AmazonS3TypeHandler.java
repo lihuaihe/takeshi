@@ -1,23 +1,13 @@
 package com.takeshi.mybatisplus.typehandler;
 
-import cn.hutool.core.net.url.UrlQuery;
-import cn.hutool.core.util.StrUtil;
-import com.takeshi.component.RedisComponent;
-import com.takeshi.config.StaticConfig;
-import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.util.AmazonS3Util;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
-import org.redisson.api.RLock;
 
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>AmazonS3TypeHandler</p>
@@ -30,8 +20,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonS3TypeHandler extends BaseTypeHandler<String> {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX");
-
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType)
             throws SQLException {
@@ -40,50 +28,17 @@ public class AmazonS3TypeHandler extends BaseTypeHandler<String> {
 
     @Override
     public String getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return this.getUrl(rs.getString(columnName));
+        return AmazonS3Util.getPresignedUrl(rs.getString(columnName)).toString();
     }
 
     @Override
     public String getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return this.getUrl(rs.getString(columnIndex));
+        return AmazonS3Util.getPresignedUrl(rs.getString(columnIndex)).toString();
     }
 
     @Override
     public String getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return this.getUrl(cs.getString(columnIndex));
-    }
-
-    /**
-     * 通过S3对象的键获取预签名URL
-     *
-     * @param key S3对象的键
-     * @return 临时URL
-     */
-    public String getUrl(String key) {
-        RedisComponent redisComponent = StaticConfig.redisComponent;
-        String redisKey = TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(key);
-        String url = redisComponent.get(redisKey);
-        if (StrUtil.isBlank(url)) {
-            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(key));
-            try {
-                if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
-                    url = redisComponent.get(redisKey);
-                    if (StrUtil.isBlank(url)) {
-                        URL presignedUrl = AmazonS3Util.getPresignedUrl(key);
-                        url = presignedUrl.toString();
-                        UrlQuery urlQuery = UrlQuery.of(presignedUrl.getQuery(), StandardCharsets.UTF_8);
-                        // 减掉代码执行时间
-                        long expires = Long.parseLong((String) urlQuery.get("X-Amz-Expires")) - 1L;
-                        redisComponent.save(redisKey, url, expires);
-                    }
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } finally {
-                lock.unlock();
-            }
-        }
-        return url;
+        return AmazonS3Util.getPresignedUrl(cs.getString(columnIndex)).toString();
     }
 
 }
