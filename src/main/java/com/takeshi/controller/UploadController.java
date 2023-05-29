@@ -72,18 +72,4 @@ public class UploadController extends AbstractBaseController {
         return retData(AmazonS3Util.addFile(files, sync));
     }
 
-    /**
-     * 通过key获取临时文件URL
-     *
-     * @param key S3对象key
-     * @return ResponseData
-     */
-    @SystemSecurity(all = true)
-    @Operation(summary = "通过key获取临时文件URL")
-    @ApiOperationSupport(author = NANASE_TAKESHI)
-    @GetMapping("/presigned-url")
-    public ResponseData<Object> getPresignedUrl(@RequestParam String key) {
-        return retData(AmazonS3Util.getPresignedUrl(key));
-    }
-
 }
