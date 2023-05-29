@@ -255,7 +255,8 @@ public final class AmazonS3Util {
                 // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
                 upload.waitForCompletion();
             }
-            return new AmazonS3VO(fileObjKey, transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plus(EXPIRATION_TIME))));
+            URL url = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plus(EXPIRATION_TIME)));
+            return new AmazonS3VO(fileObjKey, url);
         }
     }
 
@@ -345,9 +346,11 @@ public final class AmazonS3Util {
                 if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
                     presignedUrl = toUrl(redisComponent.get(redisKey));
                     if (ObjUtil.isNull(presignedUrl)) {
-                        presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)));
-                        // 减掉代码执行时间
-                        redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(3L));
+                        if (doesObjectExist(key)) {
+                            presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)));
+                            // 减掉代码执行时间
+                            redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(3L));
+                        }
                     }
                 }
             } catch (InterruptedException e) {
@@ -368,6 +371,16 @@ public final class AmazonS3Util {
     @SneakyThrows
     private static URL toUrl(String url) {
         return StrUtil.isBlank(url) ? null : new URL(url);
+    }
+
+    /**
+     * 根据key判断文件对象是否存在
+     *
+     * @param key S3对象的键
+     * @return boolean
+     */
+    public static boolean doesObjectExist(String key) {
+        return transferManager.getAmazonS3Client().doesObjectExist(BUCKET_NAME, key);
     }
 
     /**
@@ -394,6 +407,9 @@ public final class AmazonS3Util {
     public static AmazonS3FileInfoVO getAmazonS3FileInfo(String key) {
         try {
             if (StrUtil.isBlank(key)) {
+                return null;
+            }
+            if (!doesObjectExist(key)) {
                 return null;
             }
             URL presignedUrl = getPresignedUrl(key);
