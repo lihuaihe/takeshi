@@ -81,8 +81,8 @@ public class UploadController extends AbstractBaseController {
     @SystemSecurity(all = true)
     @Operation(summary = "通过key获取临时文件URL")
     @ApiOperationSupport(author = NANASE_TAKESHI)
-    @GetMapping("/presigned-url/{key}")
-    public ResponseData<Object> getPresignedUrl(@PathVariable String key) {
+    @GetMapping("/presigned-url")
+    public ResponseData<Object> getPresignedUrl(@RequestParam String key) {
         return retData(AmazonS3Util.getPresignedUrl(key));
     }
 
