@@ -99,7 +99,7 @@ public final class AmazonS3Util {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
                         BUCKET_NAME = awsSecrets.getBucketName();
-                        EXPIRATION_TIME = Duration.ofSeconds(awsSecrets.getExpirationTime());
+                        EXPIRATION_TIME = awsSecrets.getExpirationTime();
                         AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
                                 .withRegion(awsSecrets.getRegion())
                                 .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))

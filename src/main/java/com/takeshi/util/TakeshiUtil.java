@@ -29,9 +29,14 @@ import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
+import com.takeshi.pojo.bo.RetBO;
+import com.takeshi.pojo.vo.GeoPointVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -348,6 +353,55 @@ public final class TakeshiUtil {
             return false;
         }
         return num1.compareTo(num2) == 0;
+    }
+
+    /**
+     * 判断给定的经纬度坐标是否在指定半径范围内。
+     *
+     * @param sourcePoint 原始经纬度坐标
+     * @param targetPoint 目标经纬度坐标
+     * @param radius      半径范围（单位：米）
+     * @return 如果目标经纬度坐标在指定半径范围内，则返回 true；否则返回 false。
+     * @throws IllegalArgumentException 如果任一参数为 null 或经纬度值非法。
+     */
+    public static boolean isCoordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius) {
+        if (sourcePoint == null || targetPoint == null) {
+            throw new IllegalArgumentException("Coordinate points cannot be null");
+        }
+        GeometryFactory geometryFactory = new GeometryFactory();
+        Point source = geometryFactory.createPoint(new Coordinate(sourcePoint.getLon(), sourcePoint.getLat()));
+        Point target = geometryFactory.createPoint(new Coordinate(targetPoint.getLon(), targetPoint.getLat()));
+        double distance = source.distance(target);
+        return distance <= radius;
+    }
+
+    /**
+     * 判断给定的经纬度坐标是否在指定半径范围内。不再范围内则抛出异常
+     *
+     * @param sourcePoint 原始经纬度坐标
+     * @param targetPoint 目标经纬度坐标
+     * @param radius      半径范围（单位：米）
+     * @param message     消息
+     */
+    public static void coordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius, String message) {
+        if (!isCoordinatesWithinRadius(sourcePoint, targetPoint, radius)) {
+            throw new TakeshiException(message);
+        }
+    }
+
+    /**
+     * 判断给定的经纬度坐标是否在指定半径范围内。不再范围内则抛出异常
+     *
+     * @param sourcePoint 原始经纬度坐标
+     * @param targetPoint 目标经纬度坐标
+     * @param radius      半径范围（单位：米）
+     * @param retBO       消息
+     * @param args        将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     */
+    public static void coordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius, RetBO retBO, Object... args) {
+        if (!isCoordinatesWithinRadius(sourcePoint, targetPoint, radius)) {
+            throw new TakeshiException(retBO, args);
+        }
     }
 
 }

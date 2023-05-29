@@ -14,10 +14,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import org.apache.tika.mime.MimeTypeException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -73,6 +70,20 @@ public class UploadController extends AbstractBaseController {
     public ResponseData<List<AmazonS3VO>> uploadFile(@RequestPart @NotEmpty @Size(min = 1, max = 9) MultipartFile[] files,
                                                      @Parameter(description = "是否同步上传", schema = @Schema(allowableValues = {"false", "true"})) boolean sync) throws InterruptedException, IOException, MimeTypeException {
         return retData(AmazonS3Util.addFile(files, sync));
+    }
+
+    /**
+     * 通过key获取临时文件URL
+     *
+     * @param key S3对象key
+     * @return ResponseData
+     */
+    @SystemSecurity(all = true)
+    @Operation(summary = "通过key获取临时文件URL")
+    @ApiOperationSupport(author = NANASE_TAKESHI)
+    @GetMapping("/presigned-url/{key}")
+    public ResponseData<Object> getPresignedUrl(@PathVariable String key) {
+        return retData(AmazonS3Util.getPresignedUrl(key));
     }
 
 }
