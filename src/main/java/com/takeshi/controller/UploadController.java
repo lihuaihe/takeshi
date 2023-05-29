@@ -42,7 +42,7 @@ public class UploadController extends AbstractBaseController {
      * @throws MimeTypeException    MimeTypeException
      */
     @SystemSecurity(all = true)
-    @Operation(summary = "上传文件")
+    @Operation(summary = "上传文件",description = "对于后台返回的URL，可以通过【^https?:\\/\\/[^\\/]+\\/([^?]+)】正则来提取URL中的key")
     @ApiOperationSupport(author = NANASE_TAKESHI)
     @PostMapping(value = "/file", consumes = "multipart/form-data")
     public ResponseData<AmazonS3VO> uploadFile(@RequestPart MultipartFile file,
