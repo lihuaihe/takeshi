@@ -1,6 +1,7 @@
 package com.takeshi.util;
 
 import cn.hutool.core.img.Img;
+import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
@@ -27,19 +28,23 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.TakeshiException;
-import com.takeshi.pojo.vo.AmazonS3FileInfoVO;
 import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.redisson.api.RLock;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -71,6 +76,11 @@ public final class AmazonS3Util {
     private static final String ORIGINAL_NAME = "Original-Name";
     private static final String EXTENSION_NAME = "Extension-Name";
     private static final String CREATE_TIME = "Create-Time";
+    private static final String THUMBNAIL_KEY = "Thumbnail-Key";
+
+    private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
+    private static final String S3_CONTENT_TYPE = "X-NT-ContentType";
+    private static final String S3_THUMBNAIL = "X-NT-thumbnail";
 
     private static String BUCKET_NAME;
     // 预签名URL的过期时间
@@ -162,10 +172,10 @@ public final class AmazonS3Util {
      * @param quality 压缩比例，必须为0~1
      * @return S3文件访问URL
      */
-    public static AmazonS3VO addCompressImg(File file, float quality) {
+    public static AmazonS3VO uploadCompressImg(File file, float quality) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Img.from(file).setQuality(quality).write(byteArrayOutputStream);
-        return addFile(FileUtil.readBytes(file), file.getName());
+        return uploadData(FileUtil.readBytes(file), file.getName());
     }
 
     /**
@@ -174,8 +184,8 @@ public final class AmazonS3Util {
      * @param file 要上传的文件
      * @return S3文件访问URL
      */
-    public static AmazonS3VO addFile(File file) {
-        return addFile(file, false);
+    public static AmazonS3VO uploadFile(File file) {
+        return uploadData(FileUtil.readBytes(file), file.getName());
     }
 
     /**
@@ -185,92 +195,20 @@ public final class AmazonS3Util {
      * @return S3文件访问URL
      */
     @SneakyThrows
-    public static AmazonS3VO addFile(MultipartFile multipartFile) {
-        return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename());
-    }
-
-    /**
-     * 上传文件，自动根据不同文件类型创建不同目录存放文件
-     *
-     * @param file 要上传的文件
-     * @param sync 是否等待传输完成再返回URL
-     * @return S3文件访问URL
-     */
-    public static AmazonS3VO addFile(File file, boolean sync) {
-        return addFile(FileUtil.readBytes(file), file.getName(), sync);
-    }
-
-    /**
-     * 上传文件，自动根据不同文件类型创建不同目录存放文件
-     *
-     * @param multipartFile 要上传的文件
-     * @param sync          是否等待传输完成再返回URL
-     * @return S3文件访问URL
-     */
-    @SneakyThrows
-    public static AmazonS3VO addFile(MultipartFile multipartFile, boolean sync) {
-        return addFile(multipartFile.getBytes(), multipartFile.getOriginalFilename(), sync);
-    }
-
-    /**
-     * 上传文件，通过文件流上传，默认使用异步上传
-     *
-     * @param data     要上传的文件字节数组
-     * @param fileName 完整的文件名
-     * @return S3文件访问URL
-     */
-    public static AmazonS3VO addFile(byte[] data, String fileName) {
-        return addFile(data, fileName, false);
-    }
-
-    /**
-     * 上传文件，自动根据不同文件类型创建不同目录存放文件
-     *
-     * @param data     要上传的文件字节数组
-     * @param fileName 完整的文件名
-     * @param sync     是否等待传输完成再返回URL
-     * @return S3文件访问URL
-     */
-    @SneakyThrows
-    public static AmazonS3VO addFile(byte[] data, String fileName, boolean sync) {
-        try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
-            String mediaType = getMediaType(tikaInputStream, fileName);
-            String extension = getMimeType(mediaType).getExtension();
-            if (StrUtil.isBlank(extension)) {
-                throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
-            }
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(tikaInputStream.getLength());
-            metadata.setContentType(mediaType);
-            // 添加用户自定义元数据
-            String mainName = FileNameUtil.mainName(fileName);
-            metadata.addUserMetadata(ORIGINAL_NAME, mainName);
-            metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
-            metadata.addUserMetadata(EXTENSION_NAME, extension);
-            String fileObjKey = getFileObjKey(mainName, extension);
-            PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
-            // TransferManager 异步处理所有传输,所以这个调用立即返回
-            Upload upload = transferManager.upload(putObjectRequest);
-            if (sync) {
-                // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
-                upload.waitForCompletion();
-            }
-            URL url = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, fileObjKey, Date.from(Instant.now().plus(EXPIRATION_TIME)));
-            return new AmazonS3VO(fileObjKey, url);
-        }
+    public static AmazonS3VO uploadFile(MultipartFile multipartFile) {
+        return uploadData(multipartFile.getBytes(), multipartFile.getOriginalFilename());
     }
 
     /**
      * 上传多个文件
      *
      * @param multipartFiles 要上传的多文件数组
-     * @param sync           是否等待传输完成再返回URL
      * @return 多个S3文件访问URL
      */
-    public static List<AmazonS3VO> addFile(MultipartFile[] multipartFiles, boolean sync) {
+    public static List<AmazonS3VO> uploadFile(MultipartFile[] multipartFiles) {
         ArrayList<AmazonS3VO> list = new ArrayList<>();
         for (MultipartFile item : multipartFiles) {
-            list.add(addFile(item, sync));
+            list.add(uploadFile(item));
         }
         return list;
     }
@@ -281,10 +219,10 @@ public final class AmazonS3Util {
      * @param files 要上传的多文件数组
      * @return 多个S3文件访问URL
      */
-    public static List<AmazonS3VO> addFileList(File[] files) {
+    public static List<AmazonS3VO> uploadFile(File[] files) {
         ArrayList<AmazonS3VO> list = new ArrayList<>();
         for (File file : files) {
-            list.add(addFile(file));
+            list.add(uploadFile(file));
         }
         return list;
     }
@@ -306,6 +244,87 @@ public final class AmazonS3Util {
      */
     public static void download(String key, File outFile) {
         transferManager.download(BUCKET_NAME, key, outFile);
+    }
+
+    /**
+     * 提取视频/GIF第一帧缩略图
+     *
+     * @param tikaInputStream 视频/GIF文件流
+     * @param mediaType       mediaType
+     * @return BufferedImage
+     */
+    @SneakyThrows
+    public static BufferedImage extractVideoThumbnail(TikaInputStream tikaInputStream, MediaType mediaType) {
+        try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
+            if ("video".equals(mediaType.getType()) || "gif".equals(mediaType.getSubtype())) {
+                // 是视频或GIF
+                FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(tikaInputStream);
+                frameGrabber.start();
+                Frame frame = frameGrabber.grabImage();
+                // 提取第一帧作为封面
+                BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                frameGrabber.stop();
+                return bufferedImage;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * 上传文件，自动根据不同文件类型创建不同目录存放文件
+     *
+     * @param data     要上传的文件字节数组
+     * @param fileName 完整的文件名
+     * @return S3文件Key
+     */
+    @SneakyThrows
+    public static AmazonS3VO uploadData(byte[] data, String fileName) {
+        try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
+            MediaType mediaType = getMediaType(tikaInputStream, fileName);
+            String contentType = mediaType.toString();
+            String extension = getMimeType(contentType).getExtension();
+            if (StrUtil.isBlank(extension)) {
+                throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
+            }
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(tikaInputStream.getLength());
+            metadata.setContentType(contentType);
+            // 添加用户自定义元数据
+            String mainName = FileNameUtil.mainName(fileName);
+            metadata.addUserMetadata(ORIGINAL_NAME, mainName);
+            metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
+            metadata.addUserMetadata(EXTENSION_NAME, extension);
+
+            Upload thumbnailUpload = null;
+            BufferedImage bufferedImage = extractVideoThumbnail(tikaInputStream, mediaType);
+            if (ObjUtil.isNotNull(bufferedImage)) {
+                try (TikaInputStream thumbnailTikaInputStream = TikaInputStream.get(ImgUtil.toBytes(bufferedImage, ImgUtil.IMAGE_TYPE_JPG))) {
+                    ObjectMetadata thumbnailMetadata = new ObjectMetadata();
+                    thumbnailMetadata.setContentLength(thumbnailTikaInputStream.getLength());
+                    thumbnailMetadata.setContentType(MediaType.image(ImgUtil.IMAGE_TYPE_JPG).toString());
+                    // 添加用户自定义元数据
+                    thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
+                    thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
+                    thumbnailMetadata.addUserMetadata(EXTENSION_NAME, "." + ImgUtil.IMAGE_TYPE_JPG);
+                    String thumbnailObjKey = getThumbnailObjKey(mainName);
+                    // 添加视频/GIF封面图缩略图的S3 key
+                    metadata.addUserMetadata(THUMBNAIL_KEY, thumbnailObjKey);
+                    PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
+                    thumbnailUpload = transferManager.upload(putObjectRequest);
+                }
+            }
+            String fileObjKey = getFileObjKey(mainName, extension);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
+            // TransferManager 异步处理所有传输,所以这个调用立即返回
+            Upload upload = transferManager.upload(putObjectRequest);
+            // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
+            if (ObjUtil.isNotNull(thumbnailUpload)) {
+                thumbnailUpload.waitForUploadResult();
+            }
+            upload.waitForCompletion();
+            return new AmazonS3VO(fileObjKey, getPresignedUrl(fileObjKey));
+        }
     }
 
     /**
@@ -332,25 +351,41 @@ public final class AmazonS3Util {
     /**
      * 返回用于访问 Amazon S3 资源的预签名 URL
      *
-     * @param key      S3对象的键
+     * @param fileKey  S3对象的键
      * @param duration 预签名 URL 将过期的时间
      * @return URL
      */
-    public static URL getPresignedUrl(String key, Duration duration) {
+    public static URL getPresignedUrl(String fileKey, Duration duration) {
+        if (StrUtil.isBlank(fileKey)) {
+            return null;
+        }
         RedisComponent redisComponent = StaticConfig.redisComponent;
-        String redisKey = TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(key, duration);
+        String redisKey = TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(fileKey, duration);
         URL presignedUrl = toUrl(redisComponent.get(redisKey));
         if (ObjUtil.isNull(presignedUrl)) {
-            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(key, duration));
+            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(fileKey, duration));
             try {
                 if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
                     presignedUrl = toUrl(redisComponent.get(redisKey));
                     if (ObjUtil.isNull(presignedUrl)) {
-                        if (doesObjectExist(key)) {
-                            presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)));
-                            // 减掉代码执行时间
-                            redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(3L));
+                        ObjectMetadata objectMetadata = getObjectMetadata(fileKey);
+                        if (ObjUtil.isNull(objectMetadata)) {
+                            return null;
                         }
+                        Date date = Date.from(Instant.now().plus(duration));
+                        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, fileKey)
+                                .withExpiration(date);
+                        generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
+                        generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_TYPE, objectMetadata.getContentType());
+                        String thumbnailKey = objectMetadata.getUserMetaDataOf(THUMBNAIL_KEY);
+                        if (StrUtil.isNotBlank(thumbnailKey)) {
+                            // 如果有视频/GIF封面缩略图
+                            URL thumbnailUrl = transferManager.getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, thumbnailKey, date);
+                            generatePresignedUrlRequest.addRequestParameter(S3_THUMBNAIL, thumbnailUrl.toString());
+                        }
+                        presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest);
+                        // 减掉代码执行时间
+                        redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(7L));
                     }
                 }
             } catch (InterruptedException e) {
@@ -392,31 +427,13 @@ public final class AmazonS3Util {
      * @return ObjectMetadata
      */
     public static ObjectMetadata getObjectMetadata(String key) {
-        return transferManager.getAmazonS3Client().getObjectMetadata(BUCKET_NAME, key);
-    }
-
-    /**
-     * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
-     * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
-     * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
-     *
-     * @param key S3对象的键
-     * @return 封装后的文件对象
-     */
-    @Deprecated
-    public static AmazonS3FileInfoVO getAmazonS3FileInfo(String key) {
         try {
-            if (StrUtil.isBlank(key)) {
+            return transferManager.getAmazonS3Client().getObjectMetadata(BUCKET_NAME, key);
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() == 404) {
                 return null;
             }
-            if (!doesObjectExist(key)) {
-                return null;
-            }
-            URL presignedUrl = getPresignedUrl(key);
-            ObjectMetadata objectMetadata = getObjectMetadata(key);
-            return new AmazonS3FileInfoVO(presignedUrl, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME), objectMetadata.getContentType(), objectMetadata.getUserMetaDataOf(EXTENSION_NAME), objectMetadata.getUserMetaDataOf(CREATE_TIME), objectMetadata.getContentLength());
-        } catch (Exception e) {
-            return null;
+            throw e;
         }
     }
 
@@ -432,10 +449,21 @@ public final class AmazonS3Util {
         return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, extension).toString();
     }
 
-    private static String getMediaType(InputStream stream, String fileName) throws IOException {
+    /**
+     * 获取视频/GIF封面缩略图文件存储的完整路径（Key）
+     *
+     * @param mainName 文件名
+     * @return 完整路径
+     */
+    public static String getThumbnailObjKey(String mainName) {
+        String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
+        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
+    }
+
+    private static MediaType getMediaType(InputStream stream, String fileName) throws IOException {
         Metadata metadata = new Metadata();
         metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, fileName);
-        return MIME_REPOSITORY.detect(stream, metadata).toString();
+        return MIME_REPOSITORY.detect(stream, metadata);
     }
 
     private static MimeType getMimeType(String mediaType) throws MimeTypeException {

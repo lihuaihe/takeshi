@@ -13,7 +13,7 @@ configurations {
 }
 
 group = 'life.725'
-version = '1.0.12.5-SNAPSHOT'
+version = '1.0.12.8-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -106,6 +106,9 @@ dependencies {
     api 'org.redisson:redisson-spring-boot-starter:3.21.0'
     api 'org.xhtmlrenderer:flying-saucer-pdf-itext5:9.1.22'
     api 'org.apache.tika:tika-core:2.7.0'
+    // javacv 和 ffmpeg-platform
+    api 'org.bytedeco:ffmpeg-platform:5.1.2-1.5.8'
+    api 'org.bytedeco:javacv:1.5.8'
     api 'org.locationtech.jts:jts-core:1.19.0'
 
     api 'com.baomidou:mybatis-plus-boot-starter:3.5.3.1'

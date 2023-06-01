@@ -1,5 +1,6 @@
 package com.takeshi.mybatisplus.typehandler;
 
+import cn.hutool.core.util.StrUtil;
 import com.takeshi.util.AmazonS3Util;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -28,17 +29,17 @@ public class AmazonS3TypeHandler extends BaseTypeHandler<String> {
 
     @Override
     public String getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return AmazonS3Util.getPresignedUrl(rs.getString(columnName)).toString();
+        return StrUtil.toStringOrNull(AmazonS3Util.getPresignedUrl(rs.getString(columnName)));
     }
 
     @Override
     public String getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return AmazonS3Util.getPresignedUrl(rs.getString(columnIndex)).toString();
+        return StrUtil.toStringOrNull(AmazonS3Util.getPresignedUrl(rs.getString(columnIndex)));
     }
 
     @Override
     public String getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return AmazonS3Util.getPresignedUrl(cs.getString(columnIndex)).toString();
+        return StrUtil.toStringOrNull(AmazonS3Util.getPresignedUrl(cs.getString(columnIndex)));
     }
 
 }
