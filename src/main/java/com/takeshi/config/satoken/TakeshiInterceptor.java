@@ -30,6 +30,7 @@ import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.Either;
 import com.takeshi.pojo.basic.ResponseData;
+import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
@@ -231,7 +232,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             if (!ipRateLimiter.tryAcquire()) {
                 if (ipRate.isOpenBlacklist()) {
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
-                    StaticConfig.redisComponent.saveMidnight(ipBlacklistKey, Instant.now().toString());
+                    IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(servletPath, Instant.now());
+                    StaticConfig.redisComponent.saveMidnight(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
                 }
                 SaRouter.back(TakeshiCode.RATE_LIMIT);
             }

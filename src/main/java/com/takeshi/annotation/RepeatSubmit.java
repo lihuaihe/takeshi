@@ -46,6 +46,10 @@ public @interface RepeatSubmit {
      */
     String msg() default "";
 
+    // ---------此以上部分可对某个接口进行防重复提交限制---------
+
+    // ---------此以下部分可对takeshi.rate.ip的配置内容进行覆盖---------
+
     /**
      * 可覆盖${takeshi.rate.ip.rate}值
      *
@@ -55,7 +59,8 @@ public @interface RepeatSubmit {
     int ipRate() default 5;
 
     /**
-     * 可覆盖${takeshi.rate.ip.rateInterval}值
+     * 可覆盖${takeshi.rate.ip.rateInterval}值<br/>
+     * ipRateInterval大于0则ipRate，ipRateInterval，ipRateIntervalUnit，ipRateOpenBlacklist都会覆盖takeshi.rate.ip里的值
      *
      * @return int
      */
