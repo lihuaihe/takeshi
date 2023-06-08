@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @Hidden
 @Tag(name = "系统接口")
 @SystemSecurity(all = true)
-public class SystemController extends AbstractBaseController {
+public class SystemController extends AbstractBasicController {
 
     /**
      * 使用公钥加密数据

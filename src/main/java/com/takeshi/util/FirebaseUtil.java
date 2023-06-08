@@ -3,7 +3,6 @@ package com.takeshi.util;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -12,6 +11,7 @@ import com.google.firebase.database.*;
 import com.google.firebase.messaging.*;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.FirebaseCredentials;
+import com.takeshi.constants.TakeshiEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -232,6 +232,20 @@ public final class FirebaseUtil {
         }
 
         /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map, TakeshiEnum<String> clickAction) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, map, clickAction.getValue()));
+        }
+
+        /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens 设备注册令牌的集合
@@ -268,6 +282,20 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map, String clickAction) {
             return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, map, clickAction));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map, TakeshiEnum<String> clickAction) {
+            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, map, clickAction.getValue()));
         }
 
         /**

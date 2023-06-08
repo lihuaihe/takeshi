@@ -14,7 +14,7 @@ import com.takeshi.pojo.bo.RetBO;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public abstract class AbstractBaseController {
+public abstract class AbstractBasicController {
 
     /**
      * 接口开发作者

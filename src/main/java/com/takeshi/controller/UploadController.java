@@ -28,7 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/upload")
 @Tag(name = "上传文件")
-public class UploadController extends AbstractBaseController {
+public class UploadController extends AbstractBasicController {
 
     /**
      * 上传文件
