@@ -206,19 +206,6 @@ public final class FirebaseUtil {
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
-         * @param token 设备的注册令牌
-         * @param title 通知的标题
-         * @param body  通知正文
-         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
-         * @return {@link ApiFuture}
-         */
-        public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, null, map));
-        }
-
-        /**
-         * 通过 Firebase Cloud Messaging 发送Message给指定的token
-         *
          * @param token       设备的注册令牌
          * @param title       通知的标题
          * @param body        通知正文
@@ -227,6 +214,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token 设备的注册令牌
+         * @param title 通知的标题
+         * @param body  通知正文
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, null, map));
         }
 
         /**
@@ -258,19 +258,6 @@ public final class FirebaseUtil {
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
-         * @param tokens 设备注册令牌的集合
-         * @param title  通知的标题
-         * @param body   通知正文
-         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
-         * @return {@link ApiFuture}
-         */
-        public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, null, map));
-        }
-
-        /**
-         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
-         *
          * @param tokens      设备注册令牌的集合
          * @param title       通知的标题
          * @param body        通知正文
@@ -279,6 +266,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param title  通知的标题
+         * @param body   通知正文
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, null, map));
         }
 
         /**
