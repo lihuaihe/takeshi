@@ -34,6 +34,7 @@ import com.takeshi.pojo.vo.GeoPointVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
+import org.apache.tika.Tika;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -69,6 +70,15 @@ public final class TakeshiUtil {
      */
     public static TemplateEngine getTemplateEngine() {
         return Singleton.get(TemplateEngine.class.getName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
+    }
+
+    /**
+     * 获取单例的Tika对象
+     *
+     * @return Tika
+     */
+    public static Tika getTika() {
+        return Singleton.get(Tika.class.getName(), Tika::new);
     }
 
     /**

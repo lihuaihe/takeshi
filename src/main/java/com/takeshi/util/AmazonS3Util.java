@@ -30,13 +30,9 @@ import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
-import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeType;
-import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -47,8 +43,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -93,7 +87,6 @@ public final class AmazonS3Util {
     private static String BUCKET_NAME;
     // 预签名URL的过期时间
     private static Duration EXPIRATION_TIME;
-    private static final MimeTypes MIME_REPOSITORY = TikaConfig.getDefaultConfig().getMimeRepository();
 
     /**
      * 获取到的密钥信息
@@ -174,7 +167,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 上传经过压缩的图片，默认使用异步上传
+     * 上传经过压缩的图片
      *
      * @param file    要上传的图片文件
      * @param quality 压缩比例，必须为0~1
@@ -222,7 +215,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 上传多个文件，上传完成后删除文件
+     * 上传多个文件
      *
      * @param files 要上传的多文件数组
      * @return 多个S3文件访问URL
@@ -250,8 +243,9 @@ public final class AmazonS3Util {
      * @param key     S3对象的键
      * @param outFile 存储的目录文件
      */
+    @SneakyThrows
     public static void download(String key, File outFile) {
-        transferManager.download(BUCKET_NAME, key, outFile);
+        transferManager.download(BUCKET_NAME, key, outFile).waitForCompletion();
     }
 
     /**
@@ -266,15 +260,15 @@ public final class AmazonS3Util {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(data);
              Java2DFrameConverter converter = new Java2DFrameConverter()
         ) {
-            MediaType mediaType = getMediaType(tikaInputStream, fileName);
-            String contentType = mediaType.toString();
-            String extension = getMimeType(contentType).getExtension();
+            String mediaType = TakeshiUtil.getTika().detect(tikaInputStream, fileName);
+            MimeType mimeType = MimeTypes.getDefaultMimeTypes().forName(mediaType);
+            String extension = mimeType.getExtension();
             if (StrUtil.isBlank(extension)) {
                 throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
             }
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(tikaInputStream.getLength());
-            metadata.setContentType(contentType);
+            metadata.setContentType(mediaType);
             // 添加用户自定义元数据
             String mainName = FileNameUtil.mainName(fileName);
             metadata.addUserMetadata(ORIGINAL_NAME, mainName);
@@ -282,11 +276,11 @@ public final class AmazonS3Util {
             metadata.addUserMetadata(EXTENSION_NAME, extension);
 
             Upload thumbnailUpload = null;
-            if ("video".equals(mediaType.getType()) || "gif".equals(mediaType.getSubtype())) {
+            if (mediaType.startsWith("video/") || "image/gif".equals(mediaType)) {
                 // 是视频或GIF
                 FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(tikaInputStream);
                 frameGrabber.start();
-                if ("video".equals(mediaType.getType())) {
+                if (mediaType.startsWith("video/")) {
                     // 获取视频时长
                     metadata.addUserMetadata(LENGTH_IN_TIME, String.valueOf(frameGrabber.getLengthInTime()));
                 }
@@ -419,6 +413,16 @@ public final class AmazonS3Util {
     }
 
     /**
+     * 从 Amazon S3 检索对象
+     *
+     * @param key S3对象的键
+     * @return S3Object
+     */
+    public static S3Object getObject(String key) {
+        return transferManager.getAmazonS3Client().getObject(BUCKET_NAME, key);
+    }
+
+    /**
      * 获取指定 Amazon S3 对象的元数据，而不实际获取对象本身。
      * 这在仅获取对象元数据时很有用，并避免在获取对象数据时浪费带宽。
      * 对象元数据包含内容类型、内容配置等信息，以及可以与 Amazon S3 中的对象相关联的自定义用户元数据
@@ -458,16 +462,6 @@ public final class AmazonS3Util {
     public static String getThumbnailObjKey(String mainName) {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
         return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
-    }
-
-    private static MediaType getMediaType(InputStream stream, String fileName) throws IOException {
-        Metadata metadata = new Metadata();
-        metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, fileName);
-        return MIME_REPOSITORY.detect(stream, metadata);
-    }
-
-    private static MimeType getMimeType(String mediaType) throws MimeTypeException {
-        return MIME_REPOSITORY.forName(mediaType);
     }
 
 }

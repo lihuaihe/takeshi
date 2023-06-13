@@ -1,6 +1,7 @@
 package com.takeshi.jackson;
 
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
+import com.fasterxml.jackson.datatype.jsr310.deser.OffsetTimeDeserializer;
 
 import java.time.format.DateTimeFormatter;
 
@@ -10,7 +11,7 @@ import java.time.format.DateTimeFormatter;
  * @author 七濑武【Nanase Takeshi】
  */
 @JacksonStdImpl
-public class OffsetTimeTakeshiDeserializer extends com.fasterxml.jackson.datatype.jsr310.deser.OffsetTimeDeserializer {
+public class OffsetTimeTakeshiDeserializer extends OffsetTimeDeserializer {
 
     /**
      * 构造函数

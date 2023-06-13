@@ -7,7 +7,6 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microtripit.mandrillapp.lutung.MandrillApi;
 import com.microtripit.mandrillapp.lutung.model.MandrillApiError;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage;
@@ -15,10 +14,12 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.MandrillCredentials;
 import com.takeshi.exception.TakeshiException;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,15 +56,15 @@ public final class MandrillUtil {
     /**
      * 收件人列表
      */
-    private List<MandrillMessage.Recipient> to;
+    private List<MandrillMessage.Recipient> to = new ArrayList<>();
     /**
      * 附件列表
      */
-    private List<MandrillMessage.MessageContent> attachments;
+    private List<MandrillMessage.MessageContent> attachments = new ArrayList<>();
     /**
      * 嵌入的图像列表
      */
-    private List<MandrillMessage.MessageContent> images;
+    private List<MandrillMessage.MessageContent> images = new ArrayList<>();
 
     static {
         if (ObjUtil.isNull(MANDRILL_API)) {
@@ -184,7 +185,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil addRecipient(String email, String name) {
-        this.to = CollUtil.defaultIfEmpty(this.to, new ArrayList<>());
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
         recipient.setEmail(email);
         recipient.setName(name);
@@ -201,7 +201,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil addRecipient(String email, String name, MandrillMessage.Recipient.Type type) {
-        this.to = CollUtil.defaultIfEmpty(this.to, new ArrayList<>());
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
         recipient.setEmail(email);
         recipient.setName(name);
@@ -217,7 +216,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil addRecipient(MandrillMessage.Recipient... recipients) {
-        this.to = CollUtil.defaultIfEmpty(this.to, new ArrayList<>());
         this.to.addAll(Arrays.asList(recipients));
         return this;
     }
@@ -229,7 +227,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil addRecipient(List<MandrillMessage.Recipient> list) {
-        this.to = CollUtil.defaultIfEmpty(this.to, new ArrayList<>());
         this.to.addAll(list);
         return this;
     }
@@ -241,7 +238,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil addAttachment(File... files) {
-        this.attachments = CollUtil.defaultIfEmpty(this.attachments, new ArrayList<>());
         for (File file : files) {
             MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
             messageContent.setType(FileUtil.getMimeType(file.getName()));
@@ -253,24 +249,46 @@ public final class MandrillUtil {
     }
 
     /**
-     * 设置嵌入的图像
+     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true
+     * <br/>
+     * 正文中需要使用 img 标签 src="cid: 名称"
+     * <br/>
+     * 该名称要与下面代码中的 setName 中的值一值
      *
      * @param files 嵌入的图像文件列表
      * @return this
      */
+    @SneakyThrows
     public MandrillUtil addImages(File... files) {
-        this.images = CollUtil.defaultIfEmpty(this.images, new ArrayList<>());
-        StringBuilder stringBuilder = new StringBuilder();
         for (File file : files) {
             MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
-            messageContent.setType(FileUtil.getMimeType(file.getName()));
+            messageContent.setType(TakeshiUtil.getTika().detect(file));
             messageContent.setName(file.getName());
             messageContent.setContent(Base64.encode(file));
             this.images.add(messageContent);
-            stringBuilder.append("<img src='cid:").append(file.getName()).append("' />");
         }
-        this.content += stringBuilder.toString();
-        return this.isHtml(true);
+        return this;
+    }
+
+    /**
+     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true
+     * <br/>
+     * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * 该名称要与下面代码中的 setName 中的值一值
+     *
+     * @param inputStream 嵌入的图像文件流
+     * @param name        cid的名称
+     * @return this
+     */
+    @SneakyThrows
+    public MandrillUtil addImages(InputStream inputStream, String name) {
+        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+        messageContent.setType(TakeshiUtil.getTika().detect(inputStream));
+        messageContent.setName(name);
+        messageContent.setContent(Base64.encode(inputStream));
+        this.images.add(messageContent);
+        return this;
     }
 
     /**
@@ -323,6 +341,13 @@ public final class MandrillUtil {
         this.message.setSubject(this.subject);
         this.message.setFromEmail(this.fromEmail);
         this.message.setFromName(this.fromName);
+        if (CollUtil.isNotEmpty(this.attachments)) {
+            this.message.setAttachments(this.attachments);
+        }
+        if (CollUtil.isNotEmpty(this.images)) {
+            this.message.setImages(this.images);
+            this.isHtml = true;
+        }
         if (this.isHtml) {
             this.message.setHtml(this.content);
             this.message.setInlineCss(true);
@@ -331,12 +356,6 @@ public final class MandrillUtil {
         }
         this.message.setTo(this.to);
         this.message.setPreserveRecipients(true);
-        if (CollUtil.isNotEmpty(this.attachments)) {
-            this.message.setAttachments(this.attachments);
-        }
-        if (CollUtil.isNotEmpty(this.images)) {
-            this.message.setImages(this.images);
-        }
     }
 
 }
