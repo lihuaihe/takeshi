@@ -28,7 +28,6 @@ import org.apache.ibatis.parsing.ParsingException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -84,9 +83,9 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     default <P extends TakeshiPage<V>, V> TakeshiPage<V> selectPojoPage(P page, Wrapper<T> queryWrapper) {
         // TODO 暂时使用这种方法
         Assert.notNull(page.getResultClass(), "error: can not execute. because can not find resultClass of page!");
-        TakeshiPage<Map<String, Object>> of = TakeshiPage.of(page.getCurrent(), page.getSize());
+        TakeshiPage<T> of = TakeshiPage.of(page.getCurrent(), page.getSize());
         of.setOrders(page.orders());
-        return this.selectMapsPage(of, queryWrapper).convert(map -> BeanUtil.toBean(map, page.getResultClass()));
+        return this.selectPage(of, queryWrapper).convert(t -> BeanUtil.toBean(t, page.getResultClass()));
     }
 
     /**
