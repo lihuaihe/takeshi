@@ -74,9 +74,8 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     /**
      * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass
      *
-     * @param page         分页查询条件（可以为 RowBounds.DEFAULT）
-     * @param queryWrapper 实体对象封装操作类（可以为 null）
-     * @param <P>          p
+     * @param page         分页查询条件
+     * @param queryWrapper 实体对象封装操作类
      * @param <V>          V
      * @return TakeshiPage
      */

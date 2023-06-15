@@ -264,7 +264,6 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param page         翻页对象
      * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
-     * @param <P>          p
      * @param <V>          V
      * @return TakeshiPage
      */
