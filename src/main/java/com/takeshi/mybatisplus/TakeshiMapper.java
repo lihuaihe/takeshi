@@ -80,7 +80,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @param <V>          V
      * @return TakeshiPage
      */
-    default <P extends TakeshiPage<V>, V> TakeshiPage<V> selectPojoPage(P page, Wrapper<T> queryWrapper) {
+    default <V> TakeshiPage<V> selectPojoPage(TakeshiPage<V> page, Wrapper<T> queryWrapper) {
         // TODO 暂时使用这种方法
         Assert.notNull(page.getResultClass(), "error: can not execute. because can not find resultClass of page!");
         TakeshiPage<T> of = TakeshiPage.of(page.getCurrent(), page.getSize());

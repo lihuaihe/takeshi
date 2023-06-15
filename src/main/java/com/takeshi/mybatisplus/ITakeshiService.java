@@ -268,7 +268,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param <V>          V
      * @return TakeshiPage
      */
-    default <P extends TakeshiPage<V>, V> TakeshiPage<V> selectPojoPage(P page, Wrapper<T> queryWrapper) {
+    default <V> TakeshiPage<V> selectPojoPage(TakeshiPage<V> page, Wrapper<T> queryWrapper) {
         return this.getBaseMapper().selectPojoPage(page, queryWrapper);
     }
 
