@@ -47,13 +47,13 @@ public class ResponseData<T> implements Serializable {
     /**
      * 数据
      */
-    @Schema(description = "数据")
+    @Schema(description = "数据", nullable = true)
     private T data;
 
     /**
      * 附加数据
      */
-    @Schema(description = "附加数据")
+    @Schema(description = "附加数据", nullable = true)
     private Object mateData;
 
     /**

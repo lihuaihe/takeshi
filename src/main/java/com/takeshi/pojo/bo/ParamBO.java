@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import com.takeshi.util.GsonUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
@@ -24,31 +25,37 @@ import java.util.Map;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Schema
 public class ParamBO extends AbstractBasicSerializable {
 
     /**
      * URL参数
      */
+    @Schema(description = "URL参数")
     private Map<String, String> urlParam;
 
     /**
      * 上传的文件信息，value里存放文件名+文件大小
      */
+    @Schema(description = "上传的文件信息，value里存放文件名+文件大小")
     private transient Map<String, List<String>> multipartData;
 
     /**
      * 签名需要用到的上传的文件摘要信息
      */
+    @Schema(description = "签名需要用到的上传的文件摘要信息")
     private Map<String, String> multipart;
 
     /**
      * body的JsonObject内容
      */
+    @Schema(description = "body的JsonObject内容")
     private Map<String, Object> bodyObject;
 
     /**
      * body的非JsonObject内容
      */
+    @Schema(description = "body的非JsonObject内容")
     private Object bodyOther;
 
     /**

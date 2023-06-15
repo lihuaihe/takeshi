@@ -4,6 +4,7 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,9 +31,10 @@ public class TakeshiPage<T> extends Page<T> {
     /**
      * 额外的数据
      */
-    @Schema(description = "额外的数据")
+    @Schema(description = "额外的数据", nullable = true)
     private Object metaData;
 
+    @JsonIgnore
     @Schema(description = "泛型类型", hidden = true)
     private transient Class<T> resultClass;
 

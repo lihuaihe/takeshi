@@ -1,6 +1,7 @@
 package com.takeshi.config;
 
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -54,6 +56,25 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
                 .group(ApiVersion.Version.DEFAULT.getDisplay())
                 .pathsToMatch("/**")
+                .addOpenApiCustomizer(openApi -> {
+                    openApi.getComponents().getSchemas().forEach((name, schema) -> {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Schema<?>> properties = schema.getProperties();
+                        if (CollUtil.isNotEmpty(properties)) {
+                            properties.forEach((k, v) -> {
+                                String type = schema.getType();
+                                String format = schema.getFormat();
+                                // Long，BigInteger，BigDecimal
+                                if ((StrUtil.equals(type, "integer") && StrUtil.equals(format, "int64"))
+                                        || (StrUtil.equals(type, "integer") && StrUtil.isBlank(format))
+                                        || (StrUtil.equals(type, "number") && StrUtil.isBlank(format))) {
+                                    schema.setType("string");
+                                    schema.setFormat(null);
+                                }
+                            });
+                        }
+                    });
+                })
                 .addOperationCustomizer((operation, handlerMethod) -> {
                     // 生成通用响应信息
                     ApiResponses apiResponses = operation.getResponses();
