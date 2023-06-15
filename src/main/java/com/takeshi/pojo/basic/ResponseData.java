@@ -1,5 +1,6 @@
 package com.takeshi.pojo.basic;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.bo.RetBO;
@@ -39,6 +40,7 @@ public class ResponseData<T> implements Serializable {
     /**
      * 为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
+    @JsonIgnore
     @Schema(hidden = true)
     private Object[] args;
 
