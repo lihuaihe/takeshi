@@ -62,14 +62,14 @@ public class OpenApiConfig {
                         Map<String, Schema<?>> properties = schema.getProperties();
                         if (CollUtil.isNotEmpty(properties)) {
                             properties.forEach((k, v) -> {
-                                String type = schema.getType();
-                                String format = schema.getFormat();
+                                String type = v.getType();
+                                String format = v.getFormat();
                                 // Long，BigInteger，BigDecimal
                                 if ((StrUtil.equals(type, "integer") && StrUtil.equals(format, "int64"))
                                         || (StrUtil.equals(type, "integer") && StrUtil.isBlank(format))
                                         || (StrUtil.equals(type, "number") && StrUtil.isBlank(format))) {
-                                    schema.setType("string");
-                                    schema.setFormat(null);
+                                    v.setType("string");
+                                    v.setFormat(null);
                                 }
                             });
                         }
