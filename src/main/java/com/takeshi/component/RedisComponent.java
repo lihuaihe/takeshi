@@ -1,6 +1,7 @@
 package com.takeshi.component;
 
 import cn.hutool.core.util.ArrayUtil;
+import com.takeshi.util.GsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.*;
@@ -14,6 +15,7 @@ import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * RedisUtils
@@ -245,6 +247,18 @@ public class RedisComponent {
     }
 
     /**
+     * 读取缓存，JSON字符串转为实体类对象
+     *
+     * @param key       key
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return T
+     */
+    public <T> T get(String key, Class<T> beanClass) {
+        return GsonUtil.fromJson(this.boundValueOps(key).get(), beanClass);
+    }
+
+    /**
      * 获取key的剩余有效时间
      *
      * @param key key
@@ -436,10 +450,26 @@ public class RedisComponent {
      * 哈希 在绑定键处获取整个哈希
      *
      * @param key key
-     * @return map
+     * @return Map
      */
     public Map<String, String> hashEntries(String key) {
         return this.boundHashOps(key).entries();
+    }
+
+    /**
+     * 哈希 在绑定键处获取整个哈希
+     *
+     * @param key       key
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Map
+     */
+    public <T> Map<String, T> hashEntries(String key, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundHashOps(key).entries())
+                .map(m -> m.entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, item -> GsonUtil.fromJson(item.getValue(), beanClass))))
+                .orElse(null);
     }
 
     /**
@@ -451,6 +481,19 @@ public class RedisComponent {
      */
     public String hashGet(String key, String hashKey) {
         return this.boundHashOps(key).get(hashKey);
+    }
+
+    /**
+     * 哈希获取数据
+     *
+     * @param key       key
+     * @param hashKey   hashKey
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return T
+     */
+    public <T> T hashGet(String key, String hashKey, Class<T> beanClass) {
+        return GsonUtil.fromJson(this.boundHashOps(key).get(hashKey), beanClass);
     }
 
     /**
@@ -493,6 +536,22 @@ public class RedisComponent {
      */
     public List<String> listRange(String key, long start, long end) {
         return this.boundListOps(key).range(start, end);
+    }
+
+    /**
+     * list列表获取
+     *
+     * @param key       key
+     * @param start     start
+     * @param end       end
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return 在管道/事务中使用时为空
+     */
+    public <T> List<T> listRange(String key, long start, long end, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundListOps(key).range(start, end))
+                .map(l -> l.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toList()))
+                .orElse(null);
     }
 
     /**
@@ -539,6 +598,20 @@ public class RedisComponent {
      */
     public Set<String> setMembers(String key) {
         return this.boundSetOps(key).members();
+    }
+
+    /**
+     * Set集合获取
+     *
+     * @param key       key
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Set
+     */
+    public <T> Set<T> setMembers(String key, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundSetOps(key).members())
+                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                .orElse(null);
     }
 
     /**
@@ -621,6 +694,22 @@ public class RedisComponent {
     }
 
     /**
+     * 有序集合获取
+     *
+     * @param key       key
+     * @param start     start
+     * @param end       end
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Set
+     */
+    public <T> Set<T> zSetRange(String key, long start, long end, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundZSetOps(key).range(start, end))
+                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                .orElse(null);
+    }
+
+    /**
      * 有序集合删除
      * 使用绑定键从排序集中删除开始和结束之间范围内的元素
      *
@@ -660,6 +749,22 @@ public class RedisComponent {
     /**
      * 有序集合获取
      *
+     * @param key       key
+     * @param start     start
+     * @param end       end
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Set
+     */
+    public <T> Set<T> zSetReverseRange(String key, long start, long end, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundZSetOps(key).reverseRange(start, end))
+                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                .orElse(null);
+    }
+
+    /**
+     * 有序集合获取
+     *
      * @param key key
      * @param min min
      * @param max max
@@ -667,6 +772,22 @@ public class RedisComponent {
      */
     public Set<String> zSetRangeByScore(String key, double min, double max) {
         return this.boundZSetOps(key).rangeByScore(min, max);
+    }
+
+    /**
+     * 有序集合获取
+     *
+     * @param key       key
+     * @param min       min
+     * @param max       max
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Set
+     */
+    public <T> Set<T> zSetRangeByScore(String key, double min, double max, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundZSetOps(key).rangeByScore(min, max))
+                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                .orElse(null);
     }
 
     /**
@@ -692,6 +813,22 @@ public class RedisComponent {
      */
     public Set<String> zSetReverseRangeByScore(String key, double min, double max) {
         return this.boundZSetOps(key).reverseRangeByScore(min, max);
+    }
+
+    /**
+     * 有序集合获取
+     *
+     * @param key       key
+     * @param min       min
+     * @param max       max
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return Set
+     */
+    public <T> Set<T> zSetReverseRangeByScore(String key, double min, double max, Class<T> beanClass) {
+        return Optional.ofNullable(this.boundZSetOps(key).reverseRangeByScore(min, max))
+                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                .orElse(null);
     }
 
     /**
