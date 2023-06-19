@@ -356,8 +356,10 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      */
     default boolean updateColumnById(Serializable id, SFunction<T, ?> column, Serializable val) {
         TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
-        LambdaUpdateWrapper<T> updateWrapper = new UpdateWrapper<T>().eq(tableInfo.getKeyColumn(), id).lambda().set(column, val);
-        return SqlHelper.retBool(this.update(null, updateWrapper));
+        T instance = tableInfo.newInstance();
+        tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), id);
+        tableInfo.setPropertyValue(instance, TakeshiUtil.getPropertyName(column), val);
+        return SqlHelper.retBool(this.updateById(instance));
     }
 
     /**

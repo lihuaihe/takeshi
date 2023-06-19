@@ -3,6 +3,7 @@ package com.takeshi.util;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -168,12 +169,15 @@ public final class MandrillUtil {
     /**
      * 通过HTML模板与绑定参数融合后返回字符串，设置正文，需要将模版文件放在resources的默认模版路径template目录
      *
-     * @param templateName 模板名称（不需要文件后缀名）
+     * @param templateName 模板文件名
      * @param bindingMap   绑定的参数，此Map中的参数会替换模板中的变量
      * @return this
      */
     public MandrillUtil generateHtmlContent(String templateName, Map<?, ?> bindingMap) {
-        String htmlStr = TakeshiUtil.getTemplateEngine().getTemplate(templateName + ".html").render(bindingMap);
+        if (StrUtil.isBlank(FileNameUtil.extName(templateName))) {
+            templateName += ".html";
+        }
+        String htmlStr = TakeshiUtil.getTemplateEngine().getTemplate(templateName).render(bindingMap);
         return this.content(htmlStr, true);
     }
 
