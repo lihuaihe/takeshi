@@ -1,6 +1,7 @@
 package com.takeshi.constants;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import com.takeshi.config.StaticConfig;
 
 /**
@@ -32,17 +33,23 @@ public interface EnvValueFormat {
     Object getProdValue();
 
     /**
-     * 获取当前环境的值
+     * 获取当前环境的值，如果是String则可以格式化文本
      *
+     * @param params params
      * @return Object
      */
-    default Object getEnvValue() {
-        return switch (StaticConfig.active) {
+    default Object getEnvValue(Object... params) {
+        Object envValue = switch (StaticConfig.active) {
             case "dev" -> this.getDevValue();
             case "test" -> this.getTestValue();
             case "prod" -> this.getProdValue();
             default -> null;
         };
+        if (envValue instanceof CharSequence template && StrUtil.isNotBlank(template)) {
+            return StrUtil.format(template, params);
+        } else {
+            return envValue;
+        }
     }
 
     /**

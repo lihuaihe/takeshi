@@ -64,7 +64,7 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获取单例的模版引擎
+     * 获取单例的模版引擎，默认模版路径在template目录下
      *
      * @return TemplateEngine
      */
