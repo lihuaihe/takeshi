@@ -2,7 +2,6 @@ package com.takeshi.controller;
 
 import cn.hutool.crypto.asymmetric.KeyType;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.config.StaticConfig;
@@ -57,7 +56,7 @@ public class SystemController extends AbstractBasicController {
     public ResponseData<Object> decrypt(@RequestBody Object object) throws JsonProcessingException {
         String data = GsonUtil.toJson(object);
         log.info("SystemController.decrypt --> data: {}", data);
-        return retData(new ObjectMapper().readTree(StaticConfig.rsa.decryptStr(data, KeyType.PublicKey)));
+        return retData(StaticConfig.objectMapper.readTree(StaticConfig.rsa.decryptStr(data, KeyType.PublicKey)));
     }
 
     /**

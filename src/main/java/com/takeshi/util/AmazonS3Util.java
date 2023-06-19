@@ -20,7 +20,6 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.component.RedisComponent;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
@@ -91,10 +90,6 @@ public final class AmazonS3Util {
     /**
      * 获取到的密钥信息
      */
-    public static volatile Object SECRET;
-    /**
-     * 获取到的密钥信息
-     */
     public static volatile JsonNode JSON_NODE;
 
     /**
@@ -119,8 +114,7 @@ public final class AmazonS3Util {
                         getSecretValueRequest.setSecretId(awsSecrets.getSecretId());
                         GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                         String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                        SECRET = GsonUtil.fromJson(secret, awsSecrets.getSecretClass());
-                        JSON_NODE = new ObjectMapper().readValue(secret, JsonNode.class);
+                        JSON_NODE = StaticConfig.objectMapper.readValue(secret, JsonNode.class);
                         String accessKey = JSON_NODE.get(awsSecrets.getAccessKeySecrets()).asText();
                         String secretKey = JSON_NODE.get(awsSecrets.getSecretKeySecrets()).asText();
                         // S3
@@ -155,6 +149,17 @@ public final class AmazonS3Util {
     }
 
     private AmazonS3Util() {
+    }
+
+    /**
+     * 根据指定转化的类，获取密钥信息
+     *
+     * @param beanClass beanClass
+     * @param <T>       T
+     * @return T
+     */
+    public static <T> T getSecret(Class<T> beanClass) {
+        return StaticConfig.objectMapper.convertValue(JSON_NODE, beanClass);
     }
 
     /**

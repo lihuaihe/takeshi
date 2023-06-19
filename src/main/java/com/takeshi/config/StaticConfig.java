@@ -133,6 +133,15 @@ public class StaticConfig {
     }
 
     /**
+     * 是test环境
+     *
+     * @return boolean
+     */
+    public static boolean isTestActive() {
+        return StrUtil.equals("test", StaticConfig.active);
+    }
+
+    /**
      * 是prod环境
      *
      * @return boolean
