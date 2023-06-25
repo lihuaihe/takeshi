@@ -32,7 +32,7 @@ public class ControllerAspect {
     @AfterThrowing
     public Object around(ProceedingJoinPoint proceedingJoinPoint) {
         Object proceed = proceedingJoinPoint.proceed();
-        log.info("响应报文: {}", GsonUtil.toJson(proceed));
+        log.info("Response Message: {}", GsonUtil.toJson(proceed));
         return proceed;
     }
 

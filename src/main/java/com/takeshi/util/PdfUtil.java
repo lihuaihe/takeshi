@@ -128,7 +128,7 @@ public final class PdfUtil {
             try {
                 renderer.getFontResolver().addFont(FONT_FILES + StrUtil.SLASH + item, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
             } catch (DocumentException | IOException e) {
-                log.error("PdfUtil.addFontDirectory --> pdf添加 [" + item + "] 字体文件异常", e);
+                log.error("PdfUtil.addFontDirectory --> pdf add [" + item + "] font file exception", e);
             }
         });
     }

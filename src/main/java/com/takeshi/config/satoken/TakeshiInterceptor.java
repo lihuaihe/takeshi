@@ -122,8 +122,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 String clientIp = TakeshiUtil.getClientIp(request);
                 Object loginId = StpUtil.getLoginIdDefaultNull();
                 Method method = handlerMethod.getMethod();
-                log.info("请求开始, 请求IP: {}, 请求工具: {}, timestamp: {}, nonce: {}, geoPoint: {}", clientIp, userAgent, timestamp, nonce, geoPoint);
-                log.info("请求的用户ID: {}, 请求地址: {}, 请求方法: [{}] {}.{}", loginId, request.getRequestURL(), request.getMethod(), method.getDeclaringClass().getName(), method.getName());
+                log.info("Request Start, Request IP: {}, Request UserAgent: {}, Request Address: {}, Request Method: [{}] {}.{}" +
+                                "\nRequesting UserId: {}, Timestamp: {}, Nonce: {}, GeoPoint: {}",
+                        clientIp, userAgent, request.getRequestURL(), request.getMethod(), method.getDeclaringClass().getName(), method.getName(),
+                        loginId, timestamp, nonce, geoPoint);
 
                 SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                         .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
@@ -149,7 +151,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             } else {
                 str = e.getMessage();
             }
-            log.error("TakeshiInterceptor.preHandle --> 请求URL: " + request.getRequestURL() + ", 接口验证错误: " + str, e);
+            log.error("TakeshiInterceptor.preHandle --> Request URL: " + request.getRequestURL() + ", Interface validation error: " + str, e);
             response.getWriter().write(str);
             return false;
         }
@@ -241,7 +243,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
 
         ParamBO paramBO = this.getParamBO(request);
         String paramBOJsonString = paramBO.toJsonString();
-        log.info("请求参数: {}", paramBOJsonString);
+        log.info("Request Parameters: {}", paramBOJsonString);
 
         if (signVerify) {
             // 校验参数签名，如果body参数是非JsonObject值，则直接将值与其他值直接拼接

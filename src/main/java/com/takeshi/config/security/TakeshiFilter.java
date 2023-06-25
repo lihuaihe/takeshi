@@ -46,7 +46,7 @@ public class TakeshiFilter implements Filter {
             }
             chain.doFilter(request, response);
             stopWatch.stop();
-            log.info("响应结束, 耗时: {} ms", stopWatch.getTotalTimeMillis());
+            log.info("End Of Response, Time Consuming: {} ms", stopWatch.getTotalTimeMillis());
             return;
         }
         chain.doFilter(request, response);

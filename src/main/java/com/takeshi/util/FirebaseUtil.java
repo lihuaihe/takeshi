@@ -53,10 +53,10 @@ public final class FirebaseUtil {
                                     .setDatabaseUrl(databaseUrl)
                                     .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
-                            log.info("FirebaseUtil.static --> FirebaseApp 初始化成功");
+                            log.info("FirebaseUtil.static --> FirebaseApp Initialization successful");
                         }
                     } catch (IOException e) {
-                        log.error("FirebaseUtil.static --> FirebaseApp 初始化失败, e: ", e);
+                        log.error("FirebaseUtil.static --> FirebaseApp initialization failed, e: ", e);
                     }
                 }
             }

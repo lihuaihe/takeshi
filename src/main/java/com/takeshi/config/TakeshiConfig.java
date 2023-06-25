@@ -18,6 +18,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -32,7 +33,8 @@ import java.util.Locale;
 /**
  * Bean配置<br/>
  * {@link EnableCaching} 启用 Spring 的注解驱动缓存管理功能<br/>
- * {@link EnableRetry} 启用 Spring 的重试功能
+ * {@link EnableRetry} 启用 Spring 的重试功能<br/>
+ * {@link EnableScheduling} 启用定时任务功能
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -40,6 +42,7 @@ import java.util.Locale;
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableCaching
 @EnableRetry
+@EnableScheduling
 @RequiredArgsConstructor
 public class TakeshiConfig {
 

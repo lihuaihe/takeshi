@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class RedisComponent {
 
     private final StringRedisTemplate stringRedisTemplate;
-
     private final RedissonClient redissonClient;
 
     /*-------------------------------------------StringRedisTemplate start--------------------------------------------*/
