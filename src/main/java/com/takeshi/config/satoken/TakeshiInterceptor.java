@@ -122,10 +122,29 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 String clientIp = TakeshiUtil.getClientIp(request);
                 Object loginId = StpUtil.getLoginIdDefaultNull();
                 Method method = handlerMethod.getMethod();
-                log.info("Request Start, Request IP: {}, Request UserAgent: {}, Request Address: {}, Request Method: [{}] {}.{}" +
-                                "\nRequesting UserId: {}, Timestamp: {}, Nonce: {}, GeoPoint: {}",
-                        clientIp, userAgent, request.getRequestURL(), request.getMethod(), method.getDeclaringClass().getName(), method.getName(),
-                        loginId, timestamp, nonce, geoPoint);
+
+                StringBuilder strBuilder = new StringBuilder();
+                if (StrUtil.isNotBlank(clientIp)) {
+                    strBuilder.append("Request IP: ").append(clientIp).append(StrUtil.LF);
+                }
+                if (StrUtil.isNotBlank(userAgent)) {
+                    strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
+                }
+                strBuilder.append("Request Address: ").append(request.getRequestURL()).append(StrUtil.LF);
+                strBuilder.append("Request Method: ").append(StrUtil.BRACKET_START).append(request.getMethod()).append(StrUtil.BRACKET_END).append(method.getDeclaringClass().getName()).append(method.getName()).append(StrUtil.LF);
+                if (ObjUtil.isNotNull(loginId)) {
+                    strBuilder.append("Requesting UserId: ").append(loginId).append(StrUtil.LF);
+                }
+                if (StrUtil.isNotBlank(timestamp)) {
+                    strBuilder.append("Timestamp: ").append(timestamp).append(StrUtil.LF);
+                }
+                if (StrUtil.isNotBlank(nonce)) {
+                    strBuilder.append("Nonce: ").append(nonce).append(StrUtil.LF);
+                }
+                if (StrUtil.isNotBlank(geoPoint)) {
+                    strBuilder.append("GeoPoint: ").append(geoPoint).append(StrUtil.LF);
+                }
+                log.info("TakeshiInterceptor.preHandle --> Request Start: {}", StrUtil.removeSuffix(strBuilder, StrUtil.LF));
 
                 SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                         .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
