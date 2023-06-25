@@ -1,6 +1,7 @@
 package com.takeshi.config.security;
 
 import cn.hutool.core.date.StopWatch;
+import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.util.IdUtil;
 import com.takeshi.constants.TakeshiConstants;
 import jakarta.servlet.*;
@@ -10,14 +11,11 @@ import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import java.io.IOException;
-import java.util.Arrays;
-
-import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
+import java.util.stream.Stream;
 
 /**
  * TakeshiFilter
@@ -29,9 +27,9 @@ public class TakeshiFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
-                && Arrays.stream(TakeshiConstants.EXCLUDE_SWAGGER_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
+                && Stream.of(TakeshiConstants.EXCLUDE_SWAGGER_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
             String uuid = IdUtil.fastSimpleUUID();
             // 填充traceId
             MDC.put(TakeshiConstants.TRACE_ID_KEY, uuid);

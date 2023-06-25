@@ -1,6 +1,7 @@
 package com.takeshi.config;
 
 import cn.hutool.core.thread.ThreadUtil;
+import com.takeshi.util.TakeshiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -63,7 +64,7 @@ public class ThreadPoolConfig {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 super.afterExecute(r, t);
-                log.error(t.getMessage(), t);
+                TakeshiThreadUtil.printException(r, t);
             }
         };
     }
