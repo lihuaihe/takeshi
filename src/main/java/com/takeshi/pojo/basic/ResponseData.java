@@ -54,7 +54,7 @@ public class ResponseData<T> implements Serializable {
      * 附加数据
      */
     @Schema(description = "附加数据", nullable = true)
-    private Object mateData;
+    private Object metaData;
 
     /**
      * 返回时间，毫秒级别
