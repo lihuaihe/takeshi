@@ -12,8 +12,6 @@ import java.util.concurrent.*;
 @Slf4j
 public final class TakeshiThreadUtil {
 
-    private static final long TIMEOUT = 120L;
-
     /**
      * 构造函数
      */
@@ -41,7 +39,7 @@ public final class TakeshiThreadUtil {
      *
      * @param pool pool
      */
-    public static void shutdownAndAwaitTermination(ExecutorService pool) {
+    public static void shutdownAndAwaitTermination(ExecutorService pool, long timeout) {
         if (pool != null && !pool.isShutdown()) {
 //            if (pool instanceof ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
 //                BlockingQueue<Runnable> queue = scheduledThreadPoolExecutor.getQueue();
@@ -55,9 +53,9 @@ public final class TakeshiThreadUtil {
 //            }
             pool.shutdown();
             try {
-                if (!pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS)) {
+                if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
                     pool.shutdownNow();
-                    if (!pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS)) {
+                    if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
                         log.info("Pool did not terminate");
                     }
                 }

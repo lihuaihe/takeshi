@@ -1,6 +1,7 @@
 package com.takeshi.component;
 
 import cn.hutool.core.util.ObjUtil;
+import com.takeshi.config.StaticConfig;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +33,12 @@ public class ShutdownManager {
     }
 
     /**
-     * 停止异步执行任务
+     * 停止定时任务
      */
     private void shutdownAsyncManager() {
         try {
             log.info("Close the background task in the task thread pool...");
-            TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService);
+            TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
             if (ObjUtil.isNotNull(redissonClient)) {
                 log.info("Close the Redisson client connection...");
                 redissonClient.shutdown();
