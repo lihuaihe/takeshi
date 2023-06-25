@@ -1,8 +1,11 @@
 package com.takeshi.config;
 
 import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.IdUtil;
+import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.util.TakeshiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Bean;
@@ -62,9 +65,16 @@ public class ThreadPoolConfig {
                 ThreadUtil.newNamedThreadFactory("schedule-" + StaticConfig.serverPort + "-exec-", true),
                 new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
+            protected void beforeExecute(Thread t, Runnable r) {
+                MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastUUID());
+                super.beforeExecute(t, r);
+            }
+
+            @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 super.afterExecute(r, t);
                 TakeshiThreadUtil.printException(r, t);
+                MDC.remove(TakeshiConstants.TRACE_ID_KEY);
             }
         };
     }
