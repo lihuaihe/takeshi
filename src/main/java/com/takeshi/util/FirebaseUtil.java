@@ -111,7 +111,7 @@ public final class FirebaseUtil {
          * @param pathString 子路径
          * @return 数据库位置的数据
          */
-        public static DataSnapshot runTransactionOfSelfChange(String pathString) {
+        public static DataSnapshot increment(String pathString) {
             return runTransactionOfSelfChange(pathString, 1L);
         }
 
@@ -126,10 +126,21 @@ public final class FirebaseUtil {
         }
 
         /**
-         * 对路径下的值自增delta
+         * 清空初始化该路径下的值，也就是将值设置为0
          *
          * @param pathString 子路径
-         * @param delta      值
+         * @return 数据库位置的数据
+         */
+        public static DataSnapshot initialize(String pathString) {
+            return runTransactionOfSelfChange(pathString, 0L);
+        }
+
+        /**
+         * <p>对路径下的值自增delta</p>
+         * <p style="color:yellow;">注意：如果传了0，则直接将值设置为0，不进行加减</p>
+         *
+         * @param pathString 子路径
+         * @param delta      值，如果传了0，则直接将值设置为0，不进行加减
          * @return 数据库位置的数据
          */
         public static DataSnapshot runTransactionOfSelfChange(String pathString, long delta) {
@@ -138,8 +149,8 @@ public final class FirebaseUtil {
                     .runTransaction(new Transaction.Handler() {
                         @Override
                         public Transaction.Result doTransaction(MutableData currentData) {
-                            Long currentValue = ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L);
-                            currentData.setValue(currentValue + delta);
+                            Long finalValue = 0L == delta ? delta : ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L) + delta;
+                            currentData.setValue(finalValue);
                             return Transaction.success(currentData);
                         }
 
