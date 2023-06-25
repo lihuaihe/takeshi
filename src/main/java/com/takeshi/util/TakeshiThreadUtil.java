@@ -37,7 +37,8 @@ public final class TakeshiThreadUtil {
      * 如果仍然超時，則強制退出.
      * 另对在shutdown时线程本身被调用中断做了处理.
      *
-     * @param pool pool
+     * @param pool    pool
+     * @param timeout 定时任务关闭的最大超时时间（单位：秒）
      */
     public static void shutdownAndAwaitTermination(ExecutorService pool, long timeout) {
         if (pool != null && !pool.isShutdown()) {
