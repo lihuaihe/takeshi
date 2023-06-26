@@ -144,7 +144,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 if (StrUtil.isNotBlank(geoPoint)) {
                     strBuilder.append("GeoPoint: ").append(geoPoint).append(StrUtil.LF);
                 }
-                log.info("TakeshiInterceptor.preHandle --> Request Start: {}", StrUtil.removeSuffix(strBuilder, StrUtil.LF));
+                log.info("TakeshiInterceptor.preHandle --> Request Start: \n{}", StrUtil.removeSuffix(strBuilder, StrUtil.LF));
 
                 SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                         .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));

@@ -9,6 +9,7 @@ import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 /**
@@ -88,6 +90,12 @@ public class GlobalExceptionHandler {
         if (rootCause instanceof IllegalArgumentException) {
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> IllegalArgumentException: ", rootCause);
             return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
+        }
+        if (rootCause instanceof InvalidFormatException invalidFormatException && invalidFormatException.getTargetType().isEnum()) {
+            // 传递的值和接收的枚举类型值不匹配
+            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> InvalidFormatException: ", rootCause);
+            Object[] enumConstants = invalidFormatException.getTargetType().getEnumConstants();
+            return ResponseData.retData(TakeshiCode.INVALID_VALUE, invalidFormatException.getValue(), Arrays.toString(enumConstants));
         }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);

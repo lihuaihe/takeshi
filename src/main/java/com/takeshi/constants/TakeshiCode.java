@@ -65,6 +65,11 @@ public interface TakeshiCode {
     RetBO REPEAT_SUBMIT = new RetBO(1005, "repeatSubmit.message");
 
     /**
+     * 传递的值和接收的值不匹配
+     */
+    RetBO INVALID_VALUE = new RetBO(1006, "invalidValue.message");
+
+    /**
      * 验证码过期/不存在
      */
     RetBO VERIFICATION_CODE_EXPIRE = new RetBO(2000, "verificationCodeExpire.message");
