@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
             // 传递的值和接收的枚举类型值不匹配
             log.error("GlobalExceptionHandler.runtimeExceptionHandler --> InvalidFormatException: ", rootCause);
             Object[] enumConstants = invalidFormatException.getTargetType().getEnumConstants();
-            return ResponseData.retData(TakeshiCode.INVALID_VALUE, null, invalidFormatException.getValue(), Arrays.toString(enumConstants));
+            return ResponseData.retData(TakeshiCode.INVALID_VALUE, new Object[]{invalidFormatException.getValue(), Arrays.toString(enumConstants)});
         }
         if (rootCause instanceof TakeshiException) {
             log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
