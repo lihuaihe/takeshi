@@ -149,7 +149,7 @@ public final class FirebaseUtil {
                     .runTransaction(new Transaction.Handler() {
                         @Override
                         public Transaction.Result doTransaction(MutableData currentData) {
-                            Long finalValue = 0L == delta ? delta : ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L) + delta;
+                            Long finalValue = (0L == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L) + delta;
                             currentData.setValue(finalValue);
                             return Transaction.success(currentData);
                         }

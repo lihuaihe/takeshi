@@ -4,6 +4,7 @@ import cn.hutool.core.img.Img;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.net.URLEncodeUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -58,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  * <dependency>
  * <groupId>com.amazonaws</groupId>
  * <artifactId>aws-java-sdk-s3</artifactId>
- * <version>1.12.125</version>
+ * <version>1.12.496</version>
  * </dependency>
  * }</pre>
  *
@@ -95,7 +96,7 @@ public final class AmazonS3Util {
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
      */
-    private static volatile TransferManager transferManager;
+    public static volatile TransferManager transferManager;
 
     static {
         if (ObjUtil.isNull(transferManager)) {
@@ -262,9 +263,7 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static AmazonS3VO uploadData(byte[] data, String fileName) {
-        try (TikaInputStream tikaInputStream = TikaInputStream.get(data);
-             Java2DFrameConverter converter = new Java2DFrameConverter()
-        ) {
+        try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
             String mediaType = TakeshiUtil.getTika().detect(tikaInputStream, fileName);
             MimeType mimeType = MimeTypes.getDefaultMimeTypes().forName(mediaType);
             String extension = mimeType.getExtension();
@@ -275,7 +274,7 @@ public final class AmazonS3Util {
             metadata.setContentLength(tikaInputStream.getLength());
             metadata.setContentType(mediaType);
             // 添加用户自定义元数据
-            String mainName = FileNameUtil.mainName(fileName);
+            String mainName = URLEncodeUtil.encode(FileNameUtil.mainName(fileName));
             metadata.addUserMetadata(ORIGINAL_NAME, mainName);
             metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
             metadata.addUserMetadata(EXTENSION_NAME, extension);
@@ -283,29 +282,31 @@ public final class AmazonS3Util {
             Upload thumbnailUpload = null;
             if (mediaType.startsWith("video/") || "image/gif".equals(mediaType)) {
                 // 是视频或GIF
-                FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(tikaInputStream);
-                frameGrabber.start();
-                if (mediaType.startsWith("video/")) {
-                    // 获取视频时长
-                    metadata.addUserMetadata(LENGTH_IN_TIME, String.valueOf(frameGrabber.getLengthInTime()));
-                }
-                Frame frame = frameGrabber.grabImage();
-                // 提取第一帧作为封面
-                BufferedImage bufferedImage = converter.getBufferedImage(frame);
-                frameGrabber.stop();
-                try (TikaInputStream thumbnailTikaInputStream = TikaInputStream.get(ImgUtil.toBytes(bufferedImage, ImgUtil.IMAGE_TYPE_JPG))) {
-                    ObjectMetadata thumbnailMetadata = new ObjectMetadata();
-                    thumbnailMetadata.setContentLength(thumbnailTikaInputStream.getLength());
-                    thumbnailMetadata.setContentType(MediaType.image(ImgUtil.IMAGE_TYPE_JPG).toString());
-                    // 添加用户自定义元数据
-                    thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
-                    thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
-                    thumbnailMetadata.addUserMetadata(EXTENSION_NAME, "." + ImgUtil.IMAGE_TYPE_JPG);
-                    String thumbnailObjKey = getThumbnailObjKey(mainName);
-                    // 添加视频/GIF封面图缩略图的S3 key
-                    metadata.addUserMetadata(COVER_THUMBNAIL, thumbnailObjKey);
-                    PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
-                    thumbnailUpload = transferManager.upload(putObjectRequest);
+                try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
+                    FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(tikaInputStream);
+                    frameGrabber.start();
+                    if (mediaType.startsWith("video/")) {
+                        // 获取视频时长
+                        metadata.addUserMetadata(LENGTH_IN_TIME, String.valueOf(frameGrabber.getLengthInTime()));
+                    }
+                    Frame frame = frameGrabber.grabImage();
+                    // 提取第一帧作为封面
+                    BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                    frameGrabber.stop();
+                    try (TikaInputStream thumbnailTikaInputStream = TikaInputStream.get(ImgUtil.toBytes(bufferedImage, ImgUtil.IMAGE_TYPE_JPG))) {
+                        ObjectMetadata thumbnailMetadata = new ObjectMetadata();
+                        thumbnailMetadata.setContentLength(thumbnailTikaInputStream.getLength());
+                        thumbnailMetadata.setContentType(MediaType.image(ImgUtil.IMAGE_TYPE_JPG).toString());
+                        // 添加用户自定义元数据
+                        thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
+                        thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
+                        thumbnailMetadata.addUserMetadata(EXTENSION_NAME, StrUtil.DOT + ImgUtil.IMAGE_TYPE_JPG);
+                        String thumbnailObjKey = getThumbnailObjKey(mainName);
+                        // 添加视频/GIF封面图缩略图的S3 key
+                        metadata.addUserMetadata(COVER_THUMBNAIL, thumbnailObjKey);
+                        PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
+                        thumbnailUpload = transferManager.upload(putObjectRequest);
+                    }
                 }
             }
 

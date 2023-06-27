@@ -13,7 +13,7 @@ configurations {
 }
 
 group = 'life.725'
-version = '1.0.12.43-SNAPSHOT'
+version = '1.0.12.45-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -117,8 +117,8 @@ dependencies {
 
     api 'com.baomidou:mybatis-plus-boot-starter:3.5.3.1'
     api 'com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.1.0'
-    api 'com.amazonaws:aws-java-sdk-s3:1.12.476'
-    api 'com.amazonaws:aws-java-sdk-secretsmanager:1.12.476'
+    api 'com.amazonaws:aws-java-sdk-s3:1.12.496'
+    api 'com.amazonaws:aws-java-sdk-secretsmanager:1.12.496'
     api 'com.mandrillapp.wrapper.lutung:lutung:0.0.8'
     api 'com.google.firebase:firebase-admin:9.1.1'
     api 'com.google.code.findbugs:annotations:3.0.1'

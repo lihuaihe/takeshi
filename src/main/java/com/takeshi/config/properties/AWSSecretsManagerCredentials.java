@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
-import java.util.Map;
 
 /**
  * AWS密钥管理凭证
@@ -50,11 +49,6 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
      * S3临时URL的有效时间，默认7天
      */
     private Duration expirationTime = Duration.ofDays(7);
-
-    /**
-     * secret字段的Class
-     */
-    private Class<?> secretClass = Map.class;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS s3 密钥ID名称

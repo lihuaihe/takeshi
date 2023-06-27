@@ -1,7 +1,9 @@
 package com.takeshi.component;
 
 import cn.hutool.core.util.ObjUtil;
+import com.amazonaws.services.s3.transfer.TransferManager;
 import com.takeshi.config.StaticConfig;
+import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -29,19 +31,17 @@ public class ShutdownManager {
      */
     @PreDestroy
     public void destroy() {
-        shutdownAsyncManager();
-    }
-
-    /**
-     * 停止定时任务
-     */
-    private void shutdownAsyncManager() {
         try {
             log.info("Close the background task in the task thread pool...");
             TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
             if (ObjUtil.isNotNull(redissonClient)) {
                 log.info("Close the Redisson client connection...");
                 redissonClient.shutdown();
+            }
+            // 关闭 TransferManager，释放资源
+            TransferManager transferManager = AmazonS3Util.transferManager;
+            if (ObjUtil.isNotNull(transferManager)) {
+                transferManager.shutdownNow();
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
