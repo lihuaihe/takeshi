@@ -17,6 +17,7 @@ import com.takeshi.config.properties.MandrillCredentials;
 import com.takeshi.exception.TakeshiException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.io.TikaInputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -275,7 +276,7 @@ public final class MandrillUtil {
     }
 
     /**
-     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true
+     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true，读取完毕后关闭流
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
      * <br/>
@@ -287,12 +288,14 @@ public final class MandrillUtil {
      */
     @SneakyThrows
     public MandrillUtil addImages(InputStream inputStream, String name) {
-        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
-        messageContent.setType(TakeshiUtil.getTika().detect(inputStream));
-        messageContent.setName(name);
-        messageContent.setContent(Base64.encode(inputStream));
-        this.images.add(messageContent);
-        return this;
+        try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+            MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+            messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
+            messageContent.setName(name);
+            messageContent.setContent(Base64.encode(tikaInputStream));
+            this.images.add(messageContent);
+            return this;
+        }
     }
 
     /**
