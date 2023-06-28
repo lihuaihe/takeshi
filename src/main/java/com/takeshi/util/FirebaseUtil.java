@@ -1,5 +1,6 @@
 package com.takeshi.util;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -317,7 +318,7 @@ public final class FirebaseUtil {
          * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, String clickAction, Map<String, String> map) {
-            return Message.builder()
+            Message.Builder builder = Message.builder()
                     .setToken(token)
                     .setNotification(Notification.builder().setTitle(title).setBody(body).build())
                     .setAndroidConfig(AndroidConfig.builder()
@@ -334,9 +335,11 @@ public final class FirebaseUtil {
                                     .setCategory(clickAction)
                                     .setBadge(1)
                                     .build())
-                            .build())
-                    .putAllData(map)
-                    .build();
+                            .build());
+            if (CollUtil.isNotEmpty(map)) {
+                builder.putAllData(map);
+            }
+            return builder.build();
         }
 
         /**
@@ -350,7 +353,7 @@ public final class FirebaseUtil {
          * @return 多播消息
          */
         private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
-            return MulticastMessage.builder()
+            MulticastMessage.Builder builder = MulticastMessage.builder()
                     .addAllTokens(tokens)
                     .setNotification(Notification.builder().setTitle(title).setBody(body).build())
                     .setAndroidConfig(AndroidConfig.builder()
@@ -367,9 +370,11 @@ public final class FirebaseUtil {
                                     .setCategory(clickAction)
                                     .setBadge(1)
                                     .build())
-                            .build())
-                    .putAllData(map)
-                    .build();
+                            .build());
+            if (CollUtil.isNotEmpty(map)) {
+                builder.putAllData(map);
+            }
+            return builder.build();
         }
 
     }
