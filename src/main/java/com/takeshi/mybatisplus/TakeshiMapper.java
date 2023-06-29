@@ -51,6 +51,18 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     int DEFAULT_BATCH_SIZE = 1000;
 
     /**
+     * 根据 entity 条件，查询对象，并转成一个pojo对象
+     *
+     * @param queryWrapper 实体对象封装操作类
+     * @param clazz        pojo类
+     * @param <E>          E
+     * @return E
+     */
+    default <E> E selectOne(Wrapper<T> queryWrapper, Class<E> clazz) {
+        return BeanUtil.copyProperties(this.selectOne(queryWrapper), clazz);
+    }
+
+    /**
      * 根据 Wrapper 条件，查询全部记录
      * <p>注意： 只返回第一个字段的值</p>
      *
@@ -80,11 +92,22 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @return TakeshiPage
      */
     default <V> TakeshiPage<V> selectPojoPage(TakeshiPage<V> page, Wrapper<T> queryWrapper) {
-        // TODO 暂时使用这种方法
         Assert.notNull(page.getResultClass(), "error: can not execute. because can not find resultClass of page!");
         TakeshiPage<T> of = TakeshiPage.of(page.getCurrent(), page.getSize());
         of.setOrders(page.orders());
-        return this.selectPage(of, queryWrapper).convert(t -> BeanUtil.toBean(t, page.getResultClass()));
+        return this.selectPage(of, queryWrapper).convert(item -> BeanUtil.toBean(item, page.getResultClass()));
+    }
+
+    /**
+     * 根据 entity 条件，查询列表，并转成pojo对象列表
+     *
+     * @param queryWrapper 实体对象封装操作类
+     * @param clazz        返回的集合中泛型类型
+     * @param <E>          E
+     * @return List
+     */
+    default <E> List<E> selectPojoList(Wrapper<T> queryWrapper, Class<E> clazz) {
+        return this.selectList(queryWrapper).stream().map(item -> BeanUtil.copyProperties(item, clazz)).collect(Collectors.toList());
     }
 
     /**

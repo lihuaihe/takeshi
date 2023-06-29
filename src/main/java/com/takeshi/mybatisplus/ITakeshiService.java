@@ -9,8 +9,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.core.metadata.TableInfo;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -59,7 +57,7 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 扩展的mybatis-plus分页接口
      * <p>通用的列表分页查询接口</p>
-     * <p>columns 示例："user_name"</p>
+     * <p>columns 示例：User::getUserName</p>
      *
      * @param basicPage 列表查询参数
      * @param <E>       e
@@ -72,20 +70,7 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 扩展的mybatis-plus分页接口
      * <p>通用的列表分页查询接口</p>
-     * <p>columns 示例："user_name"</p>
-     *
-     * @param basicPage 列表查询参数
-     * @param <E>       e
-     * @return Page
-     */
-    default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage) {
-        return this.listTakeshiPage(basicPage, Collections.emptyList());
-    }
-
-    /**
-     * 扩展的mybatis-plus分页接口
-     * <p>通用的列表分页查询接口</p>
-     * <p>columns 示例："user_name"</p>
+     * <p>columns 示例：User::getUserName</p>
      *
      * @param basicPage 列表查询参数
      * @param columns   需要进行模糊搜索的数据库字段名
@@ -99,7 +84,52 @@ public interface ITakeshiService<T> extends IService<T> {
     /**
      * 扩展的mybatis-plus分页接口
      * <p>通用的列表分页查询接口</p>
-     * <p>columns 示例："user_name"</p>
+     * <p>columns 示例：User::getUserName</p>
+     * <p>consumer 一些where条件</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param consumer  item -> item.eq("user_id",1)
+     * @param <E>       e
+     * @return Page
+     */
+    default <E extends BasicPage> Page<T> listPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(this.buildPage(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例：User::getUserName</p>
+     * <p>consumer 一些where条件</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param consumer  item -> item.eq(User::getUserId,1)
+     * @param <E>       e
+     * @return Page
+     */
+    default <E extends BasicPage> Page<T> listPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(this.buildPage(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例：User::getUserName</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param <E>       e
+     * @return Page
+     */
+    default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage) {
+        return this.listTakeshiPage(basicPage, Collections.emptyList());
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例：User::getUserName</p>
      *
      * @param basicPage 列表查询参数
      * @param columns   需要进行模糊搜索的数据库字段名
@@ -108,6 +138,38 @@ public interface ITakeshiService<T> extends IService<T> {
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage, List<SFunction<T, ?>> columns) {
         return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns));
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例：User::getUserName</p>
+     * <p>consumer 一些where条件</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param consumer  item -> item.eq("user_id",1)
+     * @param <E>       e
+     * @return Page
+     */
+    default <E extends BasicPage> TakeshiPage<T> listTakeshiPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
+    }
+
+    /**
+     * 扩展的mybatis-plus分页接口
+     * <p>通用的列表分页查询接口</p>
+     * <p>columns 示例：User::getUserName</p>
+     * <p>consumer 一些where条件</p>
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param consumer  item -> item.eq(User::getUserId,1)
+     * @param <E>       e
+     * @return Page
+     */
+    default <E extends BasicPage> TakeshiPage<T> listTakeshiPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
@@ -141,27 +203,27 @@ public interface ITakeshiService<T> extends IService<T> {
 
     /**
      * 扩展的mybatis-plus分页接口
-     * 示例：xxxService.queryWrapperPage([basePage类或集成了BasePage的类], item -> item.eq(User::getUserId,1));
+     * 示例：userService.listPageQuery([BasicPage类或继承了BasicPage的类], item -> item.eq("user_id",1));
      *
      * @param basicPage 列表分页查询参数
      * @param consumer  item -> item.eq("user_id",1)
      * @param <E>       e
      * @return Page
      */
-    default <E extends BasicPage> Page<T> queryWrapperPage(E basicPage, Consumer<QueryWrapper<T>> consumer) {
+    default <E extends BasicPage> Page<T> listPageQuery(E basicPage, Consumer<QueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
      * 扩展的mybatis-plus分页接口
-     * 示例：xxxService.queryWrapperPage([basePage类或继承了BasePage的类], item -> item.eq(User::getUserId,1));
+     * 示例：userService.listPageLambdaQuery([BasicPage类或继承了BasicPage的类], item -> item.eq(User::getUserId,1));
      *
      * @param basicPage 列表分页查询参数
      * @param consumer  item -> item.eq(User::getUserId,1)
      * @param <E>       p
      * @return Page
      */
-    default <E extends BasicPage> Page<T> lambdaQueryWrapperPage(E basicPage, Consumer<LambdaQueryWrapper<T>> consumer) {
+    default <E extends BasicPage> Page<T> listPageLambdaQuery(E basicPage, Consumer<LambdaQueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().lambda().func(Objects.nonNull(consumer), consumer));
     }
 
@@ -221,9 +283,7 @@ public interface ITakeshiService<T> extends IService<T> {
      */
     @Override
     default boolean update(Wrapper<T> updateWrapper) {
-        // 由于调用update(T t,Wrapper updateWrapper)时t不能为空,否则自动填充失效
-        TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
-        return this.update(tableInfo.newInstance(), updateWrapper);
+        return this.getBaseMapper().update(updateWrapper);
     }
 
     /**
@@ -250,6 +310,31 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
+     * 根据 entity 条件，查询对象，并转成一个pojo对象
+     *
+     * @param queryWrapper 实体对象封装操作类
+     * @param clazz        pojo类
+     * @param <E>          E
+     * @return E
+     */
+    default <E> E getOne(Wrapper<T> queryWrapper, Class<E> clazz) {
+        return this.getBaseMapper().selectOne(queryWrapper, clazz);
+    }
+
+    /**
+     * 根据 Wrapper 条件，查询全部记录
+     * <p>注意： 只返回第一个字段的值</p>
+     *
+     * @param queryWrapper 实体对象封装操作类（可以为 null）
+     * @param clazz        返回的集合中泛型类型
+     * @param <E>          泛型
+     * @return 集合
+     */
+    default <E> List<E> listObjs(Wrapper<T> queryWrapper, Class<E> clazz) {
+        return this.getBaseMapper().selectObjs(queryWrapper, clazz);
+    }
+
+    /**
      * 根据主键ID查询（不区分是否已逻辑删除）
      *
      * @param id id
@@ -267,8 +352,20 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param <V>          V
      * @return TakeshiPage
      */
-    default <V> TakeshiPage<V> selectPojoPage(TakeshiPage<V> page, Wrapper<T> queryWrapper) {
+    default <V> TakeshiPage<V> listPojoPage(TakeshiPage<V> page, Wrapper<T> queryWrapper) {
         return this.getBaseMapper().selectPojoPage(page, queryWrapper);
+    }
+
+    /**
+     * 根据 entity 条件，查询列表，并转成pojo对象列表
+     *
+     * @param queryWrapper 实体对象封装操作类
+     * @param clazz        返回的集合中泛型类型
+     * @param <E>          E
+     * @return List
+     */
+    default <E> List<E> listPojoList(Wrapper<T> queryWrapper, Class<E> clazz) {
+        return this.getBaseMapper().selectPojoList(queryWrapper, clazz);
     }
 
     /**
