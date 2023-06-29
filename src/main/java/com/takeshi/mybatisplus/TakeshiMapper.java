@@ -51,7 +51,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     int DEFAULT_BATCH_SIZE = 1000;
 
     /**
-     * 根据 entity 条件，查询对象，并转成一个pojo对象
+     * 根据 entity 条件，查询对象，并转成一个pojo对象，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param queryWrapper 实体对象封装操作类
      * @param clazz        pojo类
@@ -63,7 +63,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 根据 Wrapper 条件，查询全部记录
+     * 根据 Wrapper 条件，查询全部记录，本质上只是替代做了类型强制转换
      * <p>注意： 只返回第一个字段的值</p>
      *
      * @param queryWrapper 实体对象封装操作类（可以为 null）
@@ -84,7 +84,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     T selectIncludeDelById(Serializable id);
 
     /**
-     * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass
+     * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param page         分页查询条件
      * @param queryWrapper 实体对象封装操作类
@@ -95,11 +95,11 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         Assert.notNull(page.getResultClass(), "error: can not execute. because can not find resultClass of page!");
         TakeshiPage<T> of = TakeshiPage.of(page.getCurrent(), page.getSize());
         of.setOrders(page.orders());
-        return this.selectPage(of, queryWrapper).convert(item -> BeanUtil.toBean(item, page.getResultClass()));
+        return this.selectPage(of, queryWrapper).convert(item -> BeanUtil.copyProperties(item, page.getResultClass()));
     }
 
     /**
-     * 根据 entity 条件，查询列表，并转成pojo对象列表
+     * 根据 entity 条件，查询列表，并转成pojo对象列表，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param queryWrapper 实体对象封装操作类
      * @param clazz        返回的集合中泛型类型

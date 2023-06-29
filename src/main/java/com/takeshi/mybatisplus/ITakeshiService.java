@@ -310,7 +310,7 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 根据 entity 条件，查询对象，并转成一个pojo对象
+     * 根据 entity 条件，查询对象，并转成一个pojo对象，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param queryWrapper 实体对象封装操作类
      * @param clazz        pojo类
@@ -322,7 +322,7 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 根据 Wrapper 条件，查询全部记录
+     * 根据 Wrapper 条件，查询全部记录，本质上只是替代做了类型强制转换
      * <p>注意： 只返回第一个字段的值</p>
      *
      * @param queryWrapper 实体对象封装操作类（可以为 null）
@@ -345,7 +345,7 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 翻页查询
+     * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param page         翻页对象
      * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
@@ -357,7 +357,7 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 根据 entity 条件，查询列表，并转成pojo对象列表
+     * 根据 entity 条件，查询列表，并转成pojo对象列表，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param queryWrapper 实体对象封装操作类
      * @param clazz        返回的集合中泛型类型
