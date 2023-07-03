@@ -1,6 +1,7 @@
 package com.takeshi.annotation;
 
 import com.takeshi.enums.LogTypeEnum;
+import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
@@ -15,10 +16,21 @@ import java.lang.annotation.*;
 public @interface TakeshiLog {
 
     /**
-     * 日志类型
+     * logType的别名
+     * 如果不需要其他属性，则允许更简洁的注释声明 - 例如， @TakeshiLog(LogTypeEnum.LOGIN)而不是@TakeshiLog(logType=LogTypeEnum.LOGIN)
      *
      * @return LogTypeEnum
      */
+    @AliasFor("logType")
+    LogTypeEnum value();
+
+    /**
+     * 日志类型
+     * value是此属性的别名（且互斥）
+     *
+     * @return LogTypeEnum
+     */
+    @AliasFor("value")
     LogTypeEnum logType();
 
     /**
