@@ -37,31 +37,33 @@ public class TakeshiHttpRequestWrapper extends HttpServletRequestWrapper {
     public ServletInputStream getInputStream() throws IOException {
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyByte);
         return new ServletInputStream() {
+
+            @Override
+            public int read() throws IOException {
+                return byteArrayInputStream.read();
+            }
+
             @Override
             public boolean isFinished() {
-                return false;
+                return byteArrayInputStream.available() == 0;
             }
 
             @Override
             public boolean isReady() {
-                return false;
+                return true;
             }
 
             @Override
             public void setReadListener(ReadListener readListener) {
 
             }
-
-            @Override
-            public int read() throws IOException {
-                return byteArrayInputStream.read();
-            }
         };
     }
 
     @Override
     public BufferedReader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(this.getInputStream()));
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyByte);
+        return new BufferedReader(new InputStreamReader(byteArrayInputStream, this.getCharacterEncoding()));
     }
 
 }

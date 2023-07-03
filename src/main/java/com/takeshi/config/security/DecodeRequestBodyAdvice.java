@@ -27,8 +27,17 @@ import java.util.Objects;
 @RestControllerAdvice
 public class DecodeRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
+    /**
+     * Invoked first to determine if this interceptor applies.
+     *
+     * @param methodParameter the method parameter
+     * @param targetType      the target type, not necessarily the same as the method
+     *                        parameter type, e.g. for {@code HttpEntity<String>}.
+     * @param converterType   the selected converter type
+     * @return whether this interceptor should be invoked or not
+     */
     @Override
-    public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
+    public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
         SystemSecurity methodAnnotation = methodParameter.getMethodAnnotation(SystemSecurity.class);
         if (Objects.nonNull(methodAnnotation)) {
             return methodAnnotation.inDecode();
@@ -40,12 +49,19 @@ public class DecodeRequestBodyAdvice extends RequestBodyAdviceAdapter {
         return false;
     }
 
+    /**
+     * The default implementation returns the InputMessage that was passed in.
+     *
+     * @param inputMessage  inputMessage
+     * @param parameter     parameter
+     * @param targetType    targetType
+     * @param converterType converterType
+     * @return HttpInputMessage
+     */
     @Override
-    public HttpInputMessage beforeBodyRead(HttpInputMessage httpInputMessage, MethodParameter methodParameter,
-                                           Type type,
-                                           Class<? extends HttpMessageConverter<?>> aClass) throws IOException {
+    public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
         // 前端使用rsa公钥加密，这里使用rsa私钥解密
-        byte[] body = StaticConfig.rsa.decrypt(IoUtil.readUtf8(httpInputMessage.getBody()), KeyType.PrivateKey);
+        byte[] body = StaticConfig.rsa.decrypt(IoUtil.readUtf8(inputMessage.getBody()), KeyType.PrivateKey);
         return new HttpInputMessage() {
             @Override
             public InputStream getBody() throws IOException {
@@ -54,7 +70,7 @@ public class DecodeRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
             @Override
             public HttpHeaders getHeaders() {
-                return httpInputMessage.getHeaders();
+                return inputMessage.getHeaders();
             }
         };
     }

@@ -8,14 +8,14 @@ package com.takeshi.constants;
 public interface TakeshiConstants {
 
     /**
+     * 接口请求的参数，放在request的attribute传递下去，以免频繁获取
+     */
+    String PARAM_BO = "paramBO";
+
+    /**
      * multipart request attribute name
      */
     String MULTIPART_REQUEST = "multipartRequest";
-
-    /**
-     * 签名参数名
-     */
-    String SIGN_NAME = "x-sign";
 
     /**
      * 调用接口header里面传的时间戳字段（毫秒级）
@@ -23,14 +23,19 @@ public interface TakeshiConstants {
     String TIMESTAMP_NAME = "x-timestamp";
 
     /**
+     * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
+     */
+    String NONCE_NAME = "x-nonce";
+
+    /**
      * 调用接口header里面传的经纬度字段
      */
     String GEO_POINT_NAME = "x-geo-point";
 
     /**
-     * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
+     * 签名参数名
      */
-    String NONCE_NAME = "x-nonce";
+    String SIGN_NAME = "x-sign";
 
     /**
      * 日志追踪ID

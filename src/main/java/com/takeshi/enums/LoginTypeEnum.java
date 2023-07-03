@@ -3,7 +3,7 @@ package com.takeshi.enums;
 import com.baomidou.mybatisplus.annotation.IEnum;
 
 /**
- * LoginTypeEnum
+ * 登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */

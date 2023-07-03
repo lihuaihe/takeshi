@@ -1,10 +1,15 @@
 package com.takeshi.pojo.bo;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.StaticConfig;
+import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import com.takeshi.util.GsonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +32,48 @@ import java.util.Map;
 @Data
 @Schema
 public class ParamBO extends AbstractBasicSerializable {
+
+    /**
+     * 客户端IP
+     */
+    @Schema(description = "客户端IP")
+    private String clientIp;
+
+    /**
+     * 请求的IP对应的地址
+     */
+    @Schema(description = "请求的IP对应的地址")
+    private String clientIpAddress;
+
+    /**
+     * 登录的用户ID
+     */
+    @Schema(description = "登录的用户ID")
+    private Object loginId;
+
+    /**
+     * 请求URL地址
+     */
+    @Schema(description = "请求URL地址")
+    private String requestUrl;
+
+    /**
+     * 请求方式
+     */
+    @Schema(description = "请求方式")
+    private String httpMethod;
+
+    /**
+     * 请求的方法，带包名类名的完整的方法名
+     */
+    @Schema(description = "请求的方法，带包名类名的完整的方法名")
+    private String methodName;
+
+    /**
+     * header参数
+     */
+    @Schema(description = "header参数")
+    private Map<String, String> headerParam;
 
     /**
      * URL参数
@@ -59,6 +106,15 @@ public class ParamBO extends AbstractBasicSerializable {
     private Object bodyOther;
 
     /**
+     * 设置header参数Map
+     *
+     * @param headerParam headerParam
+     */
+    public void setHeaderParam(Map<String, String> headerParam) {
+        this.headerParam = MapUtil.isEmpty(headerParam) ? null : headerParam;
+    }
+
+    /**
      * 设置url参数Map
      *
      * @param urlParam urlParam
@@ -80,11 +136,13 @@ public class ParamBO extends AbstractBasicSerializable {
             return;
         }
         if (jsonNode.isObject()) {
-            this.bodyObject = objectMapper.convertValue(jsonNode, new TypeReference<>() {
+            Map<String, Object> map = objectMapper.convertValue(jsonNode, new TypeReference<>() {
             });
+            this.bodyObject = MapUtil.isEmpty(map) ? null : map;
         } else if (jsonNode.isArray()) {
-            this.bodyOther = objectMapper.convertValue(jsonNode, new TypeReference<Collection<Object>>() {
+            Collection<Object> collection = objectMapper.convertValue(jsonNode, new TypeReference<>() {
             });
+            this.bodyOther = CollUtil.isEmpty(collection) ? null : collection;
         } else if (jsonNode.isTextual()) {
             this.bodyOther = jsonNode.textValue();
         } else if (jsonNode.isNumber()) {
@@ -97,21 +155,60 @@ public class ParamBO extends AbstractBasicSerializable {
     }
 
     /**
-     * 转成JSON字符串
+     * 获取一些请求开始后需要展示在日志里的信息
      *
-     * @return JSON字符串
+     * @return String
      */
-    public String toJsonString() {
-        return GsonUtil.toJson(this);
+    public String handleInfo() {
+        StringBuilder strBuilder = new StringBuilder();
+        if (StrUtil.isNotBlank(clientIp)) {
+            strBuilder.append("Request IP: ").append(clientIp).append(StrUtil.LF);
+        }
+        String userAgent = this.headerParam.get(Header.USER_AGENT.getValue());
+        if (StrUtil.isNotBlank(userAgent)) {
+            strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
+        }
+        strBuilder.append("Request Address: ").append(this.getRequestUrl()).append(StrUtil.LF);
+        strBuilder.append("Request Http Method: ").append(StrUtil.BRACKET_START).append(this.httpMethod).append(StrUtil.BRACKET_END).append(this.methodName).append(StrUtil.LF);
+        if (ObjUtil.isNotNull(this.loginId)) {
+            strBuilder.append("Requesting UserId: ").append(this.loginId).append(StrUtil.LF);
+        }
+        String timestamp = this.headerParam.get(TakeshiConstants.TIMESTAMP_NAME);
+        if (StrUtil.isNotBlank(timestamp)) {
+            strBuilder.append("Header Timestamp: ").append(timestamp).append(StrUtil.LF);
+        }
+        String nonce = this.headerParam.get(TakeshiConstants.NONCE_NAME);
+        if (StrUtil.isNotBlank(nonce)) {
+            strBuilder.append("Header Nonce: ").append(nonce).append(StrUtil.LF);
+        }
+        String geoPoint = this.headerParam.get(TakeshiConstants.GEO_POINT_NAME);
+        if (StrUtil.isNotBlank(geoPoint)) {
+            strBuilder.append("Header GeoPoint: ").append(geoPoint).append(StrUtil.LF);
+        }
+        return StrUtil.removeSuffix(strBuilder, StrUtil.LF);
     }
 
     /**
-     * 获取所有参数的Map，以用来进行签名
+     * 获取请求的参数的JSON字符串
+     *
+     * @return JSON字符串
+     */
+    public String getParamJsonStr() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("urlParam", urlParam);
+        map.put("multipart", multipart);
+        map.put("bodyObject", bodyObject);
+        map.put("bodyOther", bodyOther);
+        return GsonUtil.toJson(map);
+    }
+
+    /**
+     * 获取所有参数的Map，以用来进行签名，bodyOther将会拼接到其他参数的后面，但是在signatureKey之前
      *
      * @return Map
      */
     public Map<String, Object> getParamMap() {
-        Map<String, Object> map = new HashMap<>(8);
+        Map<String, Object> map = new HashMap<>(12);
         if (MapUtil.isNotEmpty(this.urlParam)) {
             map.putAll(this.urlParam);
         }

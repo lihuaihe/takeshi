@@ -130,10 +130,15 @@ public final class TakeshiUtil {
      * @return 真实地址
      */
     public static String getRealAddressByIp(String ip) {
-        HashMap<String, Object> map = new HashMap<>(6);
-        map.put("ip", ip);
-        map.put("json", true);
-        return JSONUtil.parseObj(HttpUtil.get("https://whois.pconline.com.cn/ipJson.jsp", map)).getStr("addr");
+        try {
+            HashMap<String, Object> map = new HashMap<>(6);
+            map.put("ip", ip);
+            map.put("json", true);
+            return JSONUtil.parseObj(HttpUtil.get("https://whois.pconline.com.cn/ipJson.jsp", map)).getStr("addr");
+        } catch (Exception e) {
+            log.error("TakeshiUtil.getRealAddressByIp --> e: ", e);
+            return null;
+        }
     }
 
     /**

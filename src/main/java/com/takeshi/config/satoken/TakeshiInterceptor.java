@@ -1,7 +1,5 @@
 package com.takeshi.config.satoken;
 
-import cn.dev33.satoken.exception.BackResultException;
-import cn.dev33.satoken.exception.StopMatchException;
 import cn.dev33.satoken.router.SaRouteFunction;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.servlet.model.SaRequestForServlet;
@@ -9,14 +7,11 @@ import cn.dev33.satoken.servlet.model.SaResponseForServlet;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.io.unit.DataSizeUtil;
-import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
-import cn.hutool.http.HttpStatus;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,7 +24,6 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.Either;
-import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.pojo.bo.RetBO;
@@ -44,6 +38,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
@@ -101,7 +96,17 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * 每次请求之前触发的方法
+     * Interception point before the execution of a handler. Called after
+     * HandlerMapping determined an appropriate handler object, but before
+     * HandlerAdapter invokes the handler.
+     * <p>DispatcherServlet processes a handler in an execution chain, consisting
+     * of any number of interceptors, with the handler itself at the end.
+     * With this method, each interceptor can decide to abort the execution chain,
+     * typically sending an HTTP error or writing a custom response.
+     * <p><strong>Note:</strong> special considerations apply for asynchronous
+     * request processing. For more details see
+     * {@link AsyncHandlerInterceptor}.
+     * <p>The default implementation returns {@code true}.
      *
      * @param request  current HTTP request
      * @param response current HTTP response
@@ -113,66 +118,23 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        try {
-            if (handler instanceof HandlerMethod handlerMethod) {
-                String userAgent = request.getHeader(Header.USER_AGENT.getValue());
-                String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
-                String nonce = request.getHeader(TakeshiConstants.NONCE_NAME);
-                String geoPoint = request.getHeader(TakeshiConstants.GEO_POINT_NAME);
-                String clientIp = TakeshiUtil.getClientIp(request);
-                Object loginId = StpUtil.getLoginIdDefaultNull();
-                Method method = handlerMethod.getMethod();
+        if (handler instanceof HandlerMethod handlerMethod) {
+            Method method = handlerMethod.getMethod();
 
-                StringBuilder strBuilder = new StringBuilder();
-                if (StrUtil.isNotBlank(clientIp)) {
-                    strBuilder.append("Request IP: ").append(clientIp).append(StrUtil.LF);
-                }
-                if (StrUtil.isNotBlank(userAgent)) {
-                    strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
-                }
-                strBuilder.append("Request Address: ").append(request.getRequestURL()).append(StrUtil.LF);
-                strBuilder.append("Request Method: ").append(StrUtil.BRACKET_START).append(request.getMethod()).append(StrUtil.BRACKET_END).append(method.getDeclaringClass().getName()).append(method.getName()).append(StrUtil.LF);
-                if (ObjUtil.isNotNull(loginId)) {
-                    strBuilder.append("Requesting UserId: ").append(loginId).append(StrUtil.LF);
-                }
-                if (StrUtil.isNotBlank(timestamp)) {
-                    strBuilder.append("Timestamp: ").append(timestamp).append(StrUtil.LF);
-                }
-                if (StrUtil.isNotBlank(nonce)) {
-                    strBuilder.append("Nonce: ").append(nonce).append(StrUtil.LF);
-                }
-                if (StrUtil.isNotBlank(geoPoint)) {
-                    strBuilder.append("GeoPoint: ").append(geoPoint).append(StrUtil.LF);
-                }
-                log.info("TakeshiInterceptor.preHandle --> Request Start: \n{}", StrUtil.removeSuffix(strBuilder, StrUtil.LF));
+            ParamBO paramBO = this.getParamBO(request, method);
+            log.info("TakeshiInterceptor.preHandle --> Request Start: \n{}", paramBO.handleInfo());
+            log.info("Request Parameters: {}", paramBO.getParamJsonStr());
 
-                SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
-                        .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
-                // 速率限制
-                this.rateLimit(request, handlerMethod, userAgent, clientIp, loginId, systemSecurity);
-                if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
-                    // 执行token认证函数
-                    function.run(new SaRequestForServlet(request), new SaResponseForServlet(response), handlerMethod);
-                }
-                // 注解式鉴权，对角色和权限进行验证，需要实现StpInterface接口
-                SaStrategy.me.checkMethodAnnotation.accept(method);
+            SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
+                    .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
+            // 速率限制
+            this.rateLimit(request, handlerMethod, systemSecurity);
+            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
+                // 执行token认证函数
+                function.run(new SaRequestForServlet(request), new SaResponseForServlet(response), handlerMethod);
             }
-        } catch (StopMatchException e) {
-            // 停止匹配，进入Controller
-        } catch (BackResultException e) {
-            // 停止匹配，向前端输出结果
-            response.setCharacterEncoding(CharsetUtil.UTF_8);
-            response.setContentType(ContentType.JSON.getValue());
-            response.setStatus(HttpStatus.HTTP_OK);
-            String str;
-            if (e.result instanceof RetBO retBO) {
-                str = GsonUtil.toJson(ResponseData.retData(retBO));
-            } else {
-                str = e.getMessage();
-            }
-            log.error("TakeshiInterceptor.preHandle --> Request URL: " + request.getRequestURL() + ", Interface validation error: " + str, e);
-            response.getWriter().write(str);
-            return false;
+            // 注解式鉴权，对角色和权限进行验证，需要实现StpInterface接口
+            SaStrategy.me.checkMethodAnnotation.accept(method);
         }
         // 通过验证
         return true;
@@ -183,13 +145,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      *
      * @param request        request
      * @param handlerMethod  handlerMethod
-     * @param userAgent      userAgent
-     * @param clientIp       clientIp
-     * @param loginId        loginId
      * @param systemSecurity systemSecurity
      */
-    private void rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, String userAgent,
-                           String clientIp, Object loginId, SystemSecurity systemSecurity) throws IOException {
+    private void rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, SystemSecurity systemSecurity) throws IOException {
+        ParamBO paramBO = (ParamBO) request.getAttribute(TakeshiConstants.PARAM_BO);
+        String clientIp = paramBO.getClientIp();
         TakeshiProperties takeshiProperties = StaticConfig.takeshiProperties;
         boolean passPlatform = false;
         boolean passSignature = false;
@@ -197,7 +157,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
             passSignature = systemSecurity.all() || systemSecurity.signature();
         }
-        if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(userAgent).isMobile()) {
+        if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验
             SaRouter.back(TakeshiCode.USERAGENT_ERROR);
         }
@@ -260,10 +220,6 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             }
         }
 
-        ParamBO paramBO = this.getParamBO(request);
-        String paramBOJsonString = paramBO.toJsonString();
-        log.info("Request Parameters: {}", paramBOJsonString);
-
         if (signVerify) {
             // 校验参数签名，如果body参数是非JsonObject值，则直接将值与其他值直接拼接
             String sign = request.getHeader(TakeshiConstants.SIGN_NAME);
@@ -282,8 +238,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             }
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatUrl", servletPath);
-            map.put("repeatLoginId", loginId);
-            JsonNode jsonNode = StaticConfig.objectMapper.readTree(paramBOJsonString);
+            map.put("repeatLoginId", paramBO.getLoginId());
+            JsonNode jsonNode = StaticConfig.objectMapper.readTree(paramBO.getParamJsonStr());
             List<String> ignoredFieldList = Arrays.asList(repeatSubmit.ignoredFieldNames());
             ignoredFieldList.forEach(fieldName -> {
                 jsonNode.findParents(fieldName)
@@ -309,8 +265,25 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param request request
      * @return ParamBO
      */
-    private ParamBO getParamBO(HttpServletRequest request) throws IOException {
+    private ParamBO getParamBO(HttpServletRequest request, Method method) throws IOException {
         ParamBO paramBO = new ParamBO();
+
+        String clientIp = TakeshiUtil.getClientIp(request);
+        paramBO.setClientIp(clientIp);
+        paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
+        paramBO.setRequestUrl(request.getRequestURL().toString());
+        paramBO.setHttpMethod(request.getMethod());
+        String methodName = StrUtil.builder(method.getDeclaringClass().getName(), StrUtil.DOT, method.getName()).toString();
+        paramBO.setMethodName(methodName);
+
+        Map<String, String> headerMap = new HashMap<>(16);
+        headerMap.put(Header.USER_AGENT.getValue(), request.getHeader(Header.USER_AGENT.getValue()));
+        headerMap.put(TakeshiConstants.TIMESTAMP_NAME, request.getHeader(TakeshiConstants.TIMESTAMP_NAME));
+        headerMap.put(TakeshiConstants.NONCE_NAME, request.getHeader(TakeshiConstants.NONCE_NAME));
+        headerMap.put(TakeshiConstants.GEO_POINT_NAME, request.getHeader(TakeshiConstants.GEO_POINT_NAME));
+        headerMap.put(TakeshiConstants.SIGN_NAME, request.getHeader(TakeshiConstants.SIGN_NAME));
+        paramBO.setHeaderParam(headerMap);
+
         paramBO.setUrlParam(JakartaServletUtil.getParamMap(request));
         Object attribute = request.getAttribute(TakeshiConstants.MULTIPART_REQUEST);
         // 从request移除该值，因为后续都不会使用到这个值，在后续的request传递中会有一点点浪费内存🤏
@@ -343,6 +316,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         } else if (!JakartaServletUtil.isGetMethod(request)) {
             paramBO.setBody(request.getInputStream());
         }
+        // 接口请求的参数，放在request的attribute传递下去，以免频繁获取
+        request.setAttribute(TakeshiConstants.PARAM_BO, paramBO);
         return paramBO;
     }
 

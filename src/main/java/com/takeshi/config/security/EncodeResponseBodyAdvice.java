@@ -28,19 +28,40 @@ import java.util.Objects;
 @RestControllerAdvice
 public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData<Object>> {
 
+    /**
+     * Whether this component supports the given controller method return type
+     * and the selected {@code HttpMessageConverter} type.
+     *
+     * @param returnType    the return type
+     * @param converterType the selected converter type
+     * @return {@code true} if {@link #beforeBodyWrite} should be invoked;
+     * {@code false} otherwise
+     */
     @Override
-    public boolean supports(MethodParameter methodParameter, Class aClass) {
-        SystemSecurity methodAnnotation = methodParameter.getMethodAnnotation(SystemSecurity.class);
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        SystemSecurity methodAnnotation = returnType.getMethodAnnotation(SystemSecurity.class);
         if (Objects.nonNull(methodAnnotation)) {
             return methodAnnotation.outEncode();
         }
-        SystemSecurity classAnnotation = AnnotationUtil.getAnnotation(methodParameter.getContainingClass(), SystemSecurity.class);
+        SystemSecurity classAnnotation = AnnotationUtil.getAnnotation(returnType.getContainingClass(), SystemSecurity.class);
         if (Objects.nonNull(classAnnotation)) {
             return classAnnotation.outEncode();
         }
         return false;
     }
 
+    /**
+     * Invoked after an {@code HttpMessageConverter} is selected and just before
+     * its write method is invoked.
+     *
+     * @param body                  the body to be written
+     * @param returnType            the return type of the controller method
+     * @param selectedContentType   the content type selected through content negotiation
+     * @param selectedConverterType the converter type selected to write to the response
+     * @param request               the current request
+     * @param response              the current response
+     * @return the body that was passed in or a modified (possibly new) instance
+     */
     @Override
     public ResponseData<Object> beforeBodyWrite(@Nullable ResponseData<Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         if (ObjUtil.isNotNull(body) && ObjUtil.isNotNull(body.getData())) {
@@ -51,4 +72,5 @@ public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData
         }
         return body;
     }
+
 }
