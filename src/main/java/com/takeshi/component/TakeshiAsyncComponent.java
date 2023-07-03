@@ -1,6 +1,7 @@
 package com.takeshi.component;
 
 import cn.hutool.core.net.Ipv4Util;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
 import cn.hutool.http.Header;
@@ -46,26 +47,28 @@ public class TakeshiAsyncComponent {
      */
     public void insertSysLog(ParamBO paramBO, long startTimeMillis, long totalTimeMillis, String responseData) {
         try {
-            TbSysLog tbSysLog = new TbSysLog();
-            tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
-            tbSysLog.setLoginId(paramBO.getLoginId());
-            tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
-            Map<String, String> headerParam = paramBO.getHeaderParam();
-            tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
-            tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
-            tbSysLog.setHttpMethod(paramBO.getHttpMethod());
-            tbSysLog.setMethodName(paramBO.getMethodName());
-            tbSysLog.setRequestUrl(paramBO.getRequestUrl());
-            tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-            tbSysLog.setRequestParams(paramBO.getParamJsonStr());
-            tbSysLog.setResponseData(responseData);
-            tbSysLog.setSuccessful(this.successful(responseData));
-            tbSysLog.setRequestTime(startTimeMillis);
-            tbSysLog.setCostTime(totalTimeMillis);
-            long epochMilli = Instant.now().toEpochMilli();
-            tbSysLog.setCreateTime(epochMilli);
-            tbSysLog.setUpdateTime(epochMilli);
-            DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
+            if (ObjUtil.isNotNull(paramBO.getTakeshiLog())) {
+                TbSysLog tbSysLog = new TbSysLog();
+                tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
+                tbSysLog.setLoginId(paramBO.getLoginId());
+                tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
+                Map<String, String> headerParam = paramBO.getHeaderParam();
+                tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
+                tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
+                tbSysLog.setHttpMethod(paramBO.getHttpMethod());
+                tbSysLog.setMethodName(paramBO.getMethodName());
+                tbSysLog.setRequestUrl(paramBO.getRequestUrl());
+                tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
+                tbSysLog.setRequestParams(paramBO.getParamJsonStr());
+                tbSysLog.setResponseData(responseData);
+                tbSysLog.setSuccessful(this.successful(responseData));
+                tbSysLog.setRequestTime(startTimeMillis);
+                tbSysLog.setCostTime(totalTimeMillis);
+                long epochMilli = Instant.now().toEpochMilli();
+                tbSysLog.setCreateTime(epochMilli);
+                tbSysLog.setUpdateTime(epochMilli);
+                DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
+            }
         } catch (Exception e) {
             log.error("TakeshiAsyncComponent.insertSysLog --> e: ", e);
         }

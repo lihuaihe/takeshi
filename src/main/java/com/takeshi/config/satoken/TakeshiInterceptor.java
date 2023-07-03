@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
+import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.RateLimitProperties;
 import com.takeshi.config.properties.TakeshiProperties;
@@ -120,7 +121,6 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (handler instanceof HandlerMethod handlerMethod) {
             Method method = handlerMethod.getMethod();
-
             ParamBO paramBO = this.getParamBO(request, method);
             log.info("TakeshiInterceptor.preHandle --> Request Start: \n{}", paramBO.handleInfo());
             log.info("Request Parameters: {}", paramBO.getParamJsonStr());
@@ -275,6 +275,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         paramBO.setHttpMethod(request.getMethod());
         String methodName = StrUtil.builder(method.getDeclaringClass().getName(), StrUtil.DOT, method.getName()).toString();
         paramBO.setMethodName(methodName);
+        paramBO.setTakeshiLog(method.getAnnotation(TakeshiLog.class));
 
         Map<String, String> headerMap = new HashMap<>(16);
         headerMap.put(Header.USER_AGENT.getValue(), request.getHeader(Header.USER_AGENT.getValue()));

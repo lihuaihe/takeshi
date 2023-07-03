@@ -8,6 +8,7 @@ import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
@@ -68,6 +69,12 @@ public class ParamBO extends AbstractBasicSerializable {
      */
     @Schema(description = "请求的方法，带包名类名的完整的方法名")
     private String methodName;
+
+    /**
+     * TakeshiLog注解
+     */
+    @Schema(description = "TakeshiLog注解")
+    private TakeshiLog takeshiLog;
 
     /**
      * header参数
