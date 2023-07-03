@@ -195,11 +195,11 @@ takeshi:
 
 ```yaml
 # 如果需要自己添加一些国际化消息，需要添加如下配置
-# 默认[application-takeshi.yml]已经配置了i18n/messages，如果你重新配置，[application-takeshi.yml]中的i18n/messages就被覆盖了，所以需要讲i18n/messages加上
+# 默认会使用已经配置了的i18n/messages
 spring:
   messages:
-    # i18n/messages是固定的，takeshi库需要用到的国际化消息配置，ValidationMessages是你自己项目的配置
-    basename: i18n/messages,ValidationMessages
+    # ValidationMessages是你自己项目的配置国际化消息的目录
+    basename: ValidationMessages
 ```
 
 ### 📃日志
