@@ -22,10 +22,12 @@ public @interface TakeshiLog {
     LogTypeEnum logType();
 
     /**
-     * 排除指定的请求参数
+     * 排除的字段名称<br/>
+     * 这些参数字段将不会保存到数据库，例如："password"<br/>
+     * 自动忽略 ["password", "oldPassword", "newPassword", "confirmPassword"]
      *
      * @return String[]
      */
-    String[] excludeParamNames() default {};
+    String[] exclusionFieldName() default {};
 
 }

@@ -2,17 +2,18 @@ package com.takeshi.pojo.bo;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
-import com.takeshi.util.GsonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -196,17 +197,23 @@ public class ParamBO extends AbstractBasicSerializable {
     }
 
     /**
-     * 获取请求的参数的JSON字符串
+     * 获取请求的参数的ObjectNode
      *
-     * @return JSON字符串
+     * @param exclusionFieldName 排除的字段名，会忽略大小写
+     * @return ObjectNode
      */
-    public String getParamJsonStr() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("urlParam", urlParam);
-        map.put("multipart", multipart);
-        map.put("bodyObject", bodyObject);
-        map.put("bodyOther", bodyOther);
-        return GsonUtil.toJson(map);
+    public ObjectNode getParamObjectNode(String... exclusionFieldName) {
+        ObjectNode objectNode = StaticConfig.objectMapper.createObjectNode();
+        objectNode.putPOJO("urlParam", urlParam);
+        objectNode.putPOJO("multipart", multipart);
+        objectNode.putPOJO("bodyObject", bodyObject);
+        objectNode.putPOJO("bodyOther", bodyOther);
+        if (ArrayUtil.isNotEmpty(exclusionFieldName)) {
+            for (String fieldName : exclusionFieldName) {
+                objectNode.findParents(fieldName).forEach(item -> ((ObjectNode) item).remove(fieldName));
+            }
+        }
+        return objectNode;
     }
 
     /**

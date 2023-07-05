@@ -7,6 +7,8 @@ import cn.hutool.db.Entity;
 import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
@@ -22,7 +24,9 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * TakeshiAsyncComponent
@@ -38,6 +42,11 @@ public class TakeshiAsyncComponent {
     private final DataSource dataSource;
 
     /**
+     * 排除敏感属性字段
+     */
+    public static final String[] EXCLUSION_FIELD_NAME = {"password", "oldPassword", "newPassword", "confirmPassword"};
+
+    /**
      * 新增一条接口请求相关信息到数据库
      *
      * @param paramBO         paramBO
@@ -47,7 +56,10 @@ public class TakeshiAsyncComponent {
      */
     public void insertSysLog(ParamBO paramBO, long startTimeMillis, long totalTimeMillis, String responseData) {
         try {
-            if (ObjUtil.isNotNull(paramBO.getTakeshiLog())) {
+            TakeshiLog takeshiLog = paramBO.getTakeshiLog();
+            if (ObjUtil.isNotNull(takeshiLog)) {
+                String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
+                ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
                 TbSysLog tbSysLog = new TbSysLog();
                 tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                 tbSysLog.setLoginId(paramBO.getLoginId());
@@ -59,7 +71,7 @@ public class TakeshiAsyncComponent {
                 tbSysLog.setMethodName(paramBO.getMethodName());
                 tbSysLog.setRequestUrl(paramBO.getRequestUrl());
                 tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-                tbSysLog.setRequestParams(paramBO.getParamJsonStr());
+                tbSysLog.setRequestParams(paramObjectNode.toString());
                 tbSysLog.setResponseData(responseData);
                 tbSysLog.setSuccessful(this.successful(responseData));
                 tbSysLog.setRequestTime(startTimeMillis);

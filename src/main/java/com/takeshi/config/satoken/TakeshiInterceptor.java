@@ -13,8 +13,6 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
@@ -46,7 +44,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -123,7 +124,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             Method method = handlerMethod.getMethod();
             ParamBO paramBO = this.getParamBO(request, method);
             log.info("TakeshiInterceptor.preHandle --> Request Start: \n{}", paramBO.handleInfo());
-            log.info("Request Parameters: {}", paramBO.getParamJsonStr());
+            log.info("Request Parameters: {}", paramBO.getParamObjectNode());
 
             SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                     .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
@@ -239,16 +240,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatUrl", servletPath);
             map.put("repeatLoginId", paramBO.getLoginId());
-            JsonNode jsonNode = StaticConfig.objectMapper.readTree(paramBO.getParamJsonStr());
-            List<String> ignoredFieldList = Arrays.asList(repeatSubmit.ignoredFieldNames());
-            ignoredFieldList.forEach(fieldName -> {
-                jsonNode.findParents(fieldName)
-                        .forEach(parent -> {
-                            ObjectNode parentNode = (ObjectNode) parent;
-                            parentNode.remove(fieldName);
-                        });
-            });
-            map.put("repeatParams", jsonNode);
+            map.put("repeatParams", paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName()));
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = StaticConfig.redisComponent.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次

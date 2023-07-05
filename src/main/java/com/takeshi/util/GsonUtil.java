@@ -1,11 +1,12 @@
 package com.takeshi.util;
 
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.lang.Singleton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.LongSerializationPolicy;
+import com.google.gson.reflect.TypeToken;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.gson.*;
 
@@ -19,63 +20,46 @@ import java.time.*;
  */
 public final class GsonUtil {
 
-    private static volatile Gson GSON = null;
-    private static volatile Gson GSON_LONG_TO_STRING = null;
-    private static volatile Gson GSON_INCLUDE_NULL = null;
-
-    static {
-        if (ObjUtil.isNull(GSON_INCLUDE_NULL)) {
-            synchronized (GsonUtil.class) {
-                if (ObjUtil.isNull(GSON_INCLUDE_NULL)) {
-                    GsonBuilder gsonBuilder = new GsonBuilder()
-                            .setDateFormat(TakeshiDatePattern.NORM_DATETIME_PATTERN)
-                            .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
-                            .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
-                            .registerTypeAdapter(LocalDate.class, new LocalDataTypeAdapter())
-                            .registerTypeAdapter(LocalTime.class, new LocalTimeTypeAdapter())
-                            .registerTypeAdapter(LocalDateTime.class, new LocalDataTimeTypeAdapter())
-                            .registerTypeAdapter(Year.class, new YearTypeAdapter())
-                            .registerTypeAdapter(YearMonth.class, new YearMonthTypeAdapter())
-                            .registerTypeAdapter(MonthDay.class, new MonthDayTypeAdapter())
-                            .registerTypeAdapter(OffsetTime.class, new OffsetTimeTypeAdapter())
-                            .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
-                            ;
-                    GSON = gsonBuilder.create();
-                    GSON_LONG_TO_STRING = gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING).create();
-                    GSON_INCLUDE_NULL = gsonBuilder.serializeNulls().create();
-                }
-            }
-        }
-    }
-
     private GsonUtil() {
     }
 
     /**
-     * 获取一个对日期进行格式化的基础Gson
+     * 获取一个对日期进行格式化的基础GSON
      *
      * @return Gson
      */
     public static Gson gson() {
-        return GSON;
+        return Singleton.get("gson", () -> new GsonBuilder()
+                .setDateFormat(TakeshiDatePattern.NORM_DATETIME_PATTERN)
+                .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
+                .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+                .registerTypeAdapter(LocalDate.class, new LocalDataTypeAdapter())
+                .registerTypeAdapter(LocalTime.class, new LocalTimeTypeAdapter())
+                .registerTypeAdapter(LocalDateTime.class, new LocalDataTimeTypeAdapter())
+                .registerTypeAdapter(Year.class, new YearTypeAdapter())
+                .registerTypeAdapter(YearMonth.class, new YearMonthTypeAdapter())
+                .registerTypeAdapter(MonthDay.class, new MonthDayTypeAdapter())
+                .registerTypeAdapter(OffsetTime.class, new OffsetTimeTypeAdapter())
+                .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .create());
     }
 
     /**
-     * 获取一个基础GSON，且会将long转String
+     * 获取一个对日期进行格式化的基础GSON，且会将long转String
      *
      * @return Gson
      */
     public static Gson gsonLongToString() {
-        return GSON_LONG_TO_STRING;
+        return Singleton.get("gsonLongToString", () -> gson().newBuilder().setLongSerializationPolicy(LongSerializationPolicy.STRING).create());
     }
 
     /**
-     * 获取一个基础GSON，且包含null值
+     * 获取一个对日期进行格式化的基础GSON，且包含null值
      *
      * @return Gson
      */
     public static Gson gsonIncludeNull() {
-        return GSON_INCLUDE_NULL;
+        return Singleton.get("gsonIncludeNull", () -> gson().newBuilder().serializeNulls().create());
     }
 
     /**
@@ -85,7 +69,7 @@ public final class GsonUtil {
      * @return String
      */
     public static String toJson(Object src) {
-        return GSON.toJson(src);
+        return gson().toJson(src);
     }
 
     /**
@@ -96,7 +80,7 @@ public final class GsonUtil {
      * @return String
      */
     public static String toJson(Object src, boolean ignoreNullValue) {
-        return ignoreNullValue ? GSON.toJson(src) : GSON_INCLUDE_NULL.toJson(src);
+        return ignoreNullValue ? gson().toJson(src) : gsonIncludeNull().toJson(src);
     }
 
     /**
@@ -107,7 +91,7 @@ public final class GsonUtil {
      * @return String
      */
     public static String toJson(Object src, Type typeOfSrc) {
-        return GSON.toJson(src, typeOfSrc);
+        return gson().toJson(src, typeOfSrc);
     }
 
     /**
@@ -120,7 +104,20 @@ public final class GsonUtil {
      * @throws JsonSyntaxException Json语法异常
      */
     public static <T> T fromJson(String json, Class<T> classOfT) throws JsonSyntaxException {
-        return GSON.fromJson(json, classOfT);
+        return gson().fromJson(json, classOfT);
+    }
+
+    /**
+     * String to Class
+     *
+     * @param json      json str
+     * @param typeToken typeToken
+     * @param <T>       T
+     * @return T
+     * @throws JsonSyntaxException Json语法异常
+     */
+    public static <T> T fromJson(String json, TypeToken<T> typeToken) throws JsonSyntaxException {
+        return gson().fromJson(json, typeToken.getType());
     }
 
     /**
@@ -133,7 +130,7 @@ public final class GsonUtil {
      * @throws JsonSyntaxException Json语法异常
      */
     public static <T> T fromJson(String json, Type typeOfT) throws JsonSyntaxException {
-        return GSON.fromJson(json, typeOfT);
+        return gson().fromJson(json, typeOfT);
     }
 
 }

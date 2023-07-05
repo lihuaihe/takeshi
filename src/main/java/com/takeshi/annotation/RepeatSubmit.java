@@ -33,11 +33,12 @@ public @interface RepeatSubmit {
     RateIntervalUnit rateIntervalUnit() default RateIntervalUnit.SECONDS;
 
     /**
-     * 重复提交 忽略的字段名称
+     * 重复提交 排除的字段名称<br/>
+     * 这些参数字段将不会参与重复提交校验，例如："requestTime"
      *
      * @return ignoredFieldNames
      */
-    String[] ignoredFieldNames() default {};
+    String[] exclusionFieldName() default {};
 
     /**
      * 重复提交 提示语信息
