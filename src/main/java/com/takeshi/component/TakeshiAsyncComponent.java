@@ -56,30 +56,32 @@ public class TakeshiAsyncComponent {
      */
     public void insertSysLog(ParamBO paramBO, long startTimeMillis, long totalTimeMillis, String responseData) {
         try {
-            TakeshiLog takeshiLog = paramBO.getTakeshiLog();
-            if (ObjUtil.isNotNull(takeshiLog)) {
-                String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
-                ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
-                TbSysLog tbSysLog = new TbSysLog();
-                tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
-                tbSysLog.setLoginId(paramBO.getLoginId());
-                tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
-                Map<String, String> headerParam = paramBO.getHeaderParam();
-                tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
-                tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
-                tbSysLog.setHttpMethod(paramBO.getHttpMethod());
-                tbSysLog.setMethodName(paramBO.getMethodName());
-                tbSysLog.setRequestUrl(paramBO.getRequestUrl());
-                tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-                tbSysLog.setRequestParams(paramObjectNode.toString());
-                tbSysLog.setResponseData(responseData);
-                tbSysLog.setSuccessful(this.successful(responseData));
-                tbSysLog.setRequestTime(startTimeMillis);
-                tbSysLog.setCostTime(totalTimeMillis);
-                long epochMilli = Instant.now().toEpochMilli();
-                tbSysLog.setCreateTime(epochMilli);
-                tbSysLog.setUpdateTime(epochMilli);
-                DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
+            if (ObjUtil.isNotNull(paramBO)) {
+                TakeshiLog takeshiLog = paramBO.getTakeshiLog();
+                if (ObjUtil.isNotNull(takeshiLog)) {
+                    String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
+                    ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
+                    TbSysLog tbSysLog = new TbSysLog();
+                    tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
+                    tbSysLog.setLoginId(paramBO.getLoginId());
+                    tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
+                    Map<String, String> headerParam = paramBO.getHeaderParam();
+                    tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
+                    tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
+                    tbSysLog.setHttpMethod(paramBO.getHttpMethod());
+                    tbSysLog.setMethodName(paramBO.getMethodName());
+                    tbSysLog.setRequestUrl(paramBO.getRequestUrl());
+                    tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
+                    tbSysLog.setRequestParams(paramObjectNode.toString());
+                    tbSysLog.setResponseData(responseData);
+                    tbSysLog.setSuccessful(this.successful(responseData));
+                    tbSysLog.setRequestTime(startTimeMillis);
+                    tbSysLog.setCostTime(totalTimeMillis);
+                    long epochMilli = Instant.now().toEpochMilli();
+                    tbSysLog.setCreateTime(epochMilli);
+                    tbSysLog.setUpdateTime(epochMilli);
+                    DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
+                }
             }
         } catch (Exception e) {
             log.error("TakeshiAsyncComponent.insertSysLog --> e: ", e);
