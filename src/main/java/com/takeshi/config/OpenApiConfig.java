@@ -28,10 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * OpenApiConfig
@@ -83,12 +80,14 @@ public class OpenApiConfig {
                     // 生成通用响应信息
                     ApiResponses apiResponses = operation.getResponses();
                     // 查询TakeshiCode子类集合
-                    Set<Class<?>> classSet = ClassUtil.scanPackage(StrUtil.EMPTY, TakeshiCode.class::isAssignableFrom);
+                    Set<Class<?>> classSet = new HashSet<>();
+                    classSet.add(TakeshiCode.class);
+                    classSet.addAll(ClassUtil.scanPackageBySuper(StrUtil.EMPTY, TakeshiCode.class));
                     classSet.stream()
-                            .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item)))
-                            .filter(item -> item.getType().isAssignableFrom(RetBO.class))
-                            .forEach(item -> {
-                                RetBO retBO = (RetBO) ReflectUtil.getStaticFieldValue(item);
+                            .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
+                            .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
+                            .sorted(Comparator.comparing(RetBO::getCode))
+                            .forEach(retBO -> {
                                 // swagger文档中的响应状态码信息
                                 String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
                                 String name = String.valueOf(retBO.getCode());
