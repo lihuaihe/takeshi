@@ -90,15 +90,15 @@ public class ParamBO extends AbstractBasicSerializable {
     private Map<String, String> urlParam;
 
     /**
-     * 上传的文件信息，value里存放文件名+文件大小
+     * 上传的文件信息，value里存放MD5加密的文件流
      */
-    @Schema(description = "上传的文件信息，value里存放文件名+文件大小")
+    @Schema(description = "上传的文件信息，value里存放MD5加密的文件流")
     private transient Map<String, List<String>> multipartData;
 
     /**
-     * 签名需要用到的上传的文件摘要信息
+     * 签名需要用到的上传的文件摘要信息，value里存放文件名+文件大小
      */
-    @Schema(description = "签名需要用到的上传的文件摘要信息")
+    @Schema(description = "签名需要用到的上传的文件摘要信息，value里存放文件名+文件大小")
     private Map<String, String> multipart;
 
     /**
@@ -167,7 +167,7 @@ public class ParamBO extends AbstractBasicSerializable {
      *
      * @return String
      */
-    public String handleInfo() {
+    public String filterInfo() {
         StringBuilder strBuilder = new StringBuilder();
         if (StrUtil.isNotBlank(clientIp)) {
             strBuilder.append("Request IP: ").append(clientIp).append(StrUtil.LF);
@@ -177,7 +177,6 @@ public class ParamBO extends AbstractBasicSerializable {
             strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
         }
         strBuilder.append("Request Address: ").append(this.getRequestUrl()).append(StrUtil.LF);
-        strBuilder.append("Request Http Method: ").append(StrUtil.BRACKET_START).append(this.httpMethod).append(StrUtil.BRACKET_END).append(this.methodName).append(StrUtil.LF);
         if (ObjUtil.isNotNull(this.loginId)) {
             strBuilder.append("Requesting UserId: ").append(this.loginId).append(StrUtil.LF);
         }

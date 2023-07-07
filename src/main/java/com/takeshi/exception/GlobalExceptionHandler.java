@@ -1,9 +1,6 @@
 package com.takeshi.exception;
 
-import cn.dev33.satoken.exception.DisableServiceException;
-import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.exception.NotPermissionException;
-import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.*;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.ObjUtil;
@@ -191,6 +188,22 @@ public class GlobalExceptionHandler {
     public ResponseData<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> DisableLoginException: ", disableServiceException);
         return ResponseData.retData(TakeshiCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
+    }
+
+    /**
+     * 全局异常拦截（拦截项目中的BackResultException异常）
+     *
+     * @param backResultException 停止匹配异常
+     * @return {@link ResponseData}
+     */
+    @ExceptionHandler(BackResultException.class)
+    public ResponseData<Object> backResultExceptionHandler(BackResultException backResultException) {
+        log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> BackResultException: ", backResultException);
+        if (backResultException.result instanceof RetBO retBO) {
+            return ResponseData.retData(retBO);
+        } else {
+            return ResponseData.retData(backResultException.getMessage());
+        }
     }
 
 }

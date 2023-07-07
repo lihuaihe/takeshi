@@ -13,11 +13,6 @@ public interface TakeshiConstants {
     String PARAM_BO = "paramBO";
 
     /**
-     * multipart request attribute name
-     */
-    String MULTIPART_REQUEST = "multipartRequest";
-
-    /**
      * 调用接口header里面传的时间戳字段（毫秒级）
      */
     String TIMESTAMP_NAME = "x-timestamp";
