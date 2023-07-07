@@ -48,7 +48,7 @@ public final class FirebaseUtil {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
                             String databaseUrl = StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
                                     ? firebase.getDatabaseUrl()
-                                    : AmazonS3Util.JSON_NODE.get(firebase.getDatabaseUrlSecrets()).asText();
+                                    : AmazonS3Util.getSecret().get(firebase.getDatabaseUrlSecrets()).asText();
                             FirebaseOptions options = FirebaseOptions.builder()
                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
                                     .setDatabaseUrl(databaseUrl)

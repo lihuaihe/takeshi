@@ -20,9 +20,9 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -46,7 +46,9 @@ public class OpenApiConfig {
 
     private final MessageSource messageSource;
     private final SaTokenConfig saTokenConfig;
-    private final ApplicationContext context;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     /**
      * 配置
@@ -112,9 +114,9 @@ public class OpenApiConfig {
         String tokenName = saTokenConfig.getTokenName();
         Info info = new Info()
                 // 设置页面标题
-                .title(StaticConfig.applicationName)
+                .title(applicationName)
                 // 设置接口描述
-                .description(StaticConfig.applicationName + "通用框架接口")
+                .description(applicationName + "通用框架接口")
                 // 设置联系方式
                 .contact(new Contact().name("七濑武【Nanase Takeshi】").email("takeshi@725.life").url("https://github.com/lihuaihe/takeshi"));
         SecurityScheme securityScheme = new SecurityScheme()

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.ResponseData;
@@ -40,6 +39,7 @@ import java.util.stream.Stream;
 public class TakeshiAsyncComponent {
 
     private final DataSource dataSource;
+    private final ObjectMapper objectMapper;
 
     /**
      * 排除敏感属性字段
@@ -96,7 +96,6 @@ public class TakeshiAsyncComponent {
      */
     private boolean successful(String responseData) {
         try {
-            ObjectMapper objectMapper = StaticConfig.objectMapper;
             ResponseData<?> data = objectMapper.readValue(responseData, ResponseData.class);
             return data.getCode() == TakeshiCode.SUCCESS.getCode();
         } catch (JsonProcessingException e) {

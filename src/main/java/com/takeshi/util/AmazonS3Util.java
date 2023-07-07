@@ -91,7 +91,7 @@ public final class AmazonS3Util {
     /**
      * 获取到的密钥信息
      */
-    public static volatile JsonNode JSON_NODE;
+    private static volatile JsonNode JSON_NODE;
 
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
@@ -150,6 +150,15 @@ public final class AmazonS3Util {
     }
 
     private AmazonS3Util() {
+    }
+
+    /**
+     * 获取密钥信息的JsonNode
+     *
+     * @return JsonNode
+     */
+    public static JsonNode getSecret() {
+        return JSON_NODE;
     }
 
     /**

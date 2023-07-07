@@ -6,6 +6,7 @@ import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.util.TakeshiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ThreadPoolConfig {
+
+    @Value("${server.port}")
+    private String serverPort;
 
     /**
      * 核心线程数 = cpu 核心数 + 1
@@ -48,7 +52,7 @@ public class ThreadPoolConfig {
         int KEEP_ALIVE_SECONDS = 300;
         executor.setKeepAliveSeconds(KEEP_ALIVE_SECONDS);
         executor.setTaskDecorator(new MdcTaskDecorator());
-        executor.setThreadNamePrefix("task-" + StaticConfig.serverPort + "-exec-");
+        executor.setThreadNamePrefix("task-" + serverPort + "-exec-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return executor;
@@ -62,7 +66,7 @@ public class ThreadPoolConfig {
     @Bean("scheduledExecutorService")
     protected ScheduledExecutorService scheduledExecutorService() {
         return new ScheduledThreadPoolExecutor(CORE,
-                ThreadUtil.newNamedThreadFactory("schedule-" + StaticConfig.serverPort + "-exec-", true),
+                ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),
                 new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
