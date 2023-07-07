@@ -176,7 +176,7 @@ public class ParamBO extends AbstractBasicSerializable {
         if (StrUtil.isNotBlank(userAgent)) {
             strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
         }
-        strBuilder.append("Request Address: ").append(this.getRequestUrl()).append(StrUtil.LF);
+        strBuilder.append("Request Address: ").append(StrUtil.BRACKET_START).append(this.httpMethod).append(StrUtil.BRACKET_END).append(this.getRequestUrl()).append(StrUtil.LF);
         if (ObjUtil.isNotNull(this.loginId)) {
             strBuilder.append("Requesting UserId: ").append(this.loginId).append(StrUtil.LF);
         }
