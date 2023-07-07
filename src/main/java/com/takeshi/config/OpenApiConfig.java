@@ -22,14 +22,16 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * OpenApiConfig
@@ -78,13 +80,8 @@ public class OpenApiConfig {
                 .addOperationCustomizer((operation, handlerMethod) -> {
                     // 生成通用响应信息
                     ApiResponses apiResponses = operation.getResponses();
-                    // 获取启动类所在的包名
-                    Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(SpringBootApplication.class);
-                    Class<?> mainClass = beansWithAnnotation.values().toArray()[0].getClass();
-                    String mainPackageName = ClassUtil.getPackage(mainClass);
-                    // 查询启动类包名下TakeshiCode子类集合
-                    Set<Class<?>> classSet = new HashSet<>(ClassUtil.scanPackageBySuper(mainPackageName, TakeshiCode.class));
-                    classSet.add(TakeshiCode.class);
+                    // 查询TakeshiCode子类集合
+                    Set<Class<?>> classSet = ClassUtil.scanPackage(StrUtil.EMPTY, TakeshiCode.class::isAssignableFrom);
                     classSet.stream()
                             .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item)))
                             .filter(item -> item.getType().isAssignableFrom(RetBO.class))

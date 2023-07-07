@@ -300,16 +300,6 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 根据 TableId 逻辑删除
-     *
-     * @param id id
-     * @return boolean
-     */
-    default boolean logicDeleteById(Serializable id) {
-        return this.getBaseMapper().logicDeleteById(id);
-    }
-
-    /**
      * 根据 entity 条件，查询对象，并转成一个pojo对象，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param queryWrapper 实体对象封装操作类
@@ -366,6 +356,16 @@ public interface ITakeshiService<T> extends IService<T> {
      */
     default <E> List<E> listPojoList(Wrapper<T> queryWrapper, Class<E> clazz) {
         return this.getBaseMapper().selectPojoList(queryWrapper, clazz);
+    }
+
+    /**
+     * 查询所有
+     *
+     * @return List
+     */
+    @Override
+    default List<T> list() {
+        return this.getBaseMapper().selectList();
     }
 
     /**

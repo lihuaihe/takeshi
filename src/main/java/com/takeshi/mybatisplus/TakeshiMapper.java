@@ -2,9 +2,7 @@ package com.takeshi.mybatisplus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.ClassScanner;
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.TypeUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -21,14 +19,12 @@ import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.apache.ibatis.logging.LogFactory;
-import org.apache.ibatis.parsing.ParsingException;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -39,11 +35,6 @@ import java.util.stream.Collectors;
  * @author 七濑武【Nanase Takeshi】
  */
 public interface TakeshiMapper<T> extends BaseMapper<T> {
-
-    /**
-     * 获取继承了TakeshiMapper接口的所有接口类
-     */
-    Set<Class<?>> MAPPER_SET = ClassScanner.scanPackageBySuper(null, TakeshiMapper.class);
 
     /**
      * 默认批次提交数量
@@ -108,6 +99,15 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      */
     default <E> List<E> selectPojoList(Wrapper<T> queryWrapper, Class<E> clazz) {
         return this.selectList(queryWrapper).stream().map(item -> BeanUtil.copyProperties(item, clazz)).collect(Collectors.toList());
+    }
+
+    /**
+     * 查询全部记录
+     *
+     * @return List
+     */
+    default List<T> selectList() {
+        return this.selectList(Wrappers.lambdaQuery(this.getEntityClass()));
     }
 
     /**
@@ -413,20 +413,24 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 根据 TableId 逻辑删除
+     * 根据 ID 删除
      *
-     * @param id id
-     * @return boolean
+     * @param id 主键ID
+     * @return int
      */
-    default boolean logicDeleteById(Serializable id) {
-        TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
-        if (tableInfo.isWithLogicDelete()) {
-            // 表字段启用了逻辑删除
-            T instance = tableInfo.newInstance();
-            tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), id);
-            return SqlHelper.retBool(this.deleteById(instance));
+    @Override
+    default int deleteById(Serializable id) {
+        Class<T> entityClass = this.getEntityClass();
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+        if (tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill()) {
+            if (!entityClass.isAssignableFrom(id.getClass())) {
+                // 表字段启用了逻辑删除
+                T instance = tableInfo.newInstance();
+                tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), id);
+                return this.deleteById(instance);
+            }
         }
-        return SqlHelper.retBool(this.deleteById(id));
+        return SqlHelper.execute(entityClass, m -> m.deleteById(id));
     }
 
     /**
@@ -446,14 +450,8 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      */
     default Class<?> getMapperClass() {
         Class<T> entityClass = this.getEntityClass();
-        List<Class<?>> list = MAPPER_SET.stream().filter(item -> TypeUtil.getTypeArgument(item).equals(entityClass)).toList();
-        if (CollUtil.isEmpty(list)) {
-            throw new ParsingException("The Mapper corresponding to this entity does not exist");
-        }
-        if (list.size() > 1) {
-            throw new TooManyResultsException("Expected one result to be returned by getMapperClass(), but found: " + list.size());
-        }
-        return list.get(0);
+        TableInfo tableInfo = Optional.ofNullable(TableInfoHelper.getTableInfo(entityClass)).orElseThrow(() -> ExceptionUtils.mpe("Can not find TableInfo from Class: \"%s\".", entityClass.getName()));
+        return ClassUtils.toClassConfident(tableInfo.getCurrentNamespace());
     }
 
     /**
