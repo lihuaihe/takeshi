@@ -78,7 +78,7 @@ public class TakeshiFilter implements Filter {
             String responseData = StrUtil.str(bytes, StandardCharsets.UTF_8);
             log.info("Response Data: {}", responseData);
             // 将响应内容写回到原始的 HttpServletResponse 中
-            ServletOutputStream outputStream = takeshiHttpResponseWrapper.getOutputStream();
+            ServletOutputStream outputStream = httpServletResponse.getOutputStream();
             outputStream.write(bytes);
             outputStream.flush();
             // 关闭输出流
