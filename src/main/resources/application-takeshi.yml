@@ -1,4 +1,9 @@
+# 如果在application.yml文件中使用include了本配置，application.yml中写的属性值不会覆盖本配置属性值，
+# 想要覆盖本配置中的属性值，就需要在include一个配置，才能覆盖本配置属性值
 spring:
+  pid:
+    file: pid/${spring.application.name}/application.pid
+    fail-on-write-error: true
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -40,7 +45,7 @@ knife4j:
 
 logging:
   file:
-    path: ./logs/${spring.application.name}
+    path: logs/${spring.application.name}
   level:
     root: info
 
