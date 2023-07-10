@@ -413,27 +413,6 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 根据 ID 删除
-     *
-     * @param id 主键ID
-     * @return int
-     */
-    @Override
-    default int deleteById(Serializable id) {
-        Class<T> entityClass = this.getEntityClass();
-        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
-        if (tableInfo.isWithLogicDelete() && tableInfo.isWithUpdateFill()) {
-            if (!entityClass.isAssignableFrom(id.getClass())) {
-                // 表字段启用了逻辑删除
-                T instance = tableInfo.newInstance();
-                tableInfo.setPropertyValue(instance, tableInfo.getKeyProperty(), id);
-                return this.deleteById(instance);
-            }
-        }
-        return SqlHelper.execute(entityClass, m -> m.deleteById(id));
-    }
-
-    /**
      * 获取 entity 的 class
      *
      * @return Class
