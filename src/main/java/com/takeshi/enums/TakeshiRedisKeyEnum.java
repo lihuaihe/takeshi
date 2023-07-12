@@ -22,13 +22,13 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
      */
     IP_BLACKLIST("ipBlacklist:{}"),
     /**
-     * nonce限制{clientIp}{servletPath}
+     * nonce限制{nonce}
      */
-    NONCE_RATE_LIMIT("rate:nonce:{}:{}"),
+    NONCE_RATE_LIMIT("rate:nonce:{}"),
     /**
-     * ip限制{clientIp}{servletPath}
+     * ip限制{clientIp}
      */
-    IP_RATE_LIMIT("rate:ip:{}:{}"),
+    IP_RATE_LIMIT("rate:ip:{}"),
     /**
      * 重复提交{MD5后的值}
      */

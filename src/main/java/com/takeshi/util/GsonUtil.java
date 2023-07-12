@@ -9,6 +9,7 @@ import com.google.gson.LongSerializationPolicy;
 import com.google.gson.reflect.TypeToken;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.gson.*;
+import org.apache.ibatis.type.InstantTypeHandler;
 
 import java.lang.reflect.Type;
 import java.time.*;
@@ -31,6 +32,7 @@ public final class GsonUtil {
     public static Gson gson() {
         return Singleton.get("gson", () -> new GsonBuilder()
                 .setDateFormat(TakeshiDatePattern.NORM_DATETIME_PATTERN)
+                .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
                 .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
                 .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
                 .registerTypeAdapter(LocalDate.class, new LocalDataTypeAdapter())

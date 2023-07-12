@@ -22,7 +22,7 @@ public class RateLimitProperties {
      * 设置0则不校验
      */
     @PositiveOrZero
-    private int maxTimeDiff = 60;
+    private int maxTimeDiff = 0;
 
     /**
      * 接口header里传递的nonce限制
@@ -35,7 +35,7 @@ public class RateLimitProperties {
     private IpRate ip = new IpRate();
 
     /**
-     * 接口header里传递的nonce限制
+     * 接口header里传递的nonce限制，例如：设置一天内nonce只能使用一次
      */
     @Data
     public static class NonceRate {
@@ -50,12 +50,12 @@ public class RateLimitProperties {
          * 速率时间间隔，设置0则不对nonce限制
          */
         @PositiveOrZero
-        private int rateInterval = 60;
+        private int rateInterval = 0;
 
         /**
          * 速率时间间隔单位
          */
-        private RateIntervalUnit rateIntervalUnit = RateIntervalUnit.SECONDS;
+        private RateIntervalUnit rateIntervalUnit = RateIntervalUnit.DAYS;
 
     }
 

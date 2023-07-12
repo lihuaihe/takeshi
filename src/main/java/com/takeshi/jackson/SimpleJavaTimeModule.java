@@ -35,6 +35,7 @@ public final class SimpleJavaTimeModule extends SimpleModule {
         addSerializer(BigDecimal.class, ToStringSerializer.instance);
 
         addSerializer(Date.class, new DateSerializer(false, DateUtil.newSimpleFormat(TakeshiDatePattern.NORM_DATETIME_PATTERN)));
+        addSerializer(Instant.class, InstantSerializer.INSTANCE);
         addSerializer(ZonedDateTime.class, ZonedDateTimeTakeshiSerializer.INSTANCE);
         addSerializer(LocalDate.class, new LocalDateSerializer(TakeshiDatePattern.NORM_DATE_FORMATTER));
         addSerializer(LocalTime.class, new LocalTimeSerializer(TakeshiDatePattern.NORM_TIME_FORMATTER));
@@ -45,6 +46,7 @@ public final class SimpleJavaTimeModule extends SimpleModule {
         addSerializer(OffsetDateTime.class, OffsetDateTimeTakeshiSerializer.INSTANCE);
 
         addDeserializer(Date.class, DateTakeshiDeserializer.INSTANCE);
+        addDeserializer(Instant.class, InstantDeserializer.INSTANT);
         addDeserializer(ZonedDateTime.class, ZonedDateTimeTakeshiDeserializer.INSTANCE);
         addDeserializer(LocalDate.class, new LocalDateDeserializer(TakeshiDatePattern.NORM_DATE_FORMATTER));
         addDeserializer(LocalTime.class, new LocalTimeDeserializer(TakeshiDatePattern.NORM_TIME_FORMATTER));
