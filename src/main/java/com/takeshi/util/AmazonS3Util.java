@@ -79,7 +79,7 @@ public final class AmazonS3Util {
     private static final String COVER_THUMBNAIL = "Cover-Thumbnail";
 
     // X-NT都是临时签名URL中的参数名
-    private static final String S3_ORIGINAL_NAME = "X-NT-OriginalName";
+    private static final String S3_ORIGINAL_FULL_NAME = "X-NT-OriginalFullName";
     private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
     private static final String S3_CONTENT_TYPE = "X-NT-ContentType";
     private static final String S3_LENGTH_IN_TIME = "X-NT-LengthInTime";
@@ -381,7 +381,7 @@ public final class AmazonS3Util {
                         Date date = Date.from(Instant.now().plus(duration));
                         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, fileKey)
                                 .withExpiration(date);
-                        generatePresignedUrlRequest.addRequestParameter(S3_ORIGINAL_NAME, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME));
+                        generatePresignedUrlRequest.addRequestParameter(S3_ORIGINAL_FULL_NAME, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME) + objectMetadata.getUserMetaDataOf(EXTENSION_NAME));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_TYPE, objectMetadata.getContentType());
                         String lengthInTime = objectMetadata.getUserMetaDataOf(LENGTH_IN_TIME);
