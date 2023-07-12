@@ -79,6 +79,7 @@ public final class AmazonS3Util {
     private static final String COVER_THUMBNAIL = "Cover-Thumbnail";
 
     // X-NT都是临时签名URL中的参数名
+    private static final String S3_ORIGINAL_NAME = "X-NT-OriginalName";
     private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
     private static final String S3_CONTENT_TYPE = "X-NT-ContentType";
     private static final String S3_LENGTH_IN_TIME = "X-NT-LengthInTime";
@@ -310,7 +311,7 @@ public final class AmazonS3Util {
                         thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
                         thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
                         thumbnailMetadata.addUserMetadata(EXTENSION_NAME, StrUtil.DOT + ImgUtil.IMAGE_TYPE_JPG);
-                        String thumbnailObjKey = getThumbnailObjKey(mainName);
+                        String thumbnailObjKey = getThumbnailObjKey();
                         // 添加视频/GIF封面图缩略图的S3 key
                         metadata.addUserMetadata(COVER_THUMBNAIL, thumbnailObjKey);
                         PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
@@ -319,7 +320,7 @@ public final class AmazonS3Util {
                 }
             }
 
-            String fileObjKey = getFileObjKey(mainName, extension);
+            String fileObjKey = getFileObjKey(extension);
             PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
             // TransferManager 异步处理所有传输,所以这个调用立即返回
             Upload upload = transferManager.upload(putObjectRequest);
@@ -380,6 +381,7 @@ public final class AmazonS3Util {
                         Date date = Date.from(Instant.now().plus(duration));
                         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, fileKey)
                                 .withExpiration(date);
+                        generatePresignedUrlRequest.addRequestParameter(S3_ORIGINAL_NAME, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_TYPE, objectMetadata.getContentType());
                         String lengthInTime = objectMetadata.getUserMetaDataOf(LENGTH_IN_TIME);
@@ -459,24 +461,22 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径（Key）
      *
-     * @param mainName  文件名
      * @param extension 扩展名
      * @return 完整路径
      */
-    public static String getFileObjKey(String mainName, String extension) {
+    public static String getFileObjKey(String extension) {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, extension).toString();
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), extension).toString();
     }
 
     /**
      * 获取视频/GIF封面缩略图文件存储的完整路径（Key）
      *
-     * @param mainName 文件名
      * @return 完整路径
      */
-    public static String getThumbnailObjKey(String mainName) {
+    public static String getThumbnailObjKey() {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.SLASH, mainName, StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
+        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
     }
 
 }
