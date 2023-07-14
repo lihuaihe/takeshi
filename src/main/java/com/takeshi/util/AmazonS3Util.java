@@ -466,7 +466,7 @@ public final class AmazonS3Util {
      */
     public static String getFileObjKey(String extension) {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), extension).toString();
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), extension).toString();
     }
 
     /**
@@ -476,7 +476,7 @@ public final class AmazonS3Util {
      */
     public static String getThumbnailObjKey() {
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.getSnowflakeNextIdStr(), StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
+        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
     }
 
 }

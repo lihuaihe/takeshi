@@ -23,7 +23,7 @@ public class MdcTaskDecorator implements TaskDecorator {
                 MDC.setContextMap(copyOfContextMap);
                 String traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
                 if (StrUtil.isBlank(traceId)) {
-                    traceId = IdUtil.fastUUID();
+                    traceId = IdUtil.fastSimpleUUID();
                     MDC.put(TakeshiConstants.TRACE_ID_KEY, traceId);
                 }
                 runnable.run();

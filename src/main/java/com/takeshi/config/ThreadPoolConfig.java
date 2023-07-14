@@ -70,7 +70,7 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastUUID());
+                MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastSimpleUUID());
                 super.beforeExecute(t, r);
             }
 
