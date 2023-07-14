@@ -359,16 +359,6 @@ public interface ITakeshiService<T> extends IService<T> {
     }
 
     /**
-     * 查询所有
-     *
-     * @return List
-     */
-    @Override
-    default List<T> list() {
-        return this.getBaseMapper().selectList();
-    }
-
-    /**
      * 获取对应 entity 的 BaseMapper
      *
      * @return BaseMapper

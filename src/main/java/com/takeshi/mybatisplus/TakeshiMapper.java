@@ -107,7 +107,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * @return List
      */
     default List<T> selectList() {
-        return this.selectList(Wrappers.lambdaQuery(this.getEntityClass()));
+        return this.selectList(Wrappers.emptyWrapper());
     }
 
     /**
