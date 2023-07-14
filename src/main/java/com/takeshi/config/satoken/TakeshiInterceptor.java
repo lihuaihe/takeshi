@@ -191,8 +191,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
 
         RepeatSubmit repeatSubmit = handlerMethod.getMethodAnnotation(RepeatSubmit.class);
         RateLimitProperties.IpRate ipRate = rate.getIp();
+        boolean overwritten = false;
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() > 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
+            overwritten = true;
             ipRate.setRate(repeatSubmit.ipRate());
             ipRate.setRateInterval(repeatSubmit.ipRateInterval());
             ipRate.setRateIntervalUnit(repeatSubmit.ipRateIntervalUnit());
@@ -207,7 +209,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             if (!ipRateLimiter.tryAcquire()) {
                 if (ipRate.isOpenBlacklist()) {
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
-                    IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(servletPath, Instant.now());
+                    IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, servletPath, ipRate, overwritten, Instant.now());
                     StaticConfig.redisComponent.saveMidnight(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
                 }
                 SaRouter.back(TakeshiCode.RATE_LIMIT);

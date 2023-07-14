@@ -69,7 +69,7 @@ public class RateLimitProperties {
          * 率
          */
         @Positive
-        private int rate = 5;
+        private int rate = 10;
 
         /**
          * 速率时间间隔，设置0则不对接口IP限制
