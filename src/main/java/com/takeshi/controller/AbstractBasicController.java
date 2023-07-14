@@ -154,25 +154,25 @@ public abstract class AbstractBasicController {
      * 返回结果状态信息
      *
      * @param retBO 消息
-     * @param date  附加对象
+     * @param data  附加对象
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO, T date) {
-        return ResponseData.retData(retBO, date);
+    public static <T> ResponseData<T> retData(RetBO retBO, T data) {
+        return ResponseData.retData(retBO, data);
     }
 
     /**
      * 返回结果状态信息
      *
      * @param retBO 消息
-     * @param date  附加对象
+     * @param data  附加对象
      * @param args  将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO, T date, Object... args) {
-        return ResponseData.retData(retBO, date, args);
+    public static <T> ResponseData<T> retData(RetBO retBO, T data, Object... args) {
+        return ResponseData.retData(retBO, data, args);
     }
 
     /**
