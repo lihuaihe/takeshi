@@ -199,8 +199,18 @@ public class RedisComponent {
      * @param dateTime 希望在哪个时间失效，毫秒数
      */
     public void saveToDateTime(String key, String value, long dateTime) {
-        long timeout = dateTime - Instant.now().toEpochMilli();
-        this.boundValueOps(key).set(value, timeout, TimeUnit.MILLISECONDS);
+        this.boundValueOps(key).set(value, Duration.between(Instant.now(), Instant.ofEpochMilli(dateTime)));
+    }
+
+    /**
+     * 写入缓存设置失效时间到指定时间
+     *
+     * @param key     key
+     * @param value   value
+     * @param timeout 希望在哪个时间失效
+     */
+    public void saveToDateTime(String key, String value, Instant timeout) {
+        this.boundValueOps(key).set(value, Duration.between(Instant.now(), timeout));
     }
 
     /**
@@ -210,8 +220,7 @@ public class RedisComponent {
      * @param value value
      */
     public void saveMidnight(String key, String value) {
-        long timeout = ZonedDateTime.now().with(LocalTime.MAX).toInstant().toEpochMilli() - ZonedDateTime.now().toInstant().toEpochMilli();
-        this.boundValueOps(key).set(value, timeout, TimeUnit.MILLISECONDS);
+        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(LocalTime.MAX)));
     }
 
     /**
@@ -221,8 +230,7 @@ public class RedisComponent {
      * @param value value
      */
     public void saveSunDayMidnight(String key, String value) {
-        long timeout = ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX).toInstant().toEpochMilli() - ZonedDateTime.now().toInstant().toEpochMilli();
-        this.boundValueOps(key).set(value, timeout, TimeUnit.MILLISECONDS);
+        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
     }
 
     /**
@@ -400,6 +408,44 @@ public class RedisComponent {
      */
     public void expire(String key, long timeout, TimeUnit unit) {
         this.boundValueOps(key).expire(timeout, unit);
+    }
+
+    /**
+     * 设置key的生存时间
+     *
+     * @param key     key
+     * @param timeout 失效时间
+     */
+    public void expire(String key, Instant timeout) {
+        this.boundValueOps(key).expire(Duration.between(Instant.now(), timeout));
+    }
+
+    /**
+     * 设置key的生存时间
+     *
+     * @param key     key
+     * @param timeout 失效时间
+     */
+    public void expire(String key, Duration timeout) {
+        this.boundValueOps(key).expire(timeout);
+    }
+
+    /**
+     * 设置key的生存时间，失效时间到当天结束时间，例如：2023-04-23 23:59:59
+     *
+     * @param key key
+     */
+    public void expireAtMidnight(String key) {
+        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(LocalTime.MAX)));
+    }
+
+    /**
+     * 设置key的生存时间，失效时间到本周日的结束时间，例如周日时间是：2023-04-23，那么周日结束时间就是 2023-04-23 23:59:59
+     *
+     * @param key key
+     */
+    public void expireAtSunDayMidnight(String key) {
+        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
     }
 
     /**
