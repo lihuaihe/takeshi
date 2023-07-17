@@ -25,7 +25,7 @@ import java.security.KeyPair;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration
+@AutoConfiguration(before = TakeshiConfig.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
 
