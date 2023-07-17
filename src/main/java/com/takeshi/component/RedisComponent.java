@@ -219,7 +219,7 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveMidnight(String key, String value) {
+    public void saveToMidnight(String key, String value) {
         this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(LocalTime.MAX)));
     }
 
@@ -229,8 +229,28 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveSunDayMidnight(String key, String value) {
+    public void saveToSunDayMidnight(String key, String value) {
         this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
+    }
+
+    /**
+     * 写入缓存设置失效时间到本月的结束时间，例如本月最后一天时间是：2023-04-30，那么本月结束时间就是 2023-04-30 23:59:59
+     *
+     * @param key   key
+     * @param value value
+     */
+    public void saveToLastDayOfMonthMidnight(String key, String value) {
+        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX)));
+    }
+
+    /**
+     * 写入缓存设置失效时间到本年的结束时间，例如本年最后一天时间是：2023-12-31，那么本年结束时间就是 2023-12-31 23:59:59
+     *
+     * @param key   key
+     * @param value value
+     */
+    public void saveToLastDayOfYearMidnight(String key, String value) {
+        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MAX)));
     }
 
     /**
@@ -446,6 +466,24 @@ public class RedisComponent {
      */
     public void expireAtSunDayMidnight(String key) {
         this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
+    }
+
+    /**
+     * 设置key的生存时间，失效时间到本月的结束时间，例如本月最后一天时间是：2023-04-30，那么本月结束时间就是 2023-04-30 23:59:59
+     *
+     * @param key key
+     */
+    public void expireAtLastDayOfMonthMidnight(String key) {
+        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX)));
+    }
+
+    /**
+     * 设置key的生存时间，失效时间到本年的结束时间，例如本年最后一天时间是：2023-12-31，那么本年结束时间就是 2023-12-31 23:59:59
+     *
+     * @param key key
+     */
+    public void expireAtLastDayOfYearMidnight(String key) {
+        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MAX)));
     }
 
     /**
