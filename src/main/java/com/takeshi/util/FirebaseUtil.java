@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -171,22 +172,11 @@ public final class FirebaseUtil {
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
          * @param pathString 子路径
-         * @param value      值
-         * @return {@link ApiFuture}
-         */
-        public static ApiFuture<Void> setValueAsync(String pathString, Long value) {
-            return DATABASE_REFERENCE.child(pathString).setValueAsync(StrUtil.toStringOrNull(value));
-        }
-
-        /**
-         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
-         *
-         * @param pathString 子路径
-         * @param value      值
+         * @param value      值，不需要特地转JSON字符串，
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
-            return DATABASE_REFERENCE.child(pathString).setValueAsync(value);
+            return DATABASE_REFERENCE.child(pathString).setValueAsync((value instanceof Long || value instanceof BigInteger) ? StrUtil.toStringOrNull(value) : value);
         }
 
         /**
