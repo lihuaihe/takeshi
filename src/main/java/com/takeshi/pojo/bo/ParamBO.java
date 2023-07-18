@@ -14,6 +14,7 @@ import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
+import com.takeshi.util.GsonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -168,31 +169,19 @@ public class ParamBO extends AbstractBasicSerializable {
      * @return String
      */
     public String filterInfo() {
-        StringBuilder strBuilder = new StringBuilder();
-        if (StrUtil.isNotBlank(clientIp)) {
-            strBuilder.append("Request IP: ").append(clientIp).append(StrUtil.LF);
-        }
+        Map<String, Object> map = new HashMap<>(16);
+        map.put("Request IP", this.clientIp);
         String userAgent = this.headerParam.get(Header.USER_AGENT.getValue());
-        if (StrUtil.isNotBlank(userAgent)) {
-            strBuilder.append("Request UserAgent: ").append(userAgent).append(StrUtil.LF);
-        }
-        strBuilder.append("Request Address: ").append(StrUtil.BRACKET_START).append(this.httpMethod).append(StrUtil.BRACKET_END).append(this.getRequestUrl()).append(StrUtil.LF);
-        if (ObjUtil.isNotNull(this.loginId)) {
-            strBuilder.append("Requesting UserId: ").append(this.loginId).append(StrUtil.LF);
-        }
+        map.put("Request UserAgent", userAgent);
+        map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, this.httpMethod, StrUtil.BRACKET_END, this.getRequestUrl()));
+        map.put("Requesting UserId", this.loginId);
         String timestamp = this.headerParam.get(TakeshiConstants.TIMESTAMP_NAME);
-        if (StrUtil.isNotBlank(timestamp)) {
-            strBuilder.append("Header Timestamp: ").append(timestamp).append(StrUtil.LF);
-        }
+        map.put("Header Timestamp", timestamp);
         String nonce = this.headerParam.get(TakeshiConstants.NONCE_NAME);
-        if (StrUtil.isNotBlank(nonce)) {
-            strBuilder.append("Header Nonce: ").append(nonce).append(StrUtil.LF);
-        }
+        map.put("Header Nonce", nonce);
         String geoPoint = this.headerParam.get(TakeshiConstants.GEO_POINT_NAME);
-        if (StrUtil.isNotBlank(geoPoint)) {
-            strBuilder.append("Header GeoPoint: ").append(geoPoint).append(StrUtil.LF);
-        }
-        return StrUtil.removeSuffix(strBuilder, StrUtil.LF);
+        map.put("Header GeoPoint", geoPoint);
+        return GsonUtil.toJson(map);
     }
 
     /**

@@ -70,7 +70,7 @@ public class TakeshiFilter implements Filter {
                 takeshiHttpRequestWrapper = new TakeshiHttpRequestWrapper(httpServletRequest);
             }
             ParamBO paramBO = this.setParamBOAttribute(takeshiHttpRequestWrapper);
-            log.info("TakeshiFilter.doFilter --> Request Start:\n{}", paramBO.filterInfo());
+            log.info("TakeshiFilter.doFilter --> Request Start: {}", paramBO.filterInfo());
             TakeshiHttpResponseWrapper takeshiHttpResponseWrapper = new TakeshiHttpResponseWrapper(httpServletResponse);
             chain.doFilter(takeshiHttpRequestWrapper, takeshiHttpResponseWrapper);
             // 获取 takeshiHttpResponseWrapper 的返回值
