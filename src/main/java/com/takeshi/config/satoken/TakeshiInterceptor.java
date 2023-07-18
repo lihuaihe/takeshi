@@ -116,7 +116,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String methodName = StrUtil.builder(method.getDeclaringClass().getName(), StrUtil.DOT, method.getName()).toString();
             paramBO.setMethodName(methodName);
             paramBO.setTakeshiLog(method.getAnnotation(TakeshiLog.class));
-            log.info("TakeshiInterceptor.preHandle --> Request Delivery:\nRequest Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, paramBO.getHttpMethod(), StrUtil.BRACKET_END, methodName));
+            log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, paramBO.getHttpMethod(), StrUtil.BRACKET_END, methodName));
             log.info("Request Parameters: {}", paramBO.getParamObjectNode());
             // 速率限制
             SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, paramBO);

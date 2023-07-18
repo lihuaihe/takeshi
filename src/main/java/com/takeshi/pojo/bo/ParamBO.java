@@ -21,10 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ParamBO
@@ -169,7 +166,7 @@ public class ParamBO extends AbstractBasicSerializable {
      * @return String
      */
     public String filterInfo() {
-        Map<String, Object> map = new HashMap<>(16);
+        Map<String, Object> map = new LinkedHashMap<>(16);
         map.put("Request IP", this.clientIp);
         String userAgent = this.headerParam.get(Header.USER_AGENT.getValue());
         map.put("Request UserAgent", userAgent);
