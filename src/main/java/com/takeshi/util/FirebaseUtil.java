@@ -113,7 +113,7 @@ public final class FirebaseUtil {
          * @return 数据库位置的数据
          */
         public static DataSnapshot increment(String pathString) {
-            return runTransactionOfSelfChange(pathString, 1L);
+            return runTransactionOfSelfChange(pathString, 1);
         }
 
         /**
@@ -123,7 +123,7 @@ public final class FirebaseUtil {
          * @return 数据库位置的数据
          */
         public static DataSnapshot decrement(String pathString) {
-            return runTransactionOfSelfChange(pathString, -1L);
+            return runTransactionOfSelfChange(pathString, -1);
         }
 
         /**
@@ -133,7 +133,7 @@ public final class FirebaseUtil {
          * @return 数据库位置的数据
          */
         public static DataSnapshot initialize(String pathString) {
-            return runTransactionOfSelfChange(pathString, 0L);
+            return runTransactionOfSelfChange(pathString, 0);
         }
 
         /**
@@ -144,13 +144,13 @@ public final class FirebaseUtil {
          * @param delta      值，如果传了0，则直接将值设置为0，不进行加减
          * @return 数据库位置的数据
          */
-        public static DataSnapshot runTransactionOfSelfChange(String pathString, long delta) {
+        public static DataSnapshot runTransactionOfSelfChange(String pathString, int delta) {
             CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
             DATABASE_REFERENCE.child(pathString)
                     .runTransaction(new Transaction.Handler() {
                         @Override
                         public Transaction.Result doTransaction(MutableData currentData) {
-                            Long finalValue = (0L == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Long.class), 0L) + delta;
+                            Integer finalValue = (0 == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Integer.class), 0) + delta;
                             currentData.setValue(finalValue);
                             return Transaction.success(currentData);
                         }
@@ -174,8 +174,19 @@ public final class FirebaseUtil {
          * @param value      值
          * @return {@link ApiFuture}
          */
+        public static ApiFuture<Void> setValueAsync(String pathString, Long value) {
+            return DATABASE_REFERENCE.child(pathString).setValueAsync(StrUtil.toStringOrNull(value));
+        }
+
+        /**
+         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
+         *
+         * @param pathString 子路径
+         * @param value      值
+         * @return {@link ApiFuture}
+         */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
-            return DATABASE_REFERENCE.child(pathString).setValueAsync(GsonUtil.fromJson(GsonUtil.gsonLongToString().toJson(value), Object.class));
+            return DATABASE_REFERENCE.child(pathString).setValueAsync(value);
         }
 
         /**

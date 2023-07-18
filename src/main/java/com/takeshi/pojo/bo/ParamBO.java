@@ -203,10 +203,18 @@ public class ParamBO extends AbstractBasicSerializable {
      */
     public ObjectNode getParamObjectNode(String... exclusionFieldName) {
         ObjectNode objectNode = StaticConfig.objectMapper.createObjectNode();
-        objectNode.putPOJO("urlParam", urlParam);
-        objectNode.putPOJO("multipart", multipart);
-        objectNode.putPOJO("bodyObject", bodyObject);
-        objectNode.putPOJO("bodyOther", bodyOther);
+        if (CollUtil.isNotEmpty(this.urlParam)) {
+            objectNode.putPOJO("urlParam", this.urlParam);
+        }
+        if (CollUtil.isNotEmpty(this.multipart)) {
+            objectNode.putPOJO("multipart", this.multipart);
+        }
+        if (CollUtil.isNotEmpty(this.bodyObject)) {
+            objectNode.putPOJO("bodyObject", this.bodyObject);
+        }
+        if (ObjUtil.isNotEmpty(this.bodyOther)) {
+            objectNode.putPOJO("bodyOther", this.bodyOther);
+        }
         if (ArrayUtil.isNotEmpty(exclusionFieldName)) {
             for (String fieldName : exclusionFieldName) {
                 objectNode.findParents(fieldName).forEach(item -> ((ObjectNode) item).remove(fieldName));
