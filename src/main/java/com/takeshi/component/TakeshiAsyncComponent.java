@@ -62,7 +62,7 @@ public class TakeshiAsyncComponent {
                     String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
                     ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
                     TbSysLog tbSysLog = new TbSysLog();
-                    tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
+                    tbSysLog.setLogType(takeshiLog.logType());
                     tbSysLog.setLoginId(paramBO.getLoginId());
                     tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
                     Map<String, String> headerParam = paramBO.getHeaderParam();
@@ -74,6 +74,7 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
                     tbSysLog.setRequestParams(paramObjectNode.toString());
                     tbSysLog.setResponseData(responseData);
+                    tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                     tbSysLog.setSuccessful(this.successful(responseData));
                     tbSysLog.setRequestTime(startTimeMillis);
                     tbSysLog.setCostTime(totalTimeMillis);

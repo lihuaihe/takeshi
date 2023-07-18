@@ -1,5 +1,6 @@
 package com.takeshi.pojo.basic;
 
+import com.takeshi.enums.LogTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -29,6 +30,12 @@ public class TbSysLog implements Serializable {
     private Long logId;
 
     /**
+     * 日志类型
+     */
+    @Schema(description = "日志类型")
+    private LogTypeEnum logType;
+
+    /**
      * 登录的用户ID
      */
     @Schema(description = "登录的用户ID")
@@ -43,6 +50,7 @@ public class TbSysLog implements Serializable {
     /**
      * 请求的IP对应的地址
      */
+    @Schema(description = "请求的IP对应的地址")
     private String clientIpAddress;
 
     /**
