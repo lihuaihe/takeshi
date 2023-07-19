@@ -62,7 +62,7 @@ public class TakeshiAsyncComponent {
                     String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
                     ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
                     TbSysLog tbSysLog = new TbSysLog();
-                    tbSysLog.setLogType(takeshiLog.logType());
+                    tbSysLog.setLogType(takeshiLog.logType().name());
                     tbSysLog.setLoginId(paramBO.getLoginId());
                     tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
                     Map<String, String> headerParam = paramBO.getHeaderParam();

@@ -33,7 +33,7 @@ public class TbSysLog implements Serializable {
      * 日志类型
      */
     @Schema(description = "日志类型")
-    private LogTypeEnum logType;
+    private String logType;
 
     /**
      * 登录的用户ID

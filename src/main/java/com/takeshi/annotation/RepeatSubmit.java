@@ -3,6 +3,7 @@ package com.takeshi.annotation;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.redisson.api.RateIntervalUnit;
+import org.springframework.validation.annotation.Validated;
 
 import java.lang.annotation.*;
 
@@ -14,6 +15,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Validated
 public @interface RepeatSubmit {
 
     /**
