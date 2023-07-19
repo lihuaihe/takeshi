@@ -2,6 +2,7 @@ package com.takeshi.component;
 
 import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
 import cn.hutool.http.Header;
@@ -73,7 +74,7 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setRequestUrl(paramBO.getRequestUrl());
                     tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
                     tbSysLog.setRequestParams(paramObjectNode.toString());
-                    tbSysLog.setResponseData(responseData);
+                    tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
                     tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                     tbSysLog.setSuccessful(this.successful(responseData));
                     tbSysLog.setRequestTime(startTimeMillis);
@@ -97,11 +98,13 @@ public class TakeshiAsyncComponent {
      */
     private boolean successful(String responseData) {
         try {
-            ResponseData<?> data = objectMapper.readValue(responseData, ResponseData.class);
-            return data.getCode() == TakeshiCode.SUCCESS.getCode();
-        } catch (JsonProcessingException e) {
-            return true;
+            if (StrUtil.isNotEmpty(responseData)) {
+                ResponseData<?> data = objectMapper.readValue(responseData, ResponseData.class);
+                return data.getCode() == TakeshiCode.SUCCESS.getCode();
+            }
+        } catch (JsonProcessingException ignored) {
         }
+        return true;
     }
 
 }
