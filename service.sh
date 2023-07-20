@@ -6,7 +6,7 @@ userRegion='US'
 userTimezone='Australia/Sydney'
 
 APP_NAME=$2
-JAR_FILE="dev-${APP_NAME}-0.0.1-SNAPSHOT.jar"
+JAR_FILE="prod-${APP_NAME}-0.0.1-SNAPSHOT.jar"
 PID_FILE_PATH="./pid/${APP_NAME}.pid"
 
 #启动方法
