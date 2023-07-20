@@ -55,19 +55,24 @@ public interface TakeshiCode {
     RetBO DB_ERROR = new RetBO(1003, "dbError.message");
 
     /**
+     * redis错误
+     */
+    RetBO REDIS_ERROR = new RetBO(1004, "redisError.message");
+
+    /**
      * 当前访问人数过多，请稍后再试
      */
-    RetBO CURRENTLY_TOO_MANY_VISITORS = new RetBO(1004, "currentlyTooManyVisitors.message");
+    RetBO CURRENTLY_TOO_MANY_VISITORS = new RetBO(1005, "currentlyTooManyVisitors.message");
 
     /**
      * 不允许重复提交，请稍候再试
      */
-    RetBO REPEAT_SUBMIT = new RetBO(1005, "repeatSubmit.message");
+    RetBO REPEAT_SUBMIT = new RetBO(1006, "repeatSubmit.message");
 
     /**
      * 传递的值和接收的值不匹配
      */
-    RetBO INVALID_VALUE = new RetBO(1006, "invalidValue.message");
+    RetBO INVALID_VALUE = new RetBO(1007, "invalidValue.message");
 
     /**
      * 验证码过期/不存在

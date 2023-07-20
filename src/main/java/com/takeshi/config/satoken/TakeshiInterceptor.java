@@ -181,7 +181,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         if (signVerify && nonceRate.getRateInterval() > 0) {
             String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonce);
             RRateLimiter nonceRateLimiter = StaticConfig.redisComponent.getRateLimiter(nonceRateLimitKey);
+            // nonce限流
             nonceRateLimiter.trySetRate(RateType.PER_CLIENT, nonceRate.getRate(), nonceRate.getRateInterval(), nonceRate.getRateIntervalUnit());
+            // 设置限流器过期时间
             nonceRateLimiter.expire(Duration.ofMillis(nonceRate.getRateIntervalUnit().toMillis(nonceRate.getRateInterval())));
             if (!nonceRateLimiter.tryAcquire()) {
                 // nonce重复使用
@@ -205,7 +207,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             RRateLimiter ipRateLimiter = StaticConfig.redisComponent.getRateLimiter(ipRateLimitKey);
             // 接口IP限流
             ipRateLimiter.trySetRate(RateType.PER_CLIENT, ipRate.getRate(), ipRate.getRateInterval(), ipRate.getRateIntervalUnit());
-            ipRateLimiter.expire(Duration.ofMillis(ipRate.getRateIntervalUnit().toMillis(ipRate.getRateInterval())));
+            // 设置限流器过期时间为1天
+            ipRateLimiter.expire(Duration.ofDays(1));
             if (!ipRateLimiter.tryAcquire()) {
                 if (ipRate.isOpenBlacklist()) {
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
@@ -240,6 +243,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             RRateLimiter rateLimiter = StaticConfig.redisComponent.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次
             rateLimiter.trySetRate(RateType.PER_CLIENT, 1, rateInterval, repeatSubmit.rateIntervalUnit());
+            // 设置限流器过期时间
             rateLimiter.expire(Duration.ofMillis(repeatSubmit.rateIntervalUnit().toMillis(rateInterval)));
             if (!rateLimiter.tryAcquire()) {
                 SaRouter.back(retBO);

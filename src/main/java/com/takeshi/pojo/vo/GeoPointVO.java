@@ -38,10 +38,8 @@ public class GeoPointVO extends AbstractBasicSerializable {
      * @param lat 纬度
      */
     public GeoPointVO(@NotNull Double lon, @NotNull Double lat) {
-        Assert.isTrue(lat >= -90.0 && lat <= 90.0, "Latitude must be in the range of [-90, 90] degrees");
-        Assert.isTrue(lon >= -180.0 && lon <= 180.0, "Longitude must be in the range of [-180, 180] degrees");
-        this.lon = lon;
-        this.lat = lat;
+        this.setLon(lon);
+        this.setLat(lat);
     }
 
     /**
