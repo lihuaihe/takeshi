@@ -45,9 +45,16 @@ knife4j:
 
 logging:
   file:
+    # 日志路径
     path: logs/${spring.application.name}
   level:
     root: info
+  logback:
+    rollingpolicy:
+      # 到了指定大小就会再创建一个文件
+      max-file-size: 3MB
+      # 日志文档保留天数
+      max-history: 7
 
 mybatis-plus:
   global-config:
