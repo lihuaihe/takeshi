@@ -1,12 +1,14 @@
 #!/bin/bash
 
-#启动jar包的脚本，springboot的jar开启了优雅关闭，使用该脚本可以优雅关闭jar
+#启动jar包的脚本，springboot的jar开启了优雅关闭，且设置了ApplicationPidFileWriter的监听器，使用该脚本可以优雅关闭jar
 userLanguage='en'
 userRegion='US'
 userTimezone='Australia/Sydney'
 
 APP_NAME=$2
+#完整的jar包名称
 JAR_FILE="prod-${APP_NAME}-0.0.1-SNAPSHOT.jar"
+#ApplicationPidFileWriter监听器生成的pid文件
 PID_FILE_PATH="./pid/${APP_NAME}.pid"
 
 #启动方法
