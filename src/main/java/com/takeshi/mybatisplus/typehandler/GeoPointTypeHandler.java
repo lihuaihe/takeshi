@@ -18,6 +18,8 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>GeoPointTypeHandler</p>
@@ -31,16 +33,7 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
 
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, GeoPointVO geoPointVO, JdbcType jdbcType) throws SQLException {
-        // 转Geometry
-        CoordinateArraySequence coordinateArraySequence = new CoordinateArraySequence(new Coordinate[]{new CoordinateXY(geoPointVO.getLon(), geoPointVO.getLat())});
-        Point point = new Point(coordinateArraySequence, new GeometryFactory());
-        // Geometry转WKB
-        byte[] geometryBytes = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN, false).write(point);
-        // 设置SRID为mysql默认的 0
-        byte[] wkb = new byte[geometryBytes.length + 4];
-        wkb[0] = wkb[1] = wkb[2] = wkb[3] = 0;
-        System.arraycopy(geometryBytes, 0, wkb, 4, geometryBytes.length);
-        preparedStatement.setBytes(i, wkb);
+        preparedStatement.setBytes(i, toWkb(geoPointVO));
     }
 
     @Override
@@ -58,13 +51,42 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
         return this.geoPointFromBytes(callableStatement.getBytes(i));
     }
 
+    /**
+     * 查询数据库时也直接传toWkb后的byte数组进行查询即可
+     *
+     * @param geoPointVO geoPointVO
+     * @return byte[]
+     */
+    public static byte[] toWkb(GeoPointVO geoPointVO) {
+        // 转Geometry
+        CoordinateArraySequence coordinateArraySequence = new CoordinateArraySequence(new Coordinate[]{new CoordinateXY(geoPointVO.getLon(), geoPointVO.getLat())});
+        Point point = new Point(coordinateArraySequence, new GeometryFactory());
+        // Geometry转WKB
+        byte[] geometryBytes = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN, false).write(point);
+        // 设置SRID为mysql默认的 0
+        byte[] wkb = new byte[geometryBytes.length + 4];
+        wkb[0] = wkb[1] = wkb[2] = wkb[3] = 0;
+        System.arraycopy(geometryBytes, 0, wkb, 4, geometryBytes.length);
+        return wkb;
+    }
+
+    /**
+     * 查询数据库时也直接传toWkb后的byte数组进行查询即可
+     *
+     * @param geoPointVOList geoPointVOList
+     * @return List
+     */
+    public static List<byte[]> toWkb(List<GeoPointVO> geoPointVOList) {
+        return geoPointVOList.stream().map(GeoPointTypeHandler::toWkb).collect(Collectors.toList());
+    }
+
     private GeoPointVO geoPointFromBytes(byte[] bytes) {
         try {
             if (ArrayUtil.isEmpty(bytes)) {
                 return null;
             }
             ByteArrayInStream byteArrayInStream = new ByteArrayInStream(bytes);
-            // 字节数组前4个字节表示srid去掉
+            // 字节数组前4个字节表示SRID去掉
             byteArrayInStream.read(new byte[4]);
             WKBReader wkbReader = new WKBReader();
             Point point = wkbReader.read(byteArrayInStream).getInteriorPoint();
