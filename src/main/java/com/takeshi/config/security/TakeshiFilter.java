@@ -10,6 +10,7 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.http.Header;
 import com.takeshi.component.TakeshiAsyncComponent;
 import com.takeshi.config.StaticConfig;
+import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.exception.Either;
 import com.takeshi.pojo.bo.ParamBO;
@@ -50,13 +51,14 @@ import java.util.stream.Collectors;
 public class TakeshiFilter implements Filter {
 
     private final TakeshiAsyncComponent takeshiAsyncComponent;
+    private final TakeshiProperties takeshiProperties;
 
-    private List<String> excludeList;
+    private List<String> excludeUrlList;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        excludeList = new ArrayList<>(List.of(TakeshiConstants.EXCLUDE_URL));
-        excludeList.addAll(List.of(StaticConfig.takeshiProperties.getExcludeUrl()));
+        excludeUrlList = new ArrayList<>(List.of(TakeshiConstants.EXCLUDE_URL));
+        excludeUrlList.addAll(List.of(takeshiProperties.getExcludeUrl()));
     }
 
     @Override
@@ -64,7 +66,7 @@ public class TakeshiFilter implements Filter {
         AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
-                && excludeList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
+                && excludeUrlList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
             long startTimeMillis = Instant.now().toEpochMilli();
             String traceId = IdUtil.fastSimpleUUID();
             // 填充traceId
