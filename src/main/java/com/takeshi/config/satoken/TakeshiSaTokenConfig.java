@@ -1,6 +1,6 @@
 package com.takeshi.config.satoken;
 
-import cn.dev33.satoken.interceptor.SaInterceptor;
+import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.jackson.BigDecimalFormatAnnotationFormatterFactory;
 import com.takeshi.jackson.NumZeroFormatAnnotationFormatterFactory;
@@ -31,9 +31,11 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
      */
     @Override
     default void addInterceptors(InterceptorRegistry registry) {
-        new SaInterceptor();
         // 注册注解拦截器
-        registry.addInterceptor(this.saRouteBuild()).addPathPatterns("/**").excludePathPatterns(TakeshiConstants.EXCLUDE_URL);
+        registry.addInterceptor(this.saRouteBuild())
+                .addPathPatterns("/**")
+                .excludePathPatterns(TakeshiConstants.EXCLUDE_URL)
+                .excludePathPatterns(StaticConfig.takeshiProperties.getExcludeUrl());
     }
 
     /**

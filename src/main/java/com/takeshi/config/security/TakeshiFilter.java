@@ -9,6 +9,7 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.http.Header;
 import com.takeshi.component.TakeshiAsyncComponent;
+import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.exception.Either;
 import com.takeshi.pojo.bo.ParamBO;
@@ -33,11 +34,11 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * TakeshiFilter
@@ -50,12 +51,20 @@ public class TakeshiFilter implements Filter {
 
     private final TakeshiAsyncComponent takeshiAsyncComponent;
 
+    private List<String> excludeList;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        excludeList = new ArrayList<>(List.of(TakeshiConstants.EXCLUDE_URL));
+        excludeList.addAll(List.of(StaticConfig.takeshiProperties.getExcludeUrl()));
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
-                && Stream.of(TakeshiConstants.EXCLUDE_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
+                && excludeList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
             long startTimeMillis = Instant.now().toEpochMilli();
             String traceId = IdUtil.fastSimpleUUID();
             // 填充traceId

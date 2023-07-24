@@ -47,6 +47,12 @@ public class TakeshiProperties {
     private long maxExecutorCloseTimeout = 30;
 
     /**
+     * 默认会排除{@link com.takeshi.constants.TakeshiConstants#EXCLUDE_URL}<br/>
+     * 需要额外排除的URL，排除的URL将不会进入TakeshiFilter和TakeshiInterceptor和TakeshiSaTokenConfig逻辑
+     */
+    private String[] excludeUrl = {};
+
+    /**
      * 接口速率限制配置
      */
     @Resource
