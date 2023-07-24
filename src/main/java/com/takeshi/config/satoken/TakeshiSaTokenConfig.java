@@ -33,7 +33,7 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
     default void addInterceptors(InterceptorRegistry registry) {
         new SaInterceptor();
         // 注册注解拦截器
-        registry.addInterceptor(this.saRouteBuild()).addPathPatterns("/**").excludePathPatterns(TakeshiConstants.EXCLUDE_SWAGGER_URL);
+        registry.addInterceptor(this.saRouteBuild()).addPathPatterns("/**").excludePathPatterns(TakeshiConstants.EXCLUDE_URL);
     }
 
     /**

@@ -55,7 +55,7 @@ public class TakeshiFilter implements Filter {
         AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
-                && Stream.of(TakeshiConstants.EXCLUDE_SWAGGER_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
+                && Stream.of(TakeshiConstants.EXCLUDE_URL).noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
             long startTimeMillis = Instant.now().toEpochMilli();
             String traceId = IdUtil.fastSimpleUUID();
             // 填充traceId

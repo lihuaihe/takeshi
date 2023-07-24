@@ -38,9 +38,9 @@ public interface TakeshiConstants {
     String TRACE_ID_KEY = "traceId";
 
     /**
-     * 需要过滤的swagger页面路径
+     * 需要过滤的页面路径
      */
-    String[] EXCLUDE_SWAGGER_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error"};
+    String[] EXCLUDE_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error", "/actuator/**"};
 
     /**
      * 版本号校验正则
