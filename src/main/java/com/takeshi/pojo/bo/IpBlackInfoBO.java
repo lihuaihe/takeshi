@@ -44,7 +44,7 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
      * IpRate的配置是被RepeatSubmit中的配置覆盖了的
      */
     @Schema(description = "IpRate的配置是被RepeatSubmit中的配置覆盖了的")
-    private Boolean overwritten;
+    private Boolean ipOverwritten;
 
     /**
      * 加入黑名单的时间
