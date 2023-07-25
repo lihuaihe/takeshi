@@ -1,6 +1,8 @@
 package com.takeshi.config.properties;
 
+import com.takeshi.constants.TakeshiConstants;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -47,7 +49,7 @@ public class TakeshiProperties {
     private long maxExecutorCloseTimeout = 30;
 
     /**
-     * 默认会排除{@link com.takeshi.constants.TakeshiConstants#EXCLUDE_URL}<br/>
+     * 默认会排除{@link TakeshiConstants#EXCLUDE_URL}<br/>
      * 需要额外排除的URL，排除的URL将不会进入TakeshiFilter和TakeshiInterceptor和TakeshiSaTokenConfig逻辑
      */
     private String[] excludeUrl;
@@ -56,6 +58,7 @@ public class TakeshiProperties {
      * 接口速率限制配置
      */
     @Resource
+    @Valid
     private RateLimitProperties rate;
 
     /**

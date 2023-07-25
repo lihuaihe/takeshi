@@ -8,9 +8,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.lang.annotation.*;
 
-import static com.takeshi.config.properties.RateLimitProperties.IpRate;
-import static com.takeshi.config.properties.RateLimitProperties.NonceRate;
-
 /**
  * 自定义注解防止重复提交
  *
@@ -59,7 +56,7 @@ public @interface RepeatSubmit {
      * 此处可覆盖${takeshi.rate.max-time-diff}的值<br/>
      * 默认-1，即不覆盖，0则不校验<br/>
      * 例如：如果takeshi.rate.max-time-diff=60，此处是-1则不覆盖，此处是0则此接口不校验，其他接口正常校验，此处大于0则覆盖值<br/>
-     * 详情请参考{@link RateLimitProperties#getMaxTimeDiff()}
+     * 详情请参考{@link RateLimitProperties#maxTimeDiff}
      *
      * @return int
      */
@@ -70,7 +67,7 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.nonce.rate}值<br/>
-     * 详情请参考{@link NonceRate#getRate()}
+     * 详情请参考{@link RateLimitProperties.NonceRate#rate}
      *
      * @return int
      */
@@ -81,7 +78,7 @@ public @interface RepeatSubmit {
     /**
      * 可覆盖${takeshi.rate.nonce.rate-interval}值<br/>
      * nonceRateInterval大于0则nonceRate，nonceRateInterval，nonceRateIntervalUnit都会覆盖takeshi.rate.nonce里的值<br/>
-     * 详情请参考{@link NonceRate#getRateInterval()}
+     * 详情请参考{@link RateLimitProperties.NonceRate#rateInterval}
      *
      * @return int
      */
@@ -90,7 +87,7 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.nonce.rate-interval-unit}值<br/>
-     * 详情请参考{@link NonceRate#getRateIntervalUnit()}
+     * 详情请参考{@link RateLimitProperties.NonceRate#rateIntervalUnit}
      *
      * @return RateIntervalUnit
      */
@@ -102,7 +99,7 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.ip.rate}值<br/>
-     * 详情请参考{@link IpRate#getRate()}
+     * 详情请参考{@link RateLimitProperties.IpRate#rate}
      *
      * @return int
      */
@@ -112,7 +109,7 @@ public @interface RepeatSubmit {
     /**
      * 可覆盖${takeshi.rate.ip.rate-interval}值<br/>
      * ipRateInterval大于0则ipRate，ipRateInterval，ipRateIntervalUnit，ipRateOpenBlacklist都会覆盖takeshi.rate.ip里的值<br/>
-     * 详情请参考{@link IpRate#getRateInterval()}
+     * 详情请参考{@link RateLimitProperties.IpRate#rateInterval}
      *
      * @return int
      */
@@ -121,7 +118,7 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.ip.rate-interval-unit}值<br/>
-     * 详情请参考{@link IpRate#getRateIntervalUnit()}
+     * 详情请参考{@link RateLimitProperties.IpRate#rateIntervalUnit}
      *
      * @return RateIntervalUnit
      */
@@ -129,7 +126,7 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.ip.open-blacklist}值<br/>
-     * 详情请参考{@link IpRate#isOpenBlacklist()}
+     * 详情请参考{@link RateLimitProperties.IpRate#openBlacklist}
      *
      * @return boolean
      */

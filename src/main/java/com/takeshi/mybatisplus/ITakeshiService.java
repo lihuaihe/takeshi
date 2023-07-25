@@ -338,7 +338,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * 根据 entity 条件，查询全部记录（并翻页），传入page时需要指定resultClass，本质上只是替代做了BeanUtil.copyProperties
      *
      * @param page         翻页对象
-     * @param queryWrapper 实体对象封装操作类 {@link com.baomidou.mybatisplus.core.conditions.query.QueryWrapper}
+     * @param queryWrapper 实体对象封装操作类 {@link QueryWrapper}
      * @param <V>          V
      * @return TakeshiPage
      */

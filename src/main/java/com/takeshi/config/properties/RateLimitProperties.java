@@ -6,6 +6,7 @@ import lombok.Data;
 import org.redisson.api.RateIntervalUnit;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * RateLimitProperties
@@ -15,6 +16,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @AutoConfiguration
 @ConfigurationProperties(prefix = "takeshi.rate")
+@Validated
 public class RateLimitProperties {
 
     /**
