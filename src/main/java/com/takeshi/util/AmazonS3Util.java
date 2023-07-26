@@ -30,6 +30,7 @@ import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeType;
@@ -65,6 +66,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 public final class AmazonS3Util {
 
     // 文件原始名称
@@ -142,8 +144,9 @@ public final class AmazonS3Util {
                             amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
                         }
                         transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
+                        log.info("AmazonS3Util.static --> TransferManager Initialization successful");
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        log.error("AmazonS3Util.static --> TransferManager initialization failed, e: ", e);
                     }
                 }
             }
