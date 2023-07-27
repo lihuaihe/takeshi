@@ -18,6 +18,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,31 @@ public class OpenApiConfig {
 
     @Value("${spring.application.name}")
     private String applicationName;
+
+    private List<RetBO> retBOList;
+
+    /**
+     * 初始化响应状态码信息
+     */
+    @PostConstruct
+    public void init() {
+        // 查询TakeshiCode子类集合
+        Set<Class<?>> classSet = new HashSet<>();
+        classSet.add(TakeshiCode.class);
+        // 获取主启动类所在的包名
+        String packageName = applicationContext.getBeansWithAnnotation(SpringBootApplication.class).values().toArray()[0].getClass().getPackageName();
+        classSet.addAll(ClassUtil.scanPackageBySuper(packageName, TakeshiCode.class));
+        retBOList = classSet.stream()
+                .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
+                .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
+                .sorted(Comparator.comparing(RetBO::getCode))
+                .peek(retBO -> {
+                    // swagger文档中的响应状态码信息
+                    String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
+                    retBO.setMessage(message);
+                })
+                .toList();
+    }
 
     /**
      * 配置
@@ -82,27 +108,15 @@ public class OpenApiConfig {
                 .addOperationCustomizer((operation, handlerMethod) -> {
                     // 生成通用响应信息
                     ApiResponses apiResponses = operation.getResponses();
-                    // 查询TakeshiCode子类集合
-                    Set<Class<?>> classSet = new HashSet<>();
-                    classSet.add(TakeshiCode.class);
-                    // 获取主启动类所在的包名
-                    String packageName = applicationContext.getBeansWithAnnotation(SpringBootApplication.class).values().toArray()[0].getClass().getPackageName();
-                    classSet.addAll(ClassUtil.scanPackageBySuper(packageName, TakeshiCode.class));
-                    classSet.stream()
-                            .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
-                            .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
-                            .sorted(Comparator.comparing(RetBO::getCode))
-                            .forEach(retBO -> {
-                                // swagger文档中的响应状态码信息
-                                String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
-                                String name = String.valueOf(retBO.getCode());
-                                ApiResponse response = apiResponses.get(name);
-                                if (ObjUtil.isNotNull(response)) {
-                                    apiResponses.addApiResponse(name, response.description(message));
-                                } else {
-                                    apiResponses.addApiResponse(name, new ApiResponse().description(message));
-                                }
-                            });
+                    retBOList.forEach(retBO -> {
+                        String name = String.valueOf(retBO.getCode());
+                        ApiResponse response = apiResponses.get(name);
+                        if (ObjUtil.isNotNull(response)) {
+                            apiResponses.addApiResponse(name, response.description(retBO.getMessage()));
+                        } else {
+                            apiResponses.addApiResponse(name, new ApiResponse().description(retBO.getMessage()));
+                        }
+                    });
                     return operation;
                 })
                 .build();
