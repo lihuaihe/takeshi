@@ -23,6 +23,8 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -43,6 +45,7 @@ public class OpenApiConfig {
 
     private final MessageSource messageSource;
     private final SaTokenConfig saTokenConfig;
+    private final ApplicationContext applicationContext;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -82,7 +85,9 @@ public class OpenApiConfig {
                     // 查询TakeshiCode子类集合
                     Set<Class<?>> classSet = new HashSet<>();
                     classSet.add(TakeshiCode.class);
-                    classSet.addAll(ClassUtil.scanPackageBySuper(StrUtil.EMPTY, TakeshiCode.class));
+                    // 获取主启动类所在的包名
+                    String packageName = applicationContext.getBeansWithAnnotation(SpringBootApplication.class).values().toArray()[0].getClass().getPackageName();
+                    classSet.addAll(ClassUtil.scanPackageBySuper(packageName, TakeshiCode.class));
                     classSet.stream()
                             .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
                             .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
