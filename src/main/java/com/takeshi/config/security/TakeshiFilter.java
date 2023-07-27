@@ -9,7 +9,6 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.http.Header;
 import com.takeshi.component.TakeshiAsyncComponent;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.exception.Either;

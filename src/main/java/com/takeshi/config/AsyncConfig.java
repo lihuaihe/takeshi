@@ -5,8 +5,6 @@ import com.takeshi.exception.TakeshiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.core.Ordered;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -21,7 +19,6 @@ import java.util.concurrent.Executor;
  */
 @EnableAsync
 @AutoConfiguration
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class AsyncConfig implements AsyncConfigurer {
 

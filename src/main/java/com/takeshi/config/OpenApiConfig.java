@@ -23,13 +23,11 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
 
 import java.util.*;
 
@@ -40,7 +38,6 @@ import java.util.*;
  */
 @Primary
 @AutoConfiguration
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class OpenApiConfig {
 
@@ -77,7 +74,7 @@ public class OpenApiConfig {
     }
 
     /**
-     * 配置
+     * GroupedOpenApi
      *
      * @return GroupedOpenApi
      */
@@ -87,35 +84,31 @@ public class OpenApiConfig {
                 .group(ApiVersion.Version.DEFAULT.getDisplay())
                 .pathsToMatch("/**")
                 .addOpenApiCustomizer(openApi -> {
-                    openApi.getComponents().getSchemas().forEach((name, schema) -> {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Schema<?>> properties = schema.getProperties();
-                        if (CollUtil.isNotEmpty(properties)) {
-                            properties.forEach((k, v) -> {
-                                String type = v.getType();
-                                String format = v.getFormat();
-                                // Long，BigInteger，BigDecimal
-                                if ((StrUtil.equals(type, "integer") && StrUtil.equals(format, "int64"))
-                                        || (StrUtil.equals(type, "integer") && StrUtil.isBlank(format))
-                                        || (StrUtil.equals(type, "number") && StrUtil.isBlank(format))) {
-                                    v.setType("string");
-                                    v.setFormat(null);
+                    openApi.getComponents()
+                            .getSchemas()
+                            .forEach((name, schema) -> {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Schema<?>> properties = schema.getProperties();
+                                if (CollUtil.isNotEmpty(properties)) {
+                                    properties.forEach((k, v) -> {
+                                        String type = v.getType();
+                                        String format = v.getFormat();
+                                        // Long，BigInteger，BigDecimal
+                                        if ((StrUtil.equals(type, "integer") && StrUtil.equals(format, "int64"))
+                                                || (StrUtil.equals(type, "integer") && StrUtil.isBlank(format))
+                                                || (StrUtil.equals(type, "number") && StrUtil.isBlank(format))) {
+                                            v.setType("string");
+                                            v.setFormat(null);
+                                        }
+                                    });
                                 }
                             });
-                        }
-                    });
                 })
                 .addOperationCustomizer((operation, handlerMethod) -> {
                     // 生成通用响应信息
                     ApiResponses apiResponses = operation.getResponses();
                     retBOList.forEach(retBO -> {
-                        String name = String.valueOf(retBO.getCode());
-                        ApiResponse response = apiResponses.get(name);
-                        if (ObjUtil.isNotNull(response)) {
-                            apiResponses.addApiResponse(name, response.description(retBO.getMessage()));
-                        } else {
-                            apiResponses.addApiResponse(name, new ApiResponse().description(retBO.getMessage()));
-                        }
+                        apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage()));
                     });
                     return operation;
                 })
