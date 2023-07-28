@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
@@ -168,18 +169,16 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             SaRouter.back(TakeshiCode.RATE_LIMIT);
         }
 
-        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0) {
-            rate.setMaxTimeDiff(repeatSubmit.maxTimeDiff());
-        }
+        int maxTimeDiff = ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0 ? repeatSubmit.maxTimeDiff() : rate.getMaxTimeDiff();
         // 请求时间校验
-        if (rate.getMaxTimeDiff() > 0) {
+        if (maxTimeDiff > 0) {
             if (StrUtil.isBlank(timestamp)) {
                 SaRouter.back(TakeshiCode.PARAMETER_ERROR);
             }
             long seconds = Duration.between(Instant.ofEpochMilli(Long.parseLong(timestamp)), Instant.now()).getSeconds();
             if (seconds > rate.getMaxTimeDiff() || seconds < TakeshiConstants.LONGS[0]) {
                 // 请求时间与当前时间相差过早
-                SaRouter.back(TakeshiCode.SIGN_ERROR);
+                SaRouter.back(TakeshiCode.CLIENT_DATE_TIME_ERROR);
             }
         }
         String signatureKey = takeshiProperties.getSignatureKey();
@@ -188,18 +187,21 @@ public class TakeshiInterceptor implements HandlerInterceptor {
 
         // nonce校验
         RateLimitProperties.NonceRate nonceRate = rate.getNonce();
+        int nRate = nonceRate.getRate();
+        int nRateInterval = nonceRate.getRateInterval();
+        RateIntervalUnit nRateIntervalUnit = nonceRate.getRateIntervalUnit();
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.nonceRateInterval() > 0) {
-            nonceRate.setRate(repeatSubmit.nonceRate());
-            nonceRate.setRateInterval(repeatSubmit.rateInterval());
-            nonceRate.setRateIntervalUnit(repeatSubmit.nonceRateIntervalUnit());
+            nRate = repeatSubmit.nonceRate();
+            nRateInterval = repeatSubmit.rateInterval();
+            nRateIntervalUnit = repeatSubmit.nonceRateIntervalUnit();
         }
-        if (signVerify && nonceRate.getRateInterval() > 0) {
+        if (signVerify && nRateInterval > 0) {
             String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonce);
             RRateLimiter nonceRateLimiter = StaticConfig.redisComponent.getRateLimiter(nonceRateLimitKey);
             // nonce限流
-            nonceRateLimiter.trySetRate(RateType.PER_CLIENT, nonceRate.getRate(), nonceRate.getRateInterval(), nonceRate.getRateIntervalUnit());
+            nonceRateLimiter.trySetRate(RateType.PER_CLIENT, nRate, nRateInterval, nRateIntervalUnit);
             // 设置限流器过期时间
-            nonceRateLimiter.expire(Duration.ofMillis(nonceRate.getRateIntervalUnit().toMillis(nonceRate.getRateInterval())));
+            nonceRateLimiter.expire(Duration.ofMillis(nRateIntervalUnit.toMillis(nRateInterval)));
             if (!nonceRateLimiter.tryAcquire()) {
                 // nonce重复使用
                 SaRouter.back(TakeshiCode.RATE_LIMIT);
@@ -209,23 +211,27 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         // ip校验
         RateLimitProperties.IpRate ipRate = rate.getIp();
         boolean ipOverwritten = false;
+        int iRate = ipRate.getRate();
+        int iRateInterval = ipRate.getRateInterval();
+        RateIntervalUnit iRateIntervalUnit = ipRate.getRateIntervalUnit();
+        boolean iOpenBlacklist = ipRate.isOpenBlacklist();
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() > 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
             ipOverwritten = true;
-            ipRate.setRate(repeatSubmit.ipRate());
-            ipRate.setRateInterval(repeatSubmit.ipRateInterval());
-            ipRate.setRateIntervalUnit(repeatSubmit.ipRateIntervalUnit());
-            ipRate.setOpenBlacklist(repeatSubmit.ipRateOpenBlacklist());
+            iRate = repeatSubmit.ipRate();
+            iRateInterval = repeatSubmit.ipRateInterval();
+            iRateIntervalUnit = repeatSubmit.ipRateIntervalUnit();
+            iOpenBlacklist = repeatSubmit.ipRateOpenBlacklist();
         }
-        if (ipRate.getRateInterval() > 0) {
+        if (iRateInterval > 0) {
             String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(clientIp);
             RRateLimiter ipRateLimiter = StaticConfig.redisComponent.getRateLimiter(ipRateLimitKey);
             // 接口IP限流
-            ipRateLimiter.trySetRate(RateType.PER_CLIENT, ipRate.getRate(), ipRate.getRateInterval(), ipRate.getRateIntervalUnit());
+            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, iRateInterval, iRateIntervalUnit);
             // 设置限流器过期时间为1天
             ipRateLimiter.expire(Duration.ofDays(1));
             if (!ipRateLimiter.tryAcquire()) {
-                if (ipRate.isOpenBlacklist()) {
+                if (iOpenBlacklist) {
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, servletPath, ipRate, ipOverwritten, Instant.now());
                     StaticConfig.redisComponent.saveToMidnight(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
