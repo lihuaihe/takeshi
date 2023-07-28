@@ -106,7 +106,7 @@ public class TakeshiConfig {
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
         return builder.createXmlMapper(false)
                 .build()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+//                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .registerModule(new SimpleJavaTimeModule());
     }
 
