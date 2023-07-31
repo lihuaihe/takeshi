@@ -65,10 +65,10 @@ public class OpenApiConfig {
                 .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
                 .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
                 .sorted(Comparator.comparing(RetBO::getCode))
-                .peek(retBO -> {
+                .map(retBO -> {
                     // swagger文档中的响应状态码信息
                     String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
-                    retBO.setMessage(message);
+                    return new RetBO(retBO.getCode(), message);
                 })
                 .toList();
     }

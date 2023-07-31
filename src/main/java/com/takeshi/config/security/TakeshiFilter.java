@@ -7,7 +7,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import cn.hutool.http.Header;
 import com.takeshi.component.TakeshiAsyncComponent;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiConstants;
@@ -34,10 +33,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -126,11 +122,11 @@ public class TakeshiFilter implements Filter {
         paramBO.setHttpMethod(request.getMethod());
 
         Map<String, String> headerMap = new HashMap<>(16);
-        headerMap.put(Header.USER_AGENT.getValue(), request.getHeader(Header.USER_AGENT.getValue()));
-        headerMap.put(TakeshiConstants.TIMESTAMP_NAME, request.getHeader(TakeshiConstants.TIMESTAMP_NAME));
-        headerMap.put(TakeshiConstants.NONCE_NAME, request.getHeader(TakeshiConstants.NONCE_NAME));
-        headerMap.put(TakeshiConstants.GEO_POINT_NAME, request.getHeader(TakeshiConstants.GEO_POINT_NAME));
-        headerMap.put(TakeshiConstants.SIGN_NAME, request.getHeader(TakeshiConstants.SIGN_NAME));
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            headerMap.put(headerName, request.getHeader(headerName));
+        }
         paramBO.setHeaderParam(headerMap);
 
         paramBO.setUrlParam(JakartaServletUtil.getParamMap(request));
