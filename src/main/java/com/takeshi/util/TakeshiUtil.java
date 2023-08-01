@@ -1,8 +1,10 @@
 package com.takeshi.util;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.impl.CollectionConverter;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Singleton;
@@ -12,6 +14,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.crypto.KeyUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.template.TemplateConfig;
@@ -22,7 +25,13 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.http.useragent.Platform;
 import cn.hutool.http.useragent.UserAgentUtil;
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import cn.hutool.jwt.JWT;
+import cn.hutool.jwt.JWTUtil;
+import cn.hutool.jwt.signers.AlgorithmUtil;
+import cn.hutool.jwt.signers.EllipticCurveJWTSigner;
+import cn.hutool.jwt.signers.JWTSigner;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.takeshi.config.StaticConfig;
@@ -32,6 +41,7 @@ import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.pojo.vo.GeoPointVO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.apache.tika.Tika;
@@ -45,6 +55,8 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.util.*;
 
 /**
@@ -417,6 +429,38 @@ public final class TakeshiUtil {
         if (!isCoordinatesWithinRadius(sourcePoint, targetPoint, radius)) {
             throw new TakeshiException(retBO, args);
         }
+    }
+
+    /**
+     * 校验Apple订阅通知回调中的负载内容
+     *
+     * @param jwt 负载内容解析出来的JWT
+     * @return boolean
+     */
+    @SneakyThrows
+    public static boolean verifyAppleNotifyPayload(JWT jwt) {
+        Certificate appleRootCaG3 = Singleton.get("AppleRootCA-G3Cer", () -> KeyUtil.readX509Certificate(IoUtil.toStream(HttpUtil.downloadBytes("https://www.apple.com/certificateauthority/AppleRootCA-G3.cer"))));
+        List<String> x5c = jwt.getHeaders().getBeanList("x5c", String.class);
+        Certificate jwtSignCa = KeyUtil.readX509Certificate(IoUtil.toStream(cn.hutool.core.codec.Base64.decode(x5c.get(0))));
+        Certificate jwtRootCa = KeyUtil.readX509Certificate(IoUtil.toStream(Base64.decode(x5c.get(2))));
+        // 验证是否是苹果颁发的证书
+        appleRootCaG3.verify(jwtRootCa.getPublicKey());
+        PublicKey publicKey = jwtSignCa.getPublicKey();
+        JWTSigner jwtSigner = new EllipticCurveJWTSigner(AlgorithmUtil.getAlgorithm(jwt.getAlgorithm()), publicKey);
+        jwt.setSigner(jwtSigner);
+        boolean verify = jwt.verify();
+        JSONObject data = jwt.getPayloads().getJSONObject("data");
+        if (ObjUtil.isNotNull(data)) {
+            String signedTransactionInfo = data.getStr("signedTransactionInfo");
+            if (StrUtil.isNotBlank(signedTransactionInfo) && verify) {
+                verify = JWTUtil.parseToken(signedTransactionInfo).setSigner(jwtSigner).verify();
+            }
+            String signedRenewalInfo = data.getStr("signedRenewalInfo");
+            if (StrUtil.isNotBlank(signedRenewalInfo) && verify) {
+                verify = JWTUtil.parseToken(signedRenewalInfo).setSigner(jwtSigner).verify();
+            }
+        }
+        return verify;
     }
 
 }
