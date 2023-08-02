@@ -237,11 +237,11 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获得指定目录下所有文件<br>
+     * 获得指定目录下所有文件名<br>
      * 不会扫描子目录
      *
      * @param path 相对ClassPath的目录或者绝对路径目录
-     * @return 文件路径列表
+     * @return 文件名列表
      * @throws IORuntimeException IO异常
      */
     public static List<String> listFileNames(String path) throws IORuntimeException {
@@ -258,7 +258,7 @@ public final class TakeshiUtil {
         final File[] files = FileUtil.ls(path);
         for (File file : files) {
             if (file.isFile()) {
-                paths.add(file.getName());
+                paths.add(file.getAbsolutePath());
             }
         }
         return paths;

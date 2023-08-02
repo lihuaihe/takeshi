@@ -30,11 +30,7 @@ import java.util.Map;
 /**
  * MailUtil
  * <pre>{@code
- * <dependency>
- * <groupId>com.mandrillapp.wrapper.lutung</groupId>
- * <artifactId>lutung</artifactId>
- * <version>0.0.8</version>
- * </dependency>
+ * implementation 'com.mandrillapp.wrapper.lutung:lutung:0.0.8'
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
