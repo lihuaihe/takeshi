@@ -57,8 +57,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * AmazonS3Util
  * <pre>{@code
- * implementation 'com.amazonaws:aws-java-sdk-s3:1.12.496'
- * implementation 'com.amazonaws:aws-java-sdk-secretsmanager:1.12.496'
+ * implementation 'com.amazonaws:aws-java-sdk-s3:+'
+ * implementation 'com.amazonaws:aws-java-sdk-secretsmanager:+'
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】

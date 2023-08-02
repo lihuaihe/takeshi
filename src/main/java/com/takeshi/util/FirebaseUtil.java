@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * FirebaseUtil
  * <pre>{@code
- * implementation 'com.google.firebase:firebase-admin:9.1.1'
+ * implementation 'com.google.firebase:firebase-admin:+'
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
@@ -265,7 +265,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body) {
-            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, null, null));
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, null, null));
         }
 
         /**
@@ -278,7 +278,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction) {
-            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null));
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null));
         }
 
         /**
@@ -291,7 +291,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, null, map));
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, null, map));
         }
 
         /**
@@ -305,7 +305,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map));
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map));
         }
 
         /**

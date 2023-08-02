@@ -9,6 +9,9 @@ import lombok.SneakyThrows;
 
 /**
  * 全球手机号码工具类
+ * <pre>{@code
+ * implementation 'com.googlecode.libphonenumber:libphonenumber:+'
+ * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
  */
