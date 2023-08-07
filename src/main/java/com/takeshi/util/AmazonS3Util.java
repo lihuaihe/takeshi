@@ -74,16 +74,25 @@ public final class AmazonS3Util {
     private static final String CREATE_TIME = "Create-Time";
     // 视频时长，单位（微秒）
     private static final String LENGTH_IN_TIME = "Length-In-Time";
-    // 视频封面缩略图
+    // 视频封面缩略图URL
     private static final String COVER_THUMBNAIL = "Cover-Thumbnail";
 
-    // X-NT都是临时签名URL中的参数名
+    /*
+     * X-NT都是临时签名URL中的参数名
+     */
+
+    // 原始文件名
     private static final String S3_ORIGINAL_FULL_NAME = "X-NT-OriginalFullName";
+    // 文件大小，单位（字节）
     private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
+    // 内容类型
     private static final String S3_CONTENT_TYPE = "X-NT-ContentType";
+    // 视频时长，单位（微秒）
     private static final String S3_LENGTH_IN_TIME = "X-NT-LengthInTime";
+    // 视频封面缩略图URL
     private static final String S3_THUMBNAIL = "X-NT-Thumbnail";
 
+    // 存储桶名称
     private static String BUCKET_NAME;
     // 预签名URL的过期时间
     private static Duration EXPIRATION_TIME;
