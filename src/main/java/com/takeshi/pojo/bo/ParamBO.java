@@ -1,6 +1,7 @@
 package com.takeshi.pojo.bo;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.CaseInsensitiveMap;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -79,7 +80,7 @@ public class ParamBO extends AbstractBasicSerializable {
      * header参数
      */
     @Schema(description = "header参数")
-    private Map<String, String> headerParam;
+    private CaseInsensitiveMap<String, String> headerParam;
 
     /**
      * URL参数
@@ -116,7 +117,7 @@ public class ParamBO extends AbstractBasicSerializable {
      *
      * @param headerParam headerParam
      */
-    public void setHeaderParam(Map<String, String> headerParam) {
+    public void setHeaderParam(CaseInsensitiveMap<String, String> headerParam) {
         this.headerParam = MapUtil.isEmpty(headerParam) ? null : headerParam;
     }
 

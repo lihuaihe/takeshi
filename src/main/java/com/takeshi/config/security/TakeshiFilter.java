@@ -3,6 +3,7 @@ package com.takeshi.config.security;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.lang.Singleton;
+import cn.hutool.core.map.CaseInsensitiveMap;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
@@ -33,7 +34,10 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -121,7 +125,7 @@ public class TakeshiFilter implements Filter {
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
 
-        Map<String, String> headerMap = new HashMap<>(16);
+        CaseInsensitiveMap<String, String> headerMap = new CaseInsensitiveMap<>();
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
