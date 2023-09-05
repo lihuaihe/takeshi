@@ -315,6 +315,7 @@ public final class MandrillUtil {
             if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
                 throw new TakeshiException(GsonUtil.toJson(result));
             }
+            log.info("MandrillUtil.sendErr --> result: {}", GsonUtil.toJson(result));
         } catch (MandrillApiError | IOException e) {
             throw new TakeshiException(e.getMessage());
         }
