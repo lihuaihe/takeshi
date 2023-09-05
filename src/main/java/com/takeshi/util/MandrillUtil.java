@@ -304,21 +304,19 @@ public final class MandrillUtil {
      */
     public void sendErr() {
         if (StrUtil.hasBlank(this.subject, this.fromEmail, this.fromName) || CollUtil.isEmpty(this.to)) {
-            throw new TakeshiException("MandrillUtil send hasBlank: [subject, fromEmail, fromName, to]");
+            throw new TakeshiException("MandrillUtil sendErr hasBlank: [subject, fromEmail, fromName, to]");
         }
         this.format();
-        MandrillMessageStatus[] result;
         try {
-            result = MANDRILL_API.messages().send(this.message, false);
-        } catch (MandrillApiError | IOException mandrillApiError) {
-            log.error("MandrillUtil.send --> mandrillApiError: ", mandrillApiError);
-            throw new TakeshiException(mandrillApiError.getMessage());
-        }
-        if (ArrayUtil.isEmpty(result)) {
-            throw new TakeshiException("MandrillUtil send result is empty");
-        }
-        if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
-            throw new TakeshiException(GsonUtil.toJson(result));
+            MandrillMessageStatus[] result = MANDRILL_API.messages().send(this.message, false);
+            if (ArrayUtil.isEmpty(result)) {
+                throw new TakeshiException("MandrillUtil sendErr result is empty");
+            }
+            if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
+                throw new TakeshiException(GsonUtil.toJson(result));
+            }
+        } catch (MandrillApiError | IOException e) {
+            throw new TakeshiException(e.getMessage());
         }
     }
 
@@ -326,22 +324,10 @@ public final class MandrillUtil {
      * 发送邮件，不会抛出异常
      */
     public void send() {
-        if (StrUtil.hasBlank(this.subject, this.fromEmail, this.fromName) || CollUtil.isEmpty(this.to)) {
-            log.error("MandrillUtil.send --> hasBlank: [subject, fromEmail, fromName, to]");
-            return;
-        }
-        this.format();
-        MandrillMessageStatus[] result = new MandrillMessageStatus[0];
         try {
-            result = MANDRILL_API.messages().send(this.message, false);
-        } catch (MandrillApiError | IOException mandrillApiError) {
-            log.error("MandrillUtil.send --> mandrillApiError: ", mandrillApiError);
-        }
-        if (ArrayUtil.isEmpty(result)) {
-            log.error("MandrillUtil.send --> result is empty");
-        }
-        if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
-            log.error("MandrillUtil.send --> result: {}", GsonUtil.toJson(result));
+            this.sendErr();
+        } catch (Exception e) {
+            log.error("MandrillUtil.send --> e: ", e);
         }
     }
 

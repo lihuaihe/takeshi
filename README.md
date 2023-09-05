@@ -16,7 +16,7 @@ takeshi是为了快速开发一个项目发布的一个库
 
 <dependency>
     <groupId>life.725</groupId>
-    <artifactId>takeshi</artifactId>
+    <artifactId>takeshi-spring-boot-starter</artifactId>
     <version>${version}</version>
 </dependency>
 ```

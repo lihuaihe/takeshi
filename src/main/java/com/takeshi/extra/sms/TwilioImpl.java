@@ -1,7 +1,6 @@
 package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.log.StaticLog;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TwilioProperties;
@@ -10,6 +9,7 @@ import com.takeshi.util.GsonUtil;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
 
 /**
@@ -17,6 +17,7 @@ import net.dreamlu.mica.auto.annotation.AutoService;
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 @AutoService(SmsInterface.class)
 public class TwilioImpl implements SmsInterface {
 
@@ -51,7 +52,7 @@ public class TwilioImpl implements SmsInterface {
                             messagingServiceSid,
                             message)
                     .create();
-            StaticLog.info("TwilioImpl.sendMessage --> msg: {}", GsonUtil.toJson(msg));
+            log.info("TwilioImpl.sendMessage --> msg: {}", GsonUtil.toJson(msg));
         }
     }
 

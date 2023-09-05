@@ -31,7 +31,7 @@ public class SmsFactory {
         if (null != smsInterface) {
             return smsInterface;
         }
-        throw new RuntimeException("No sms found ! Please add one of sms yml/jar to your project !");
+        throw new RuntimeException("No sms found! Please add one of sms yml/jar to your project!");
     }
 
 }

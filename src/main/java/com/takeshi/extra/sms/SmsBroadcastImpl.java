@@ -2,12 +2,12 @@ package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
-import cn.hutool.log.StaticLog;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.SmsBroadcastProperties;
 import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.GsonUtil;
+import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
 
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import java.util.Map;
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 @AutoService(SmsInterface.class)
 public class SmsBroadcastImpl implements SmsInterface {
 
@@ -35,6 +36,9 @@ public class SmsBroadcastImpl implements SmsInterface {
         userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
         password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();
         from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : jsonNode.get(smsBroadcast.getFromSecrets()).asText();
+        if (StrUtil.hasBlank(userName, password, from)) {
+            throw new IllegalArgumentException("SmsBroadcast required parameter is empty, Please set the yml value of SmsBroadcast!");
+        }
     }
 
     /**
@@ -58,9 +62,9 @@ public class SmsBroadcastImpl implements SmsInterface {
             map.put("delay", "0");
             map.put("maxsplit", String.valueOf((StrUtil.length(message) / 160) + 1));
             map.put("Content-Type", "UTF-8");
-            StaticLog.info("SmsBroadcastImpl.sendMessage --> map: {}", GsonUtil.toJson(map));
+            log.info("SmsBroadcastImpl.sendMessage --> map: {}", GsonUtil.toJson(map));
             String result = HttpUtil.post(URL, map);
-            StaticLog.info("SmsBroadcastImpl.sendMessage --> result: {}", result);
+            log.info("SmsBroadcastImpl.sendMessage --> result: {}", result);
         }
     }
 

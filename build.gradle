@@ -3,8 +3,8 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'org.springframework.boot' version '3.1.2'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.springframework.boot' version '3.1.3'
+    id 'io.spring.dependency-management' version '1.1.3'
 }
 configurations {
     compileOnly {
@@ -12,16 +12,34 @@ configurations {
     }
 }
 
+ext {
+    redissonVersion = '3.23.2'
+    tikaVersion = '2.8.0'
+    jtsVersion = '1.19.0'
+    ffmpegVersion = '6.0-1.5.9'
+    javacvVersion = '1.5.9'
+    mybatisPlusVersion = '3.5.3.1'
+    knife4jVersion = '4.2.0'
+    awsJavaSdkVersion = '1.12.520'
+    lutungVersion = '0.0.8'
+    firebaseVersion = '9.2.0'
+    findbugsVersion = '3.0.1u2'
+    libphonenumberVersion = '8.13.17'
+    html2pdfVersion = '5.0.0'
+    hutoolVersion = '5.8.21'
+    saTokenVersion = '1.34.0'
+    ognlVersion = '3.4.1'
+    jaxbApiVersion = '2.3.1'
+    twilioVersion = '9.9.1'
+    micaAutoVersion = '3.1.1'
+}
+
 group = 'life.725'
-//version = '1.0.12'
-version = '1.0.13.0-SNAPSHOT'
+archivesBaseName='takeshi-spring-boot-starter'
+version = '1.0.0'
+//version = '1.0.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
-
-ext {
-    mavenUsername = project.findProperty('mavenUsername')
-    mavenPassword = project.findProperty('mavenPassword')
-}
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -54,8 +72,9 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifactId = archivesBaseName
             pom {
-                name = 'takeshi'
+                name = archivesBaseName
                 description = '一个集成了各种库的，可以快速构建SpringBoot项目框架的库，GitHub地址：https://github.com/lihuaihe/takeshi'
                 url = 'https://github.com/lihuaihe/takeshi'
                 licenses {
@@ -98,48 +117,44 @@ signing {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
-    api 'org.springframework.boot:spring-boot-starter-data-redis'
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
-    api 'org.redisson:redisson-spring-boot-starter:3.23.2'
-    api 'org.apache.tika:tika-core:2.8.0'
-    // logback-spring.xml里要使用if标签需要的jar
-    api 'org.codehaus.janino:janino:3.1.10'
+    api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"
+    api "org.apache.tika:tika-core:${tikaVersion}"
+    // geoPoint
+    api "org.locationtech.jts:jts-core:${jtsVersion}"
 
     // javacv 和 ffmpeg-platform
-    api 'org.bytedeco:ffmpeg:6.0-1.5.9:macosx-x86_64'
-    api 'org.bytedeco:ffmpeg:6.0-1.5.9:windows-x86_64'
-    api 'org.bytedeco:ffmpeg:6.0-1.5.9:linux-x86_64'
-    api 'org.bytedeco:javacv:1.5.9'
+    api "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
+    api "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
+    api "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
+    api "org.bytedeco:javacv:${javacvVersion}"
 
-    api 'org.locationtech.jts:jts-core:1.19.0'
+    api "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
+    api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
+    api "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
+    api "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
+    api "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
+    api "com.google.firebase:firebase-admin:${firebaseVersion}"
+    api "com.google.code.findbugs:annotations:${findbugsVersion}"
+    api "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
+    api "com.itextpdf:html2pdf:${html2pdfVersion}"
 
-    api 'com.baomidou:mybatis-plus-boot-starter:3.5.3.1'
-    api 'com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.2.0'
-    api 'com.amazonaws:aws-java-sdk-s3:1.12.520'
-    api 'com.amazonaws:aws-java-sdk-secretsmanager:1.12.520'
-    api 'com.mandrillapp.wrapper.lutung:lutung:0.0.8'
-    api 'com.google.firebase:firebase-admin:9.2.0'
-    api 'com.google.code.findbugs:annotations:3.0.1u2'
-    api 'com.googlecode.libphonenumber:libphonenumber:8.13.17'
-    api 'com.itextpdf:html2pdf:5.0.0'
+    api "cn.hutool:hutool-all:${hutoolVersion}"
+    api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"
+    api "cn.dev33:sa-token-dao-redis-jackson:${saTokenVersion}"
 
-    api 'cn.hutool:hutool-all:5.8.21'
-    api 'cn.dev33:sa-token-spring-boot3-starter:1.34.0'
-    api 'cn.dev33:sa-token-dao-redis-jackson:1.34.0'
-
-    api 'ognl:ognl:3.4.1'
-    api 'io.netty:netty-all:4.1.96.Final'
+    api "ognl:ognl:${ognlVersion}"
     // 使用S3时提示：JAXB is unavailable. Will fallback to SDK implementation which may be less performant.If you are using Java 9+, you will need to include javax.xml.bind:jaxb-api as a dependency.
-    api 'javax.xml.bind:jaxb-api:2.3.1'
+    api "javax.xml.bind:jaxb-api:${jaxbApiVersion}"
 
-    implementation 'com.twilio.sdk:twilio:9.9.1'
+    compileOnly "com.twilio.sdk:twilio:${twilioVersion}"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    annotationProcessor 'net.dreamlu:mica-auto:3.1.1'
+    annotationProcessor "net.dreamlu:mica-auto:${micaAutoVersion}"
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 }
