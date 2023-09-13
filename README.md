@@ -24,14 +24,14 @@ takeshi是为了快速开发一个项目发布的一个库
 ### 🍐Gradle
 
 ```
-implementation 'life.725:takeshi:${version}'
+implementation 'life.725:takeshi-spring-boot-starter:${version}'
 ```
 
 ### 📥下载jar
 
-点击以下链接，下载`takeshi-X.X.X.jar`即可：
+点击以下链接，下载`takeshi-spring-boot-starter-X.X.X.jar`即可：
 
-- [Maven中央库](https://central.sonatype.com/artifact/life.725/takeshi/)
+- [Maven中央库](https://central.sonatype.com/artifact/life.725/takeshi-spring-boot-starter)
 
 ### 🔔️<font color="#FFFF00">注意</font>
 
@@ -68,27 +68,28 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 header中传递参数：
 
 - 参数签名：(<font color="#FFFF00">看系统是否开启了需要参数签名</font>)
-    - `sign`：签名的值
+    - `x-sign`：签名的值
         - 对参数做MD5签名
         - 参数签名为对Map参数按照key的顺序排序后拼接为字符串
         - 拼接后的字符串键值对之间无符号，键值对之间无符号，忽略path值和null值，只对最外层的key进行排序，嵌套的对象不用额外处理，保持原本的JSON格式即可
-        - 对参数进行排序拼接后在末尾加入header中的`timestamp`字段的值
+        - 对参数进行排序拼接后在末尾加入header中的`x-timestamp`字段的值
         - 然后根据提供的签名算法生成签名字符串
+    - `x-nonce`: 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
 - 必传参数:
-    - `timestamp`：调用接口的时间戳，13位的毫秒级时间戳
+    - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
     - `User-Agent`：
         - 当前设备名/当前APP版本号 系统时区
         - 例如：
             - iPhone/1.0.0 Asia/Shanghai
             - Android/1.0.0 Asia/Shanghai
             - iPad/1.0.0 Asia/Shanghai
-- 国际化消息(接口返回值中的message语言):
+- 国际化消息(接口返回值中的message语言，实际看配置的国际化文件名):
     - `Accept-Language`
         - `en-US`(返回英文)
         - `zh-CN`(返回中文)
 - 经纬度:
-    - `Longitude(设备位置经度)`
-    - `Latitude(设备位置纬度)`
+    - `x-geo-point`: 传一个JSON字符串
+      - 例如: `{"long":1.0,"lat":1.0}`
 
 加解密(<font color="#FFFF00">看系统是否开启了加解密</font>)
 
@@ -138,7 +139,7 @@ spring:
     include: takeshi
 ```
 
-**include: takeshi 后takeshi的默认配置就生效了**
+**include: takeshi 后takeshi的默认配置就生效了，详情可自行查看`application-takeshi.yml`**
 > sa-token 的配置
 > * token名称：${spring.application.name}-satoken
 > * token临时有效期30天

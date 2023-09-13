@@ -14,6 +14,7 @@ public enum BusinessStatusEnum {
     /**
      * 成功
      */
-    SUCCESS;
+    SUCCESS,
+    ;
 
 }

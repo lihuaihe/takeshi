@@ -42,7 +42,13 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
     /**
      * S3临时URL{S3Key}{Duration}
      */
-    S3_PRESIGNED_URL("s3:presignedUrl:{}:{}");
+    S3_PRESIGNED_URL("s3:presignedUrl:{}:{}"),
+
+    /**
+     * RSA算法用到的公钥和私钥生成锁
+     */
+    LOCK_RSA_SECURE("lock:rsaSecure"),
+    ;
 
     private final String key;
 

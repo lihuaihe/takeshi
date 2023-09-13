@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.map.CaseInsensitiveMap;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
@@ -57,7 +58,9 @@ public class TakeshiFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         excludeUrlList = new ArrayList<>(List.of(TakeshiConstants.EXCLUDE_URL));
-        excludeUrlList.addAll(List.of(takeshiProperties.getExcludeUrl()));
+        if (ArrayUtil.isNotEmpty(takeshiProperties.getExcludeUrl())) {
+            excludeUrlList.addAll(List.of(takeshiProperties.getExcludeUrl()));
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.takeshi.pojo.vo;
+package com.takeshi.pojo.bo;
 
 import cn.hutool.core.lang.Assert;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * GeoPointVO
+ * GeoPointBO
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Schema(description = "经纬度对象")
 @NoArgsConstructor
-public class GeoPointVO extends AbstractBasicSerializable {
+public class GeoPointBO extends AbstractBasicSerializable {
     /**
      * 经度
      */
@@ -37,7 +37,7 @@ public class GeoPointVO extends AbstractBasicSerializable {
      * @param lon 经度
      * @param lat 纬度
      */
-    public GeoPointVO(@NotNull Double lon, @NotNull Double lat) {
+    public GeoPointBO(@NotNull Double lon, @NotNull Double lat) {
         this.setLon(lon);
         this.setLat(lat);
     }

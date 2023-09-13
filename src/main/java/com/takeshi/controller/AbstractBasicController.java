@@ -5,12 +5,6 @@ import com.takeshi.pojo.bo.RetBO;
 
 /**
  * controller 层通用数据处理
- * <pre>{@code
- * // ignoreParameters 可以指定排除接口文档中不需要显示的字段
- * @ApiOperationSupport(author = NANASE_TAKESHI, ignoreParameters = "notesId")
- * @Validated 是@Valid的高级用法，可以进行分组校验，例如 @NotNull(groups = Update.class)
- * }
- * </pre>
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -19,7 +13,7 @@ public abstract class AbstractBasicController {
     /**
      * 接口开发作者
      */
-    public static final String NANASE_TAKESHI = "Nanase Takeshi";
+    protected static final String NANASE_TAKESHI = "Nanase Takeshi";
 
     /**
      * 返回成功结果状态信息
@@ -27,7 +21,7 @@ public abstract class AbstractBasicController {
      * @param <T> T
      * @return T
      */
-    public static <T> ResponseData<T> success() {
+    protected static <T> ResponseData<T> success() {
         return ResponseData.success();
     }
 
@@ -37,7 +31,7 @@ public abstract class AbstractBasicController {
      * @param <T> T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> fail() {
+    protected static <T> ResponseData<T> fail() {
         return ResponseData.fail();
     }
 
@@ -48,7 +42,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> fail(String message) {
+    protected static <T> ResponseData<T> fail(String message) {
         return ResponseData.fail(message);
     }
 
@@ -60,7 +54,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> fail(String message, Object... args) {
+    protected static <T> ResponseData<T> fail(String message, Object... args) {
         return ResponseData.fail(message, args);
     }
 
@@ -72,7 +66,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(int code, String message) {
+    protected static <T> ResponseData<T> retData(int code, String message) {
         return ResponseData.retData(code, message);
     }
 
@@ -85,7 +79,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(int code, String message, Object[] args) {
+    protected static <T> ResponseData<T> retData(int code, String message, Object[] args) {
         return ResponseData.retData(code, message, args);
     }
 
@@ -98,7 +92,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(int code, String message, T data) {
+    protected static <T> ResponseData<T> retData(int code, String message, T data) {
         return ResponseData.retData(code, message, data);
     }
 
@@ -112,7 +106,7 @@ public abstract class AbstractBasicController {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(int code, String message, T data, Object... args) {
+    protected static <T> ResponseData<T> retData(int code, String message, T data, Object... args) {
         return ResponseData.retData(code, message, data, args);
     }
 
@@ -123,7 +117,7 @@ public abstract class AbstractBasicController {
      * @param <T>  T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(T data) {
+    protected static <T> ResponseData<T> retData(T data) {
         return ResponseData.retData(data);
     }
 
@@ -134,7 +128,7 @@ public abstract class AbstractBasicController {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO) {
+    protected static <T> ResponseData<T> retData(RetBO retBO) {
         return ResponseData.retData(retBO);
     }
 
@@ -146,7 +140,7 @@ public abstract class AbstractBasicController {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO, Object[] args) {
+    protected static <T> ResponseData<T> retData(RetBO retBO, Object[] args) {
         return ResponseData.retData(retBO, args);
     }
 
@@ -158,7 +152,7 @@ public abstract class AbstractBasicController {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO, T data) {
+    protected static <T> ResponseData<T> retData(RetBO retBO, T data) {
         return ResponseData.retData(retBO, data);
     }
 
@@ -171,7 +165,7 @@ public abstract class AbstractBasicController {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO retBO, T data, Object... args) {
+    protected static <T> ResponseData<T> retData(RetBO retBO, T data, Object... args) {
         return ResponseData.retData(retBO, data, args);
     }
 
@@ -182,7 +176,7 @@ public abstract class AbstractBasicController {
      * @param <T>  T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag) {
+    protected static <T> ResponseData<T> retBool(boolean flag) {
         return ResponseData.retBool(flag);
     }
 
@@ -195,7 +189,7 @@ public abstract class AbstractBasicController {
      * @param <T>         T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, String failMessage, Object... args) {
+    protected static <T> ResponseData<T> retBool(boolean flag, String failMessage, Object... args) {
         return ResponseData.retBool(flag, failMessage, args);
     }
 
@@ -208,7 +202,7 @@ public abstract class AbstractBasicController {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBO, Object... args) {
+    protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBO, Object... args) {
         return ResponseData.retBool(flag, retBO, args);
     }
 
@@ -221,7 +215,7 @@ public abstract class AbstractBasicController {
      * @param <T>          T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse) {
+    protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse) {
         return ResponseData.retBool(flag, retBOOfTrue, retBOOfFalse);
     }
 
@@ -235,7 +229,7 @@ public abstract class AbstractBasicController {
      * @param <T>          T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object... args) {
+    protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object... args) {
         return ResponseData.retBool(flag, retBOOfTrue, retBOOfFalse, args);
     }
 

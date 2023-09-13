@@ -41,10 +41,11 @@ public class ShutdownManager {
             // 关闭 TransferManager，释放资源
             TransferManager transferManager = AmazonS3Util.transferManager;
             if (ObjUtil.isNotNull(transferManager)) {
+                log.info("Close the TransferManager instance...");
                 transferManager.shutdownNow();
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("ShutdownManager.destroy --> e: ", e);
         }
     }
 

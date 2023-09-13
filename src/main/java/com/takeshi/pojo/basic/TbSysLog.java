@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 系统操作日志
+ * 系统操作日志，此处使用TbSysLog命名类，对应tb_sys_log表，因为使用{@link cn.hutool.db.Entity#parseWithUnderlineCase}解析
  * </p>
  *
  * @author 七濑武【Nanase Takeshi】

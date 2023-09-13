@@ -1,6 +1,5 @@
 package com.takeshi.config;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
@@ -9,15 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.component.RedisComponent;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
+import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.MessageSource;
 import org.springframework.core.Ordered;
-import org.springframework.data.redis.core.BoundValueOperations;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.util.concurrent.TimeUnit;
 
 /**
  * StaticConfig
@@ -65,16 +65,6 @@ public class StaticConfig {
     public static String serverPort;
 
     /**
-     * RSA算法用到的项目的私钥
-     */
-    public static String privateKeyBase64;
-
-    /**
-     * RSA算法用到的项目的公钥
-     */
-    public static String publicKeyBase64;
-
-    /**
      * RSA
      */
     public static RSA rsa;
@@ -89,6 +79,7 @@ public class StaticConfig {
      * @param messageSource     messageSource
      * @param redisComponent    redisComponent
      * @param takeshiProperties takeshiProperties
+     * @throws InterruptedException 获取锁异常
      */
     public StaticConfig(@Value("${spring.application.name}") String applicationName,
                         @Value("${spring.profiles.active}") String active,
@@ -96,7 +87,7 @@ public class StaticConfig {
                         ObjectMapper objectMapper,
                         MessageSource messageSource,
                         RedisComponent redisComponent,
-                        TakeshiProperties takeshiProperties) {
+                        TakeshiProperties takeshiProperties) throws InterruptedException {
         StaticConfig.applicationName = applicationName;
         StaticConfig.active = active;
         StaticConfig.serverPort = serverPort;
@@ -104,23 +95,26 @@ public class StaticConfig {
         StaticConfig.messageSource = messageSource;
         StaticConfig.redisComponent = redisComponent;
         StaticConfig.takeshiProperties = takeshiProperties;
-        // 保存rsa算法的公钥和私钥到redis中
-        String projectPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
-        String projectPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
-        BoundValueOperations<String, String> privateKeyBoundValue = redisComponent.boundValueOps(projectPrivateKey);
-        BoundValueOperations<String, String> publicKeyBoundValue = redisComponent.boundValueOps(projectPublicKey);
-        String privateKeyValue = privateKeyBoundValue.get();
-        String publicKeyValue = publicKeyBoundValue.get();
-        if (StrUtil.hasBlank(privateKeyValue, publicKeyValue)) {
-            KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
-            privateKeyValue = Base64.encode(keyPair.getPrivate().getEncoded());
-            publicKeyValue = Base64.encode(keyPair.getPublic().getEncoded());
-            privateKeyBoundValue.setIfAbsent(privateKeyValue);
-            publicKeyBoundValue.setIfAbsent(publicKeyValue);
+        RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
+        if (lock.tryLock(10, TimeUnit.SECONDS)) {
+            // 保存rsa算法的公钥和私钥到redis中
+            try {
+                String rsaPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
+                String rsaPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
+                if (redisComponent.hasKey(rsaPrivateKey) && redisComponent.hasKey(rsaPublicKey)) {
+                    KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
+                    StaticConfig.rsa = SecureUtil.rsa(keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
+                    redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
+                    redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
+                } else {
+                    StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
+                }
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            throw new IllegalStateException("Creating RSA object using generated private and public keys failed to acquire lock.");
         }
-        StaticConfig.privateKeyBase64 = privateKeyValue;
-        StaticConfig.publicKeyBase64 = publicKeyValue;
-        StaticConfig.rsa = SecureUtil.rsa(privateKeyValue, publicKeyValue);
     }
 
     /**

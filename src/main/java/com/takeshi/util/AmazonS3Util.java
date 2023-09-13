@@ -28,7 +28,6 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.exception.TakeshiException;
-import com.takeshi.pojo.vo.AmazonS3VO;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TikaInputStream;
@@ -198,7 +197,7 @@ public final class AmazonS3Util {
      * @param quality 压缩比例，必须为0~1
      * @return S3文件访问URL
      */
-    public static AmazonS3VO uploadCompressImg(File file, float quality) {
+    public static URL uploadCompressImg(File file, float quality) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Img.from(file).setQuality(quality).write(byteArrayOutputStream);
         return uploadData(FileUtil.readBytes(file), file.getName());
@@ -210,7 +209,7 @@ public final class AmazonS3Util {
      * @param file 要上传的文件
      * @return S3文件访问URL
      */
-    public static AmazonS3VO uploadFile(File file) {
+    public static URL uploadFile(File file) {
         return uploadData(FileUtil.readBytes(file), file.getName());
     }
 
@@ -221,7 +220,7 @@ public final class AmazonS3Util {
      * @return S3文件访问URL
      */
     @SneakyThrows
-    public static AmazonS3VO uploadFile(MultipartFile multipartFile) {
+    public static URL uploadFile(MultipartFile multipartFile) {
         return uploadData(multipartFile.getBytes(), multipartFile.getOriginalFilename());
     }
 
@@ -231,8 +230,8 @@ public final class AmazonS3Util {
      * @param multipartFiles 要上传的多文件数组
      * @return 多个S3文件访问URL
      */
-    public static List<AmazonS3VO> uploadFile(MultipartFile[] multipartFiles) {
-        ArrayList<AmazonS3VO> list = new ArrayList<>();
+    public static List<URL> uploadFile(MultipartFile[] multipartFiles) {
+        ArrayList<URL> list = new ArrayList<>();
         for (MultipartFile item : multipartFiles) {
             list.add(uploadFile(item));
         }
@@ -245,8 +244,8 @@ public final class AmazonS3Util {
      * @param files 要上传的多文件数组
      * @return 多个S3文件访问URL
      */
-    public static List<AmazonS3VO> uploadFile(File[] files) {
-        ArrayList<AmazonS3VO> list = new ArrayList<>();
+    public static List<URL> uploadFile(File[] files) {
+        ArrayList<URL> list = new ArrayList<>();
         for (File file : files) {
             list.add(uploadFile(file));
         }
@@ -281,7 +280,7 @@ public final class AmazonS3Util {
      * @return S3文件Key
      */
     @SneakyThrows
-    public static AmazonS3VO uploadData(byte[] data, String fileName) {
+    public static URL uploadData(byte[] data, String fileName) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(data)) {
             String mediaType = TakeshiUtil.getTika().detect(tikaInputStream, fileName);
             MimeType mimeType = MimeTypes.getDefaultMimeTypes().forName(mediaType);
@@ -338,7 +337,7 @@ public final class AmazonS3Util {
                 thumbnailUpload.waitForUploadResult();
             }
             upload.waitForCompletion();
-            return new AmazonS3VO(fileObjKey, getPresignedUrl(fileObjKey));
+            return getPresignedUrl(fileObjKey);
         }
     }
 

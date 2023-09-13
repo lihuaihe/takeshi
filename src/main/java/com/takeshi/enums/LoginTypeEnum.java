@@ -44,7 +44,8 @@ public enum LoginTypeEnum implements IEnum<String> {
     /**
      * 脸书登录
      */
-    Facebook;
+    Facebook,
+    ;
 
     /**
      * 枚举数据库存储值

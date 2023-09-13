@@ -20,7 +20,9 @@ import java.lang.annotation.*;
 public @interface RepeatSubmit {
 
     /**
-     * 间隔时间，小于此时间视为重复提交<br/>
+     * <p style="color:yellow;">若要使用防重功能，此值需要设置大于0</p>
+     * 间隔时间，小于此时间视为重复提交
+     * <br/>
      * 设置0则不开启重复提交校验
      *
      * @return 时间

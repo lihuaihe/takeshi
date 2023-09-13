@@ -39,7 +39,7 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import com.takeshi.pojo.bo.RetBO;
-import com.takeshi.pojo.vo.GeoPointVO;
+import com.takeshi.pojo.bo.GeoPointBO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -308,7 +308,7 @@ public final class TakeshiUtil {
         MessageSource messageSource = Optional.ofNullable(StaticConfig.messageSource)
                 .orElseGet(() -> {
                     ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
-                    resourceBundleMessageSource.setBasenames("ValidationMessages", "i18n/messages");
+                    resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
                     resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
                     return resourceBundleMessageSource;
                 });
@@ -391,7 +391,7 @@ public final class TakeshiUtil {
      * @return 如果目标经纬度坐标在指定半径范围内，则返回 true；否则返回 false。
      * @throws IllegalArgumentException 如果任一参数为 null 或经纬度值非法。
      */
-    public static boolean isCoordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius) {
+    public static boolean isCoordinatesWithinRadius(GeoPointBO sourcePoint, GeoPointBO targetPoint, double radius) {
         if (sourcePoint == null || targetPoint == null) {
             throw new IllegalArgumentException("Coordinate points cannot be null");
         }
@@ -410,7 +410,7 @@ public final class TakeshiUtil {
      * @param radius      半径范围（单位：米）
      * @param message     消息
      */
-    public static void coordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius, String message) {
+    public static void coordinatesWithinRadius(GeoPointBO sourcePoint, GeoPointBO targetPoint, double radius, String message) {
         if (!isCoordinatesWithinRadius(sourcePoint, targetPoint, radius)) {
             throw new TakeshiException(message);
         }
@@ -425,7 +425,7 @@ public final class TakeshiUtil {
      * @param retBO       消息
      * @param args        将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
-    public static void coordinatesWithinRadius(GeoPointVO sourcePoint, GeoPointVO targetPoint, double radius, RetBO retBO, Object... args) {
+    public static void coordinatesWithinRadius(GeoPointBO sourcePoint, GeoPointBO targetPoint, double radius, RetBO retBO, Object... args) {
         if (!isCoordinatesWithinRadius(sourcePoint, targetPoint, radius)) {
             throw new TakeshiException(retBO, args);
         }

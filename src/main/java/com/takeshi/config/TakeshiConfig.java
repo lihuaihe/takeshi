@@ -1,7 +1,6 @@
 package com.takeshi.config;
 
 import cn.dev33.satoken.config.SaTokenConfig;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.jackson.SimpleJavaTimeModule;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +90,7 @@ public class TakeshiConfig {
     @Bean
     public MessageSource messageSource(@Value("${spring.messages.basename:ValidationMessages}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames(basename, "i18n/messages");
+        messageSource.setBasenames(basename, "takeshi-i18n/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return messageSource;
     }

@@ -1,7 +1,7 @@
 package com.takeshi.mybatisplus.typehandler;
 
 import cn.hutool.core.util.ArrayUtil;
-import com.takeshi.pojo.vo.GeoPointVO;
+import com.takeshi.pojo.bo.GeoPointBO;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.locationtech.jts.geom.Coordinate;
@@ -29,37 +29,37 @@ import java.util.stream.Collectors;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
+public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointBO> {
 
     @Override
-    public void setNonNullParameter(PreparedStatement preparedStatement, int i, GeoPointVO geoPointVO, JdbcType jdbcType) throws SQLException {
-        preparedStatement.setBytes(i, toWkb(geoPointVO));
+    public void setNonNullParameter(PreparedStatement preparedStatement, int i, GeoPointBO geoPointBO, JdbcType jdbcType) throws SQLException {
+        preparedStatement.setBytes(i, toWkb(geoPointBO));
     }
 
     @Override
-    public GeoPointVO getNullableResult(ResultSet resultSet, String s) throws SQLException {
+    public GeoPointBO getNullableResult(ResultSet resultSet, String s) throws SQLException {
         return this.geoPointFromBytes(resultSet.getBytes(s));
     }
 
     @Override
-    public GeoPointVO getNullableResult(ResultSet resultSet, int i) throws SQLException {
+    public GeoPointBO getNullableResult(ResultSet resultSet, int i) throws SQLException {
         return this.geoPointFromBytes(resultSet.getBytes(i));
     }
 
     @Override
-    public GeoPointVO getNullableResult(CallableStatement callableStatement, int i) throws SQLException {
+    public GeoPointBO getNullableResult(CallableStatement callableStatement, int i) throws SQLException {
         return this.geoPointFromBytes(callableStatement.getBytes(i));
     }
 
     /**
      * 查询数据库时也直接传toWkb后的byte数组进行查询即可
      *
-     * @param geoPointVO geoPointVO
+     * @param geoPointBO geoPointBO
      * @return byte[]
      */
-    public static byte[] toWkb(GeoPointVO geoPointVO) {
+    public static byte[] toWkb(GeoPointBO geoPointBO) {
         // 转Geometry
-        CoordinateArraySequence coordinateArraySequence = new CoordinateArraySequence(new Coordinate[]{new CoordinateXY(geoPointVO.getLon(), geoPointVO.getLat())});
+        CoordinateArraySequence coordinateArraySequence = new CoordinateArraySequence(new Coordinate[]{new CoordinateXY(geoPointBO.getLon(), geoPointBO.getLat())});
         Point point = new Point(coordinateArraySequence, new GeometryFactory());
         // Geometry转WKB
         byte[] geometryBytes = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN, false).write(point);
@@ -73,14 +73,14 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
     /**
      * 查询数据库时也直接传toWkb后的byte数组进行查询即可
      *
-     * @param geoPointVOList geoPointVOList
+     * @param geoPointBOList geoPointBOList
      * @return List
      */
-    public static List<byte[]> toWkb(List<GeoPointVO> geoPointVOList) {
-        return geoPointVOList.stream().map(GeoPointTypeHandler::toWkb).collect(Collectors.toList());
+    public static List<byte[]> toWkb(List<GeoPointBO> geoPointBOList) {
+        return geoPointBOList.stream().map(GeoPointTypeHandler::toWkb).collect(Collectors.toList());
     }
 
-    private GeoPointVO geoPointFromBytes(byte[] bytes) {
+    private GeoPointBO geoPointFromBytes(byte[] bytes) {
         try {
             if (ArrayUtil.isEmpty(bytes)) {
                 return null;
@@ -90,7 +90,7 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointVO> {
             byteArrayInStream.read(new byte[4]);
             WKBReader wkbReader = new WKBReader();
             Point point = wkbReader.read(byteArrayInStream).getInteriorPoint();
-            return new GeoPointVO(point.getX(), point.getY());
+            return new GeoPointBO(point.getX(), point.getY());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
