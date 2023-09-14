@@ -20,17 +20,17 @@ import java.time.Duration;
 public class AWSSecretsManagerCredentials implements AWSCredentials {
 
     /**
-     * accessKey
+     * SecretsManager 使用的 accessKey
      */
     private String accessKey;
 
     /**
-     * secretKey
+     * SecretsManager 使用的 secretKey
      */
     private String secretKey;
 
     /**
-     * 密钥名称
+     * SecretsManager 使用的 密钥名称
      */
     private String secretId;
 
