@@ -82,6 +82,7 @@ public class TakeshiAsyncComponent {
                     long epochMilli = Instant.now().toEpochMilli();
                     tbSysLog.setCreateTime(epochMilli);
                     tbSysLog.setUpdateTime(epochMilli);
+                    log.info("TakeshiAsyncComponent.insertSysLog --> tbSysLog: {}", GsonUtil.toJson(tbSysLog));
                     DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
                 }
             }

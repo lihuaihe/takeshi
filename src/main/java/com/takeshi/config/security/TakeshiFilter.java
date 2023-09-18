@@ -123,7 +123,7 @@ public class TakeshiFilter implements Filter {
 
         String clientIp = TakeshiUtil.getClientIp(request);
         paramBO.setClientIp(clientIp);
-        paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
+        // paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
         paramBO.setLoginId(StpUtil.getLoginIdDefaultNull());
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
