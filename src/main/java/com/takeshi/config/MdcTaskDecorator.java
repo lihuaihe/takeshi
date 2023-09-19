@@ -1,5 +1,6 @@
 package com.takeshi.config;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.takeshi.constants.TakeshiConstants;
@@ -20,7 +21,9 @@ public class MdcTaskDecorator implements TaskDecorator {
         Map<String, String> copyOfContextMap = MDC.getCopyOfContextMap();
         return () -> {
             try {
-                MDC.setContextMap(copyOfContextMap);
+                if (CollUtil.isNotEmpty(copyOfContextMap)) {
+                    MDC.setContextMap(copyOfContextMap);
+                }
                 if (StrUtil.isBlank(MDC.get(TakeshiConstants.TRACE_ID_KEY))) {
                     MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastSimpleUUID());
                 }
