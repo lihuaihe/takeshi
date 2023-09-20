@@ -102,12 +102,12 @@ public class StaticConfig {
                 String rsaPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
                 String rsaPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
                 if (redisComponent.hasKey(rsaPrivateKey) && redisComponent.hasKey(rsaPublicKey)) {
+                    StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
+                } else {
                     KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
                     StaticConfig.rsa = SecureUtil.rsa(keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
                     redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
                     redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
-                } else {
-                    StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
                 }
             } finally {
                 lock.unlock();
