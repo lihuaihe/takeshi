@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * <p>
@@ -110,7 +111,7 @@ public class TbSysLog implements Serializable {
      * 请求时间
      */
     @Schema(description = "请求时间")
-    private Long requestTime;
+    private Instant requestTime;
 
     /**
      * 消耗时间
@@ -122,12 +123,12 @@ public class TbSysLog implements Serializable {
      * 创建时间
      */
     @Schema(description = "创建时间")
-    private Long createTime;
+    private Instant createTime;
 
     /**
      * 更新时间
      */
     @Schema(description = "更新时间")
-    private Long updateTime;
+    private Instant updateTime;
 
 }

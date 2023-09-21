@@ -57,10 +57,10 @@ public class ResponseData<T> implements Serializable {
     private Object metaData;
 
     /**
-     * 返回时间，毫秒级别
+     * 返回时间
      */
-    @Schema(description = "返回时间，毫秒级别", example = "1625101951214")
-    private Long time;
+    @Schema(description = "返回时间")
+    private Instant time;
 
     /**
      * 日志追踪ID
@@ -349,7 +349,7 @@ public class ResponseData<T> implements Serializable {
         this.code = code;
         this.message = TakeshiUtil.formatMessage(message, args);
         this.data = data;
-        this.time = Instant.now().toEpochMilli();
+        this.time = Instant.now();
         this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
     }
 

@@ -17,6 +17,7 @@ import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -183,7 +184,7 @@ public interface ITakeshiService<T> extends IService<T> {
     private <E extends BasicPage> QueryWrapper<T> queryWrapper(E basicPage, List<SFunction<T, ?>> columns) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         String keyword = null;
-        Long startTime = null, endTime = null;
+        Instant startTime = null, endTime = null;
         if (basicPage instanceof BasicSortQuery basicSortQuery) {
             keyword = basicSortQuery.getKeyword();
             startTime = basicSortQuery.getStartTime();

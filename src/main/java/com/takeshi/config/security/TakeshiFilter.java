@@ -69,7 +69,7 @@ public class TakeshiFilter implements Filter {
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
                 && excludeUrlList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
-            long startTimeMillis = Instant.now().toEpochMilli();
+            Instant startTime = Instant.now();
             String traceId = IdUtil.fastSimpleUUID();
             // 填充traceId
             MDC.put(TakeshiConstants.TRACE_ID_KEY, traceId);
@@ -100,7 +100,7 @@ public class TakeshiFilter implements Filter {
             long totalTimeMillis = stopWatch.getTotalTimeMillis();
             log.info("End Of Response, Time Consuming: {} ms", totalTimeMillis);
             // 新增一条接口请求相关信息到数据库
-            takeshiAsyncComponent.insertSysLog((ParamBO) takeshiHttpRequestWrapper.getAttribute(TakeshiConstants.PARAM_BO), startTimeMillis, totalTimeMillis, responseData);
+            takeshiAsyncComponent.insertSysLog((ParamBO) takeshiHttpRequestWrapper.getAttribute(TakeshiConstants.PARAM_BO), startTime, totalTimeMillis, responseData);
             return;
         }
         chain.doFilter(request, response);
