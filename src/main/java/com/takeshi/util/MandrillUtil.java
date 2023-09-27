@@ -302,20 +302,20 @@ public final class MandrillUtil {
     /**
      * 发送邮件，会抛出异常
      */
-    public void sendErr() {
+    public void sendThrow() {
         if (StrUtil.hasBlank(this.subject, this.fromEmail, this.fromName) || CollUtil.isEmpty(this.to)) {
-            throw new TakeshiException("MandrillUtil sendErr hasBlank: [subject, fromEmail, fromName, to]");
+            throw new TakeshiException("MandrillUtil sendThrow hasBlank: [subject, fromEmail, fromName, to]");
         }
         this.format();
         try {
             MandrillMessageStatus[] result = MANDRILL_API.messages().send(this.message, false);
             if (ArrayUtil.isEmpty(result)) {
-                throw new TakeshiException("MandrillUtil sendErr result is empty");
+                throw new TakeshiException("MandrillUtil sendThrow result is empty");
             }
             if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
                 throw new TakeshiException(GsonUtil.toJson(result));
             }
-            log.info("MandrillUtil.sendErr --> result: {}", GsonUtil.toJson(result));
+            log.info("MandrillUtil.sendThrow --> result: {}", GsonUtil.toJson(result));
         } catch (MandrillApiError | IOException e) {
             throw new TakeshiException(e.getMessage());
         }
@@ -326,7 +326,7 @@ public final class MandrillUtil {
      */
     public void send() {
         try {
-            this.sendErr();
+            this.sendThrow();
         } catch (Exception e) {
             log.error("MandrillUtil.send --> e: ", e);
         }
