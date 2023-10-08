@@ -5,9 +5,9 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.net.URLEncodeUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -43,6 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -322,7 +323,7 @@ public final class AmazonS3Util {
                         thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
                         thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
                         thumbnailMetadata.addUserMetadata(EXTENSION_NAME, StrUtil.DOT + ImgUtil.IMAGE_TYPE_JPG);
-                        String thumbnailObjKey = getThumbnailObjKey();
+                        String thumbnailObjKey = getThumbnailObjKey(thumbnailTikaInputStream, mainName);
                         // 添加视频/GIF封面图缩略图的S3 key
                         metadata.addUserMetadata(COVER_THUMBNAIL, thumbnailObjKey);
                         PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
@@ -331,7 +332,7 @@ public final class AmazonS3Util {
                 }
             }
 
-            String fileObjKey = getFileObjKey(extension);
+            String fileObjKey = getFileObjKey(tikaInputStream, mainName, extension);
             PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
             // TransferManager 异步处理所有传输,所以这个调用立即返回
             Upload upload = transferManager.upload(putObjectRequest);
@@ -475,9 +476,10 @@ public final class AmazonS3Util {
      * @param extension 扩展名
      * @return 完整路径
      */
-    public static String getFileObjKey(String extension) {
+    public static String getFileObjKey(InputStream inputStream, String mainName, String extension) {
+        String md5 = SecureUtil.md5(inputStream);
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), extension).toString();
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, md5, StrUtil.SLASH, mainName, extension).toString();
     }
 
     /**
@@ -485,9 +487,10 @@ public final class AmazonS3Util {
      *
      * @return 完整路径
      */
-    public static String getThumbnailObjKey() {
+    public static String getThumbnailObjKey(InputStream inputStream, String mainName) {
+        String md5 = SecureUtil.md5(inputStream);
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
+        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, md5, StrUtil.SLASH, mainName, StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
     }
 
 }
