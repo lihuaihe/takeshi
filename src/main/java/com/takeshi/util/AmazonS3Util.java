@@ -48,10 +48,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -387,7 +384,7 @@ public final class AmazonS3Util {
                     presignedUrl = toUrl(redisComponent.get(redisKey));
                     if (ObjUtil.isNull(presignedUrl)) {
                         ObjectMetadata objectMetadata = getObjectMetadata(fileKey);
-                        if (ObjUtil.isNull(objectMetadata)) {
+                        if (Objects.isNull(objectMetadata)) {
                             return null;
                         }
                         Date date = Date.from(Instant.now().plus(duration));
