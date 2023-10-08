@@ -473,7 +473,9 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径（Key）
      *
-     * @param extension 扩展名
+     * @param inputStream 文件流
+     * @param mainName    主文件名
+     * @param extension   文件扩展名
      * @return 完整路径
      */
     public static String getFileObjKey(InputStream inputStream, String mainName, String extension) {
@@ -485,6 +487,8 @@ public final class AmazonS3Util {
     /**
      * 获取视频/GIF封面缩略图文件存储的完整路径（Key）
      *
+     * @param inputStream 文件流
+     * @param mainName    主文件名
      * @return 完整路径
      */
     public static String getThumbnailObjKey(InputStream inputStream, String mainName) {
