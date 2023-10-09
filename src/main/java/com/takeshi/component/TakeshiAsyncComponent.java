@@ -51,11 +51,11 @@ public class TakeshiAsyncComponent {
      * 新增一条接口请求相关信息到数据库
      *
      * @param paramBO         paramBO
-     * @param startTimeMillis 请求时间
+     * @param startTime       请求时间
      * @param totalTimeMillis 接口总耗时
      * @param responseData    接口响应数据
      */
-    public void insertSysLog(ParamBO paramBO, long startTimeMillis, long totalTimeMillis, String responseData) {
+    public void insertSysLog(ParamBO paramBO, Instant startTime, long totalTimeMillis, String responseData) {
         try {
             if (ObjUtil.isNotNull(paramBO)) {
                 TakeshiLog takeshiLog = paramBO.getTakeshiLog();
@@ -77,11 +77,11 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
                     tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                     tbSysLog.setSuccessful(this.successful(responseData));
-                    tbSysLog.setRequestTime(startTimeMillis);
+                    tbSysLog.setRequestTime(startTime);
                     tbSysLog.setCostTime(totalTimeMillis);
-                    long epochMilli = Instant.now().toEpochMilli();
-                    tbSysLog.setCreateTime(epochMilli);
-                    tbSysLog.setUpdateTime(epochMilli);
+                    Instant instant = Instant.now();
+                    tbSysLog.setCreateTime(instant);
+                    tbSysLog.setUpdateTime(instant);
                     log.info("TakeshiAsyncComponent.insertSysLog --> tbSysLog: {}", GsonUtil.toJson(tbSysLog));
                     DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
                 }

@@ -6,7 +6,7 @@ import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * DefaultMetaObjectHandler
@@ -25,13 +25,13 @@ public class DefaultMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, CREATE_TIME, () -> Instant.now().toEpochMilli(), Long.class);
-        this.strictInsertFill(metaObject, UPDATE_TIME, () -> Instant.now().toEpochMilli(), Long.class);
+        this.strictInsertFill(metaObject, CREATE_TIME, LocalDateTime::now, LocalDateTime.class);
+        this.strictInsertFill(metaObject, UPDATE_TIME, LocalDateTime::now, LocalDateTime.class);
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, UPDATE_TIME, () -> Instant.now().toEpochMilli(), Long.class);
+        this.strictUpdateFill(metaObject, UPDATE_TIME, LocalDateTime::now, LocalDateTime.class);
     }
 
 }
