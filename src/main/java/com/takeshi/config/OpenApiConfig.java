@@ -48,6 +48,9 @@ public class OpenApiConfig {
     @Value("${spring.application.name}")
     private String applicationName;
 
+    /**
+     * 全局通用响应信息列表
+     */
     private List<RetBO> retBOList;
 
     /**
