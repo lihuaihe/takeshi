@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.bo.RetBO;
+import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -351,6 +352,11 @@ public class ResponseData<T> implements Serializable {
         this.data = data;
         this.time = Instant.now();
         this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
+    }
+
+    @Override
+    public String toString() {
+        return GsonUtil.toJson(this);
     }
 
 }

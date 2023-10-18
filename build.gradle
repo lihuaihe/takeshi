@@ -19,7 +19,7 @@ ext {
     ffmpegVersion = '6.0-1.5.9'
     javacvVersion = '1.5.9'
     mybatisPlusVersion = '3.5.3.1'
-    knife4jVersion = '4.2.0'
+    knife4jVersion = '4.3.0'
     awsJavaSdkVersion = '1.12.520'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.2.0'
@@ -37,7 +37,7 @@ ext {
 group = 'life.725'
 archivesBaseName='takeshi-spring-boot-starter'
 //version = '1.0.0'
-version = '1.0.12-SNAPSHOT'
+version = '1.0.14-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 

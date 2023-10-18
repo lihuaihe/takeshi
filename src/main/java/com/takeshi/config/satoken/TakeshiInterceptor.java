@@ -20,6 +20,7 @@ import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
+import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.pojo.bo.RetBO;
@@ -152,7 +153,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         }
         if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验
-            SaRouter.back(TakeshiCode.USERAGENT_ERROR);
+            SaRouter.back(ResponseData.retData(TakeshiCode.USERAGENT_ERROR));
         }
 
         // 获取方法上的RepeatSubmit注解
@@ -166,19 +167,19 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
         if (StaticConfig.redisComponent.hasKey(ipBlacklistKey)) {
             // 黑名单中的IP
-            SaRouter.back(TakeshiCode.RATE_LIMIT);
+            SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
         }
 
         int maxTimeDiff = ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0 ? repeatSubmit.maxTimeDiff() : rate.getMaxTimeDiff();
         // 请求时间校验
         if (maxTimeDiff > 0) {
             if (StrUtil.isBlank(timestamp)) {
-                SaRouter.back(TakeshiCode.PARAMETER_ERROR);
+                SaRouter.back(ResponseData.retData(TakeshiCode.PARAMETER_ERROR));
             }
             long seconds = Duration.between(Instant.ofEpochMilli(Long.parseLong(timestamp)), Instant.now()).getSeconds();
             if (seconds > maxTimeDiff || seconds < TakeshiConstants.LONGS[0]) {
                 // 请求时间与当前时间相差过早
-                SaRouter.back(TakeshiCode.CLIENT_DATE_TIME_ERROR);
+                SaRouter.back(ResponseData.retData(TakeshiCode.CLIENT_DATE_TIME_ERROR));
             }
         }
         String signatureKey = takeshiProperties.getSignatureKey();
@@ -204,7 +205,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             nonceRateLimiter.expire(Duration.ofMillis(nRateIntervalUnit.toMillis(nRateInterval)));
             if (!nonceRateLimiter.tryAcquire()) {
                 // nonce重复使用
-                SaRouter.back(TakeshiCode.RATE_LIMIT);
+                SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
         }
 
@@ -236,7 +237,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, servletPath, ipRate, ipOverwritten, Instant.now());
                     StaticConfig.redisComponent.saveToMidnight(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
                 }
-                SaRouter.back(TakeshiCode.RATE_LIMIT);
+                SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
         }
 
@@ -246,7 +247,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String signParamsMd5 = SecureUtil.signParamsMd5(paramBO.getParamMap(), StrUtil.toStringOrNull(paramBO.getBodyOther()), signatureKey, nonce, timestamp);
             if (!StrUtil.equals(sign, signParamsMd5)) {
                 // 签名验证错误
-                SaRouter.back(TakeshiCode.SIGN_ERROR);
+                SaRouter.back(ResponseData.retData(TakeshiCode.SIGN_ERROR));
             }
         }
 
@@ -267,7 +268,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             // 设置限流器过期时间
             rateLimiter.expire(Duration.ofMillis(repeatSubmit.rateIntervalUnit().toMillis(rateInterval)));
             if (!rateLimiter.tryAcquire()) {
-                SaRouter.back(retBO);
+                SaRouter.back(ResponseData.retData(retBO));
             }
         }
         return systemSecurity;

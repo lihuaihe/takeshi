@@ -43,6 +43,7 @@ public class ParamBO extends AbstractBasicSerializable {
     /**
      * 请求的IP对应的地址
      */
+    @Deprecated
     @Schema(description = "请求的IP对应的地址")
     private String clientIpAddress;
 

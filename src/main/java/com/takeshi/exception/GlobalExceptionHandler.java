@@ -149,38 +149,6 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseData<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
-//        Throwable rootCause = ExceptionUtil.getRootCause(runtimeException);
-//        if (rootCause instanceof NullPointerException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NullPointerException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.SYS_NULL_POINT);
-//        }
-//        if (rootCause instanceof SQLException || rootCause instanceof DataAccessException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> SQLException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.DB_ERROR);
-//        }
-//        if (rootCause instanceof RedisException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RedisException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.REDIS_ERROR);
-//        }
-//        if (rootCause instanceof NoSuchElementException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NoSuchElementException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
-//        }
-//        if (rootCause instanceof IllegalArgumentException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> IllegalArgumentException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
-//        }
-//        if (rootCause instanceof InvalidFormatException invalidFormatException && invalidFormatException.getTargetType().isEnum()) {
-//            // 传递的值和接收的枚举类型值不匹配
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> InvalidFormatException: ", rootCause);
-//            Object[] enumConstants = invalidFormatException.getTargetType().getEnumConstants();
-//            return ResponseData.retData(TakeshiCode.INVALID_VALUE, new Object[]{invalidFormatException.getValue(), Arrays.toString(enumConstants)});
-//        }
-//        if (rootCause instanceof TakeshiException) {
-//            log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
-//            return JSONUtil.toBean(rootCause.getMessage(), new TypeReference<>() {
-//            }, false);
-//        }
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", runtimeException);
         return ResponseData.fail(runtimeException.getMessage());
     }
@@ -279,12 +247,12 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(BackResultException.class)
-    public ResponseData<Object> backResultExceptionHandler(BackResultException backResultException) {
+    public ResponseData<?> backResultExceptionHandler(BackResultException backResultException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> BackResultException: ", backResultException);
-        if (backResultException.result instanceof RetBO retBO) {
-            return ResponseData.retData(retBO);
+        if (backResultException.result instanceof ResponseData<?> responseData) {
+            return responseData;
         } else {
-            return ResponseData.retData(backResultException.getMessage());
+            return ResponseData.retData(backResultException.result);
         }
     }
 
