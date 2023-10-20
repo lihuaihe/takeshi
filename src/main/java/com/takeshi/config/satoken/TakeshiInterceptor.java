@@ -1,9 +1,7 @@
 package com.takeshi.config.satoken;
 
-import cn.dev33.satoken.router.SaRouteFunction;
+import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
-import cn.dev33.satoken.servlet.model.SaRequestForServlet;
-import cn.dev33.satoken.servlet.model.SaResponseForServlet;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.util.ObjUtil;
@@ -51,23 +49,25 @@ import java.util.Optional;
 public class TakeshiInterceptor implements HandlerInterceptor {
 
     /**
-     * 每次进入拦截器的[执行函数]，默认为登录校验
+     * 认证函数：每次请求执行
+     * <p> 参数：路由处理函数指针
      */
-    public SaRouteFunction function = (req, res, handler) -> StpUtil.checkLogin();
+    public SaParamFunction<Object> auth = handler -> StpUtil.checkLogin();
+
 
     /**
-     * 创建一个路由拦截器
+     * 创建一个 Sa-Token 综合拦截器，默认带有注解鉴权能力
      */
     public TakeshiInterceptor() {
     }
 
     /**
-     * 创建, 并指定[执行函数]
+     * 创建一个 Sa-Token 综合拦截器，默认带有注解鉴权能力
      *
-     * @param function [执行函数]
+     * @param auth 认证函数，每次请求执行
      */
-    private TakeshiInterceptor(SaRouteFunction function) {
-        this.function = function;
+    private TakeshiInterceptor(SaParamFunction<Object> auth) {
+        this.auth = auth;
     }
 
     /**
@@ -82,11 +82,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * 设置执行函数
      *
-     * @param function 自定义模式下的执行函数
+     * @param auth 自定义模式下的执行函数
      * @return sa路由拦截器
      */
-    public static TakeshiInterceptor newInstance(SaRouteFunction function) {
-        return new TakeshiInterceptor(function);
+    public static TakeshiInterceptor newInstance(SaParamFunction<Object> auth) {
+        return new TakeshiInterceptor(auth);
     }
 
     /**
@@ -124,10 +124,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, paramBO);
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
                 // 执行token认证函数
-                function.run(new SaRequestForServlet(request), new SaResponseForServlet(response), handlerMethod);
+                auth.run(handlerMethod);
             }
             // 注解式鉴权，对角色和权限进行验证，需要实现StpInterface接口
-            SaStrategy.me.checkMethodAnnotation.accept(method);
+            SaStrategy.instance.checkMethodAnnotation.accept(method);
         }
         // 通过验证
         return true;

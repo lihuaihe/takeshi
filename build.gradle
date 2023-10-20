@@ -26,8 +26,8 @@ ext {
     findbugsVersion = '3.0.1u2'
     libphonenumberVersion = '8.13.17'
     html2pdfVersion = '5.0.0'
-    hutoolVersion = '5.8.21'
-    saTokenVersion = '1.34.0'
+    hutoolVersion = '5.8.22'
+    saTokenVersion = '1.37.0'
     ognlVersion = '3.4.1'
     jaxbApiVersion = '2.3.1'
     twilioVersion = '9.9.1'
@@ -37,7 +37,7 @@ ext {
 group = 'life.725'
 archivesBaseName='takeshi-spring-boot-starter'
 //version = '1.0.0'
-version = '1.0.14-SNAPSHOT'
+version = '1.0.15-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -145,7 +145,7 @@ dependencies {
 
     api "cn.hutool:hutool-all:${hutoolVersion}"
     api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"
-    api "cn.dev33:sa-token-dao-redis-jackson:${saTokenVersion}"
+    api "cn.dev33:sa-token-redisson-jackson:${saTokenVersion}"
 
     api "ognl:ognl:${ognlVersion}"
     // 使用S3时提示：JAXB is unavailable. Will fallback to SDK implementation which may be less performant.If you are using Java 9+, you will need to include javax.xml.bind:jaxb-api as a dependency.
