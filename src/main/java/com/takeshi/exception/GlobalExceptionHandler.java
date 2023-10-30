@@ -1,6 +1,7 @@
 package com.takeshi.exception;
 
 import cn.dev33.satoken.exception.*;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletionException;
 
 /**
  * GlobalExceptionHandler
@@ -139,6 +141,22 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler.takeshiException --> TakeshiException: ", takeshiException);
         return GsonUtil.fromJson(takeshiException.getMessage(), new TypeToken<>() {
         });
+    }
+
+    /**
+     * @param completionException 异常
+     * @return {@link ResponseData}
+     */
+    @ExceptionHandler(CompletionException.class)
+    public ResponseData<Object> completionException(CompletionException completionException) {
+        Throwable rootCause = ExceptionUtil.getRootCause(completionException);
+        if (rootCause instanceof TakeshiException takeshiException) {
+            log.error("GlobalExceptionHandler.completionException --> takeshiException: ", takeshiException);
+            return GsonUtil.fromJson(takeshiException.getMessage(), new TypeToken<>() {
+            });
+        }
+        log.error("GlobalExceptionHandler.completionException --> completionException: ", completionException);
+        return ResponseData.fail(completionException.getMessage());
     }
 
     /**
