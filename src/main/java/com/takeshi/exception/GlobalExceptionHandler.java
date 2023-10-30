@@ -144,6 +144,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * concurrent包下任务在完成结果或任务的过程中遇到错误或其他异常时抛出异常
+     *
      * @param completionException 异常
      * @return {@link ResponseData}
      */
@@ -151,9 +153,7 @@ public class GlobalExceptionHandler {
     public ResponseData<Object> completionException(CompletionException completionException) {
         Throwable rootCause = ExceptionUtil.getRootCause(completionException);
         if (rootCause instanceof TakeshiException takeshiException) {
-            log.error("GlobalExceptionHandler.completionException --> takeshiException: ", takeshiException);
-            return GsonUtil.fromJson(takeshiException.getMessage(), new TypeToken<>() {
-            });
+            return this.takeshiException(takeshiException);
         }
         log.error("GlobalExceptionHandler.completionException --> completionException: ", completionException);
         return ResponseData.fail(completionException.getMessage());
