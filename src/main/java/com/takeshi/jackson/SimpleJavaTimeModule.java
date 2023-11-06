@@ -1,6 +1,7 @@
 package com.takeshi.jackson;
 
 import cn.hutool.core.date.DateUtil;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.DateSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -44,6 +45,12 @@ public final class SimpleJavaTimeModule extends SimpleModule {
         addSerializer(MonthDay.class, new MonthDaySerializer(TakeshiDatePattern.NORM_MONTH_DAY_FORMATTER));
         addSerializer(OffsetTime.class, OffsetTimeTakeshiSerializer.INSTANCE);
         addSerializer(OffsetDateTime.class, OffsetDateTimeTakeshiSerializer.INSTANCE);
+
+
+        addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null));
+        addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null));
+        addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance);
+        addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
 
         addDeserializer(Date.class, DateTakeshiDeserializer.INSTANCE);
         addDeserializer(Instant.class, InstantDeserializer.INSTANT);
