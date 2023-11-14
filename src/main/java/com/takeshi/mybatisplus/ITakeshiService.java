@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.takeshi.pojo.basic.*;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
@@ -284,7 +285,7 @@ public interface ITakeshiService<T> extends IService<T> {
      */
     @Override
     default boolean update(Wrapper<T> updateWrapper) {
-        return this.getBaseMapper().update(updateWrapper);
+        return SqlHelper.retBool(this.getBaseMapper().update(updateWrapper));
     }
 
     /**

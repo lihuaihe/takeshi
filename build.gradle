@@ -13,31 +13,31 @@ configurations {
 }
 
 ext {
-    redissonVersion = '3.23.2'
-    tikaVersion = '2.8.0'
+    redissonVersion = '3.24.3'
+    tikaVersion = '2.9.1'
     jtsVersion = '1.19.0'
     ffmpegVersion = '6.0-1.5.9'
     javacvVersion = '1.5.9'
-    mybatisPlusVersion = '3.5.3.1'
+    mybatisPlusVersion = '3.5.4.1'
     knife4jVersion = '4.3.0'
-    awsJavaSdkVersion = '1.12.520'
+    awsJavaSdkVersion = '1.12.588'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.2.0'
     findbugsVersion = '3.0.1u2'
-    libphonenumberVersion = '8.13.17'
-    html2pdfVersion = '5.0.0'
-    hutoolVersion = '5.8.22'
+    libphonenumberVersion = '8.13.25'
+    html2pdfVersion = '5.0.2'
+    hutoolVersion = '5.8.23'
     saTokenVersion = '1.37.0'
     ognlVersion = '3.4.1'
     jaxbApiVersion = '2.3.1'
-    twilioVersion = '9.9.1'
-    micaAutoVersion = '3.1.1'
+    twilioVersion = '9.14.1'
+    micaAutoVersion = '3.1.2'
 }
 
 group = 'life.725'
 archivesBaseName='takeshi-spring-boot-starter'
 //version = '1.0.0'
-version = '1.0.15-SNAPSHOT'
+version = '23.11.14.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -122,7 +122,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
-    api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"
+    api "org.redisson:redisson-spring-boot-starter"
     api "org.apache.tika:tika-core:${tikaVersion}"
     // geoPoint
     api "org.locationtech.jts:jts-core:${jtsVersion}"

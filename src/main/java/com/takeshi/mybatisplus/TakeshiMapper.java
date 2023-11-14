@@ -360,12 +360,13 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * 根据 UpdateWrapper 条件，更新记录 需要设置sqlset
      *
      * @param updateWrapper 实体对象封装操作类
-     * @return boolean
+     * @return int
      */
-    default boolean update(Wrapper<T> updateWrapper) {
+    @Override
+    default int update(Wrapper<T> updateWrapper) {
         // 由于调用update(T t,Wrapper updateWrapper)时t不能为空,否则自动填充失效
         TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
-        return SqlHelper.retBool(this.update(tableInfo.newInstance(), updateWrapper));
+        return this.update(tableInfo.newInstance(), updateWrapper);
     }
 
     /**

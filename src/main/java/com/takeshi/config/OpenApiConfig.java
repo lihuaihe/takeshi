@@ -33,7 +33,6 @@ import org.springdoc.core.service.OperationService;
 import org.springdoc.webmvc.api.MultipleOpenApiWebMvcResource;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -62,7 +61,6 @@ public class OpenApiConfig {
 
     @Value("${spring.application.name}")
     private String applicationName;
-    private final ConfigurableListableBeanFactory beanFactory;
 
     /**
      * GroupedOpenApi
@@ -70,7 +68,7 @@ public class OpenApiConfig {
      * @param springWebProvider springWebProvider
      * @return GroupedOpenApi
      */
-    @SuppressWarnings("all")
+    @SuppressWarnings("unchecked")
     @Bean
     public List<GroupedOpenApi> groupedOpenApis(SpringWebProvider springWebProvider) {
         Map<String, LinkedHashSet<String>> groupMap = new LinkedHashMap<>();
@@ -78,7 +76,7 @@ public class OpenApiConfig {
         Map<RequestMappingInfo, HandlerMethod> map = springWebProvider.getHandlerMethods();
         map.forEach((requestMappingInfo, handlerMethod) -> {
             ApiGroup apiGroup = handlerMethod.getMethodAnnotation(ApiGroup.class);
-            if (ObjUtil.isNotNull(apiGroup)) {
+            if (ObjUtil.isNotNull(requestMappingInfo.getPatternsCondition()) && ObjUtil.isNotNull(apiGroup)) {
                 String path = requestMappingInfo.getPatternsCondition().getPatterns().iterator().next();
                 for (String group : apiGroup.value()) {
                     groupMap.compute(group, (k, v) -> {
