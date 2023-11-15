@@ -35,7 +35,7 @@ public class TakeshiProperties {
     /**
      * 是否开启移动端请求工具限制
      */
-    private boolean appPlatform;
+    private boolean appPlatform = false;
 
     /**
      * 是否Controller方法参数绑定错误时错误信息包含字段名
