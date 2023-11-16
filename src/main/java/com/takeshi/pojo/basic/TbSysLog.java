@@ -48,13 +48,6 @@ public class TbSysLog implements Serializable {
     private Long clientIp;
 
     /**
-     * 请求的IP对应的地址
-     */
-    @Deprecated
-    @Schema(description = "请求的IP对应的地址")
-    private String clientIpAddress;
-
-    /**
      * 用户代理
      */
     @Schema(description = "用户代理")

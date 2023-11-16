@@ -67,7 +67,6 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setLoginId(paramBO.getLoginId());
                     tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
                     Map<String, String> headerParam = paramBO.getHeaderParam();
-                    // tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
                     tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
                     tbSysLog.setHttpMethod(paramBO.getHttpMethod());
                     tbSysLog.setMethodName(paramBO.getMethodName());
