@@ -12,7 +12,7 @@ public enum LoginTypeEnum implements IEnum<String> {
     /**
      * 验证码登陆
      */
-    VerificationCode,
+    Captcha,
     /**
      * 密码登录
      */

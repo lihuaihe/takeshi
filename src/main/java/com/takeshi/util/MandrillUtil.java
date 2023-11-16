@@ -90,12 +90,32 @@ public final class MandrillUtil {
     /**
      * 创建一个MandrillMessage对象
      *
-     * @return this
+     * @return MandrillUtil
      */
     private MandrillUtil message() {
         this.message = new MandrillMessage();
         this.fromEmail = FROM_EMAIL;
         this.fromName = FROM_NAME;
+        return this;
+    }
+
+    /**
+     * 创建一个MandrillMessage对象
+     *
+     * @param subject 主题
+     * @param email   收件人邮箱
+     * @param name    收件人名称
+     * @return MandrillUtil
+     */
+    private MandrillUtil message(String subject, String email, String name) {
+        this.message = new MandrillMessage();
+        this.fromEmail = FROM_EMAIL;
+        this.fromName = FROM_NAME;
+        this.subject = subject;
+        MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
+        recipient.setEmail(email);
+        recipient.setName(name);
+        this.to.add(recipient);
         return this;
     }
 
@@ -106,6 +126,18 @@ public final class MandrillUtil {
      */
     public static MandrillUtil create() {
         return new MandrillUtil().message();
+    }
+
+    /**
+     * 创建一个可以发送邮件的对象
+     *
+     * @param subject 主题
+     * @param email   收件人邮箱
+     * @param name    收件人名称
+     * @return MandrillUtil
+     */
+    public static MandrillUtil create(String subject, String email, String name) {
+        return new MandrillUtil().message(subject, email, name);
     }
 
     /**
