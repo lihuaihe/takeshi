@@ -10,6 +10,10 @@ import com.baomidou.mybatisplus.annotation.IEnum;
 public enum LoginTypeEnum implements IEnum<String> {
 
     /**
+     * 验证码登陆
+     */
+    VerificationCode,
+    /**
      * 密码登录
      */
     Password,
