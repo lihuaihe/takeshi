@@ -1,6 +1,7 @@
 package com.takeshi.config;
 
 import cn.dev33.satoken.config.SaTokenConfig;
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.jackson.SimpleJavaTimeModule;
 import lombok.RequiredArgsConstructor;
@@ -88,9 +89,12 @@ public class TakeshiConfig {
      * @return MessageSource
      */
     @Bean
-    public MessageSource messageSource(@Value("${spring.messages.basename:ValidationMessages}") String basename) {
+    public MessageSource messageSource(@Value("${spring.messages.basename:null}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames(basename, "takeshi-i18n/messages");
+        if (StrUtil.isNotBlank(basename)) {
+            messageSource.setBasename(basename);
+        }
+        messageSource.setBasename("takeshi-i18n/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return messageSource;
     }
@@ -105,7 +109,7 @@ public class TakeshiConfig {
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
         return builder.createXmlMapper(false)
                 .build()
-//                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                //                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .registerModule(new SimpleJavaTimeModule());
     }
 
