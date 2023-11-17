@@ -56,6 +56,12 @@ import java.util.concurrent.TimeUnit;
  * <pre>{@code
  * implementation 'com.amazonaws:aws-java-sdk-s3:+'
  * implementation 'com.amazonaws:aws-java-sdk-secretsmanager:+'
+ *
+ * // 由于使用了获取视频时长的API，所以需要引入ffmpeg，为了减少依赖包大小，自行按开发和生产环境导入对应平台的ffmpeg包
+ * implementation "org.bytedeco:ffmpeg:+:macosx-x86_64"
+ * implementation "org.bytedeco:ffmpeg:+:windows-x86_64"
+ * implementation "org.bytedeco:ffmpeg:+:linux-x86_64"
+ * implementation "org.bytedeco:javacv:+"
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】

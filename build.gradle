@@ -35,9 +35,9 @@ ext {
 }
 
 group = 'life.725'
-archivesBaseName='takeshi-spring-boot-starter'
+archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.0'
-version = '23.11.16.7-SNAPSHOT'
+version = '23.11.17.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -120,7 +120,7 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-validation'
-    api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    compileOnly 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
     api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"
     api "org.apache.tika:tika-core:${tikaVersion}"
@@ -128,20 +128,20 @@ dependencies {
     api "org.locationtech.jts:jts-core:${jtsVersion}"
 
     // javacv 和 ffmpeg-platform
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
-    api "org.bytedeco:javacv:${javacvVersion}"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
+    compileOnly "org.bytedeco:javacv:${javacvVersion}"
 
     api "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
     api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
-    api "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
-    api "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
-    api "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
-    api "com.google.firebase:firebase-admin:${firebaseVersion}"
+    compileOnly "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
+    compileOnly "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
+    compileOnly "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
+    compileOnly "com.google.firebase:firebase-admin:${firebaseVersion}"
     api "com.google.code.findbugs:annotations:${findbugsVersion}"
     api "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
-    api "com.itextpdf:html2pdf:${html2pdfVersion}"
+    compileOnly "com.itextpdf:html2pdf:${html2pdfVersion}"
 
     api "cn.hutool:hutool-all:${hutoolVersion}"
     api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"

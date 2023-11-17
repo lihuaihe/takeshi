@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * MailUtil
  * <pre>{@code
- * implementation 'com.mandrillapp.wrapper.lutung:lutung:0.0.8'
+ * implementation 'com.mandrillapp.wrapper.lutung:lutung:+'
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
