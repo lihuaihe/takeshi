@@ -17,7 +17,7 @@ public class SmsFactory {
      * @return SmsInterface
      */
     public static SmsInterface get() {
-        return Singleton.get(SmsInterface.class.getName(), SmsFactory::create);
+        return Singleton.get(SmsInterface.class.getSimpleName(), SmsFactory::create);
     }
 
     /**

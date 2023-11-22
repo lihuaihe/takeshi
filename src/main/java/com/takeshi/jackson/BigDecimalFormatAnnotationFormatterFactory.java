@@ -44,8 +44,8 @@ public class BigDecimalFormatAnnotationFormatterFactory implements AnnotationFor
     protected Formatter<BigDecimal> getFormatter(BigDecimalFormat annotation) {
         return new Formatter<>() {
             @Override
-            public String print(BigDecimal object, Locale locale) {
-                return NumberUtil.decimalFormat(annotation.pattern(), object);
+            public String print(BigDecimal value, Locale locale) {
+                return NumberUtil.decimalFormat(annotation.pattern(), value);
             }
 
             @Override

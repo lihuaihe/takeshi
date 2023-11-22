@@ -81,7 +81,7 @@ public final class TakeshiUtil {
      * @return TemplateEngine
      */
     public static TemplateEngine getTemplateEngine() {
-        return Singleton.get(TemplateEngine.class.getName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
+        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
     }
 
     /**
@@ -90,7 +90,7 @@ public final class TakeshiUtil {
      * @return Tika
      */
     public static Tika getTika() {
-        return Singleton.get(Tika.class.getName(), Tika::new);
+        return Singleton.get(Tika.class.getSimpleName(), Tika::new);
     }
 
     /**

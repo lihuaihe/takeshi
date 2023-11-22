@@ -1,7 +1,5 @@
 package com.takeshi.config.properties;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Regions;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -17,7 +15,12 @@ import java.time.Duration;
 @Data
 @AutoConfiguration
 @ConfigurationProperties(prefix = "takeshi.aws-secrets")
-public class AWSSecretsManagerCredentials implements AWSCredentials {
+public class AWSSecretsManagerCredentials {
+
+    /**
+     * 是否启用AWS S3文件存储功能
+     */
+    private boolean enabled = false;
 
     /**
      * SecretsManager 使用的 accessKey
@@ -43,7 +46,7 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     /**
      * 设置客户端使用的区域（例如：us-west-2）
      */
-    private Regions region = Regions.DEFAULT_REGION;
+    private String region = "us-west-2";
 
     /**
      * S3临时URL的有效时间，默认7天
@@ -59,15 +62,5 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
      * 存储在AWS Secrets Manager中的 AWS s3 密钥名称
      */
     private String secretKeySecrets = "AWS-S3-Secret-access-key";
-
-    @Override
-    public String getAWSAccessKeyId() {
-        return accessKey;
-    }
-
-    @Override
-    public String getAWSSecretKey() {
-        return secretKey;
-    }
 
 }

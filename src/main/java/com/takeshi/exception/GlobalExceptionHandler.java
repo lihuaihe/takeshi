@@ -182,14 +182,13 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
-        RetBO parameterError = TakeshiCode.PARAMETER_ERROR;
+        String msg = TakeshiCode.PARAMETER_ERROR.getMessage();
         if (ObjUtil.isNotNull(fieldError)) {
-            String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName()
+            msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName()
                     ? StrUtil.format("[{}] {}", fieldError.getField(), fieldError.getDefaultMessage())
                     : fieldError.getDefaultMessage();
-            parameterError.setMessage(msg);
         }
-        return ResponseData.retData(parameterError);
+        return ResponseData.retData(TakeshiCode.PARAMETER_ERROR.getCode(), msg);
     }
 
     /**

@@ -65,7 +65,7 @@ public class TakeshiFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
+        AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getSimpleName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
                 && excludeUrlList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {

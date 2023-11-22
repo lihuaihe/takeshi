@@ -70,7 +70,7 @@ public final class MandrillUtil {
                 if (ObjUtil.isNull(MANDRILL_API)) {
                     try {
                         MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
-                        JsonNode jsonNode = AmazonS3Util.getSecret();
+                        JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
                         FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : jsonNode.get(mandrill.getFromEmailSecrets()).asText();
                         FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : jsonNode.get(mandrill.getFromNameSecrets()).asText();
                         String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : jsonNode.get(mandrill.getApiKeySecrets()).asText();

@@ -13,6 +13,8 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -92,9 +94,7 @@ public class OpenApiConfig {
         });
         return groupMap.entrySet()
                 .stream()
-                .map(item -> {
-                    return GroupedOpenApi.builder().group(item.getKey()).pathsToMatch(item.getValue().toArray(String[]::new)).build();
-                }).toList();
+                .map(item -> GroupedOpenApi.builder().group(item.getKey()).pathsToMatch(item.getValue().toArray(String[]::new)).build()).toList();
     }
 
     /**
@@ -145,10 +145,8 @@ public class OpenApiConfig {
                                 properties.forEach((k, v) -> {
                                     String type = v.getType();
                                     String format = v.getFormat();
-                                    // Long，BigInteger，BigDecimal
-                                    if ((StrUtil.equals(type, "integer") && StrUtil.equals(format, "int64"))
-                                            || (StrUtil.equals(type, "integer") && StrUtil.isBlank(format))
-                                            || (StrUtil.equals(type, "number") && StrUtil.isBlank(format))) {
+                                    if (v instanceof NumberSchema || (v instanceof IntegerSchema && (StrUtil.equals(format, "int64") || StrUtil.isBlank(format)))) {
+                                        // Long，BigInteger，BigDecimal
                                         v.setType("string");
                                         v.setFormat(null);
                                     }
