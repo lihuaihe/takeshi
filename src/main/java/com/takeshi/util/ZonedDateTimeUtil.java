@@ -366,7 +366,7 @@ public final class ZonedDateTimeUtil {
      * @param text text
      * @return ZonedDateTime
      */
-    public ZonedDateTime parse(CharSequence text) {
+    public static ZonedDateTime parse(CharSequence text) {
         return parse(text, null);
     }
 
@@ -377,7 +377,7 @@ public final class ZonedDateTimeUtil {
      * @param formatter formatter
      * @return ZonedDateTime
      */
-    public ZonedDateTime parse(CharSequence text, DateTimeFormatter formatter) {
+    public static ZonedDateTime parse(CharSequence text, DateTimeFormatter formatter) {
         if (null == text) {
             return null;
         }
@@ -492,7 +492,7 @@ public final class ZonedDateTimeUtil {
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime beginOfDay(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime beginOfDay(ZonedDateTime zonedDateTime) {
         return zonedDateTime.with(LocalTime.MIN);
     }
 
@@ -502,7 +502,7 @@ public final class ZonedDateTimeUtil {
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfDay(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime endOfDay(ZonedDateTime zonedDateTime) {
         return endOfDay(zonedDateTime, false);
     }
 
@@ -513,7 +513,7 @@ public final class ZonedDateTimeUtil {
      * @param truncateMillisecond truncateMillisecond
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfDay(ZonedDateTime zonedDateTime, boolean truncateMillisecond) {
+    public static ZonedDateTime endOfDay(ZonedDateTime zonedDateTime, boolean truncateMillisecond) {
         if (truncateMillisecond) {
             return zonedDateTime.with(LocalTime.of(23, 59, 59));
         }
@@ -526,7 +526,7 @@ public final class ZonedDateTimeUtil {
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime beginOfWeek(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime beginOfWeek(ZonedDateTime zonedDateTime) {
         return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
@@ -536,7 +536,7 @@ public final class ZonedDateTimeUtil {
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfWeek(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime endOfWeek(ZonedDateTime zonedDateTime) {
         return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
     }
 

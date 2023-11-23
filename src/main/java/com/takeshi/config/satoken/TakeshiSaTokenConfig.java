@@ -4,6 +4,7 @@ import cn.hutool.core.util.ArrayUtil;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.jackson.BigDecimalFormatAnnotationFormatterFactory;
+import com.takeshi.jackson.CurrencyConversionAnnotationFormatterFactory;
 import com.takeshi.jackson.NumZeroFormatAnnotationFormatterFactory;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
@@ -51,6 +52,7 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
     default void addFormatters(FormatterRegistry registry) {
         registry.addFormatterForFieldAnnotation(new NumZeroFormatAnnotationFormatterFactory());
         registry.addFormatterForFieldAnnotation(new BigDecimalFormatAnnotationFormatterFactory());
+        registry.addFormatterForFieldAnnotation(new CurrencyConversionAnnotationFormatterFactory());
     }
 
 }

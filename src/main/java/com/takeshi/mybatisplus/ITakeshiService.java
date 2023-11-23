@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.takeshi.pojo.basic.*;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
  * 自定义多表关联分页查询，在mapper层新建一个方法
  * //示例：
  * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
- * Page<T> pageList(Page<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
+ * TakeshiPage<T> pageList(TakeshiPage<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
  * }
  * </pre>
  *
@@ -44,10 +43,10 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param basicPage basicPage
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> buildPage(E basicPage) {
-        Page<T> page = Page.of(basicPage.getPageNum(), basicPage.getPageSize());
+    default <E extends BasicPage> TakeshiPage<T> buildPage(E basicPage) {
+        TakeshiPage<T> page = TakeshiPage.of(basicPage.getPageNum(), basicPage.getPageSize());
         if (basicPage instanceof BasicSortPage basicSortPage) {
             if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
                 page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
@@ -63,9 +62,9 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param basicPage 列表查询参数
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPage(E basicPage) {
+    default <E extends BasicPage> TakeshiPage<T> listPage(E basicPage) {
         return this.listPage(basicPage, Collections.emptyList());
     }
 
@@ -77,9 +76,9 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param basicPage 列表查询参数
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPage(E basicPage, List<SFunction<T, ?>> columns) {
+    default <E extends BasicPage> TakeshiPage<T> listPage(E basicPage, List<SFunction<T, ?>> columns) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), this.queryWrapper(basicPage, columns));
     }
 
@@ -93,9 +92,9 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param consumer  item -> item.eq("user_id",1)
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
+    default <E extends BasicPage> TakeshiPage<T> listPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
     }
 
@@ -109,9 +108,9 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param consumer  item -> item.eq(User::getUserId,1)
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
+    default <E extends BasicPage> TakeshiPage<T> listPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
     }
 
@@ -122,7 +121,7 @@ public interface ITakeshiService<T> extends IService<T> {
      *
      * @param basicPage 列表查询参数
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage) {
         return this.listTakeshiPage(basicPage, Collections.emptyList());
@@ -136,7 +135,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param basicPage 列表查询参数
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage, List<SFunction<T, ?>> columns) {
         return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns));
@@ -152,7 +151,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param consumer  item -> item.eq("user_id",1)
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
@@ -168,7 +167,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param columns   需要进行模糊搜索的数据库字段名
      * @param consumer  item -> item.eq(User::getUserId,1)
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
@@ -210,9 +209,9 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param basicPage 列表分页查询参数
      * @param consumer  item -> item.eq("user_id",1)
      * @param <E>       e
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPageQuery(E basicPage, Consumer<QueryWrapper<T>> consumer) {
+    default <E extends BasicPage> TakeshiPage<T> listPageQuery(E basicPage, Consumer<QueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().func(Objects.nonNull(consumer), consumer));
     }
 
@@ -223,9 +222,9 @@ public interface ITakeshiService<T> extends IService<T> {
      * @param basicPage 列表分页查询参数
      * @param consumer  item -> item.eq(User::getUserId,1)
      * @param <E>       p
-     * @return Page
+     * @return TakeshiPage
      */
-    default <E extends BasicPage> Page<T> listPageLambdaQuery(E basicPage, Consumer<LambdaQueryWrapper<T>> consumer) {
+    default <E extends BasicPage> TakeshiPage<T> listPageLambdaQuery(E basicPage, Consumer<LambdaQueryWrapper<T>> consumer) {
         return this.getBaseMapper().selectPage(this.buildPage(basicPage), new QueryWrapper<T>().lambda().func(Objects.nonNull(consumer), consumer));
     }
 

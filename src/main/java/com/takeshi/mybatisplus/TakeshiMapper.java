@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * 自定义多表关联分页查询，在mapper层新建一个方法
  * //示例：
  * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
- * Page<T> pageList(Page<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
+ * TakeshiPage<T> pageList(TakeshiPage<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
  * }
  * </pre>
  *
