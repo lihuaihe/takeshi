@@ -20,7 +20,7 @@ public class FirebaseCredentials {
     private String jsonFileName = "firebase.json";
 
     /**
-     * databaseUrl
+     * databaseUrl，url后面不需要/，例如：https://takeshi-firebase-adminsdk-12345.firebaseio.com
      */
     private String databaseUrl;
 
