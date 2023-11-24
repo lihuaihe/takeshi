@@ -87,7 +87,7 @@ public final class FirebaseUtil {
         /**
          * 获取指定位置的的值
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot getValue(String pathString) {
@@ -110,7 +110,7 @@ public final class FirebaseUtil {
         /**
          * 对路径下的值自增1
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot increment(String pathString) {
@@ -120,7 +120,7 @@ public final class FirebaseUtil {
         /**
          * 对路径下的值自减1
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot decrement(String pathString) {
@@ -130,7 +130,7 @@ public final class FirebaseUtil {
         /**
          * 清空初始化该路径下的值，也就是将值设置为0
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot initialize(String pathString) {
@@ -141,7 +141,7 @@ public final class FirebaseUtil {
          * <p>对路径下的值自增delta</p>
          * <p style="color:yellow;">注意：如果传了0，则直接将值设置为0，不进行加减</p>
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @param delta      值，如果传了0，则直接将值设置为0，不进行加减
          * @return 数据库位置的数据
          */
@@ -171,7 +171,7 @@ public final class FirebaseUtil {
         /**
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @param value      值，不需要特地转JSON字符串，
          * @return {@link ApiFuture}
          */
@@ -182,7 +182,7 @@ public final class FirebaseUtil {
         /**
          * 将此位置的值设置为 null，即删除指定位置的数据
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> removeValueAsync(String pathString) {
