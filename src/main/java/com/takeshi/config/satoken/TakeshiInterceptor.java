@@ -252,11 +252,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         }
 
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
-            RetBO retBO = TakeshiCode.REPEAT_SUBMIT;
+            RetBO retBO = StrUtil.isBlank(repeatSubmit.msg()) ? TakeshiCode.REPEAT_SUBMIT : TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
             long rateInterval = repeatSubmit.rateInterval();
-            if (StrUtil.isNotBlank(repeatSubmit.msg())) {
-                retBO.setMessage(repeatSubmit.msg());
-            }
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatUrl", servletPath);
             map.put("repeatLoginId", paramBO.getLoginId());

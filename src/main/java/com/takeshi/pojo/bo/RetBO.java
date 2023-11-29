@@ -2,10 +2,7 @@ package com.takeshi.pojo.bo;
 
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
@@ -14,7 +11,8 @@ import lombok.experimental.Accessors;
  * @author 七濑武【Nanase Takeshi】
  */
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
@@ -32,5 +30,26 @@ public class RetBO extends AbstractBasicSerializable {
      */
     @Schema(description = "提示信息")
     private String message;
+
+    /**
+     * clone
+     *
+     * @return RetBO
+     */
+    @Override
+    @SuppressWarnings("all")
+    public RetBO clone() {
+        return new RetBO(this.code, this.message);
+    }
+
+    /**
+     * clone
+     *
+     * @param message message
+     * @return RetBO
+     */
+    public RetBO cloneWithMessage(String message) {
+        return new RetBO(this.code, message);
+    }
 
 }
