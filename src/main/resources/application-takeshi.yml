@@ -38,7 +38,7 @@ knife4j:
   documents:
     - group: default
       name: 接口说明
-      locations: classpath:markdown/*
+      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
   setting:
     language: zh_cn
     enable-version: true
