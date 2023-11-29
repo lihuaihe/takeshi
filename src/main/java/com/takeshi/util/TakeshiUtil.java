@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.impl.CollectionConverter;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.io.IoUtil;
@@ -57,6 +58,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 
 /**
@@ -380,6 +383,26 @@ public final class TakeshiUtil {
             return false;
         }
         return num1.compareTo(num2) == 0;
+    }
+
+    /**
+     * 获取某个月的开始时间戳
+     *
+     * @param yearMonth yearMonth
+     * @return 时间戳
+     */
+    public static Long firstDayOfMonth(YearMonth yearMonth) {
+        return LocalDateTimeUtil.toEpochMilli(yearMonth.atDay(1).atTime(LocalTime.MIN));
+    }
+
+    /**
+     * 获取某个月的结束时间戳
+     *
+     * @param yearMonth yearMonth
+     * @return 时间戳
+     */
+    public static Long lastDayOfMonth(YearMonth yearMonth) {
+        return LocalDateTimeUtil.toEpochMilli(yearMonth.atEndOfMonth().atTime(LocalTime.MAX));
     }
 
     /**
