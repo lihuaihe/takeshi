@@ -92,9 +92,9 @@ public class TakeshiConfig {
     public MessageSource messageSource(@Value("${spring.messages.basename:null}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         if (StrUtil.isNotBlank(basename)) {
-            messageSource.setBasename(basename);
+            messageSource.addBasenames(basename);
         }
-        messageSource.setBasename("takeshi-i18n/messages");
+        messageSource.addBasenames("takeshi-i18n/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return messageSource;
     }
