@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
-import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.client.RedisException;
@@ -168,7 +167,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseData<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", runtimeException);
-        return ResponseData.fail(runtimeException.getMessage());
+        return ResponseData.fail(ExceptionUtil.getRootCause(runtimeException).getMessage());
     }
 
     /**

@@ -29,7 +29,7 @@ ext {
     html2pdfVersion = '5.0.2'
     hutoolVersion = '5.8.23'
     saTokenVersion = '1.37.0'
-    ognlVersion = '3.4.1'
+    ognlVersion = '3.3.4' // 使用高于这个版本会提示java.lang.NoSuchMethodError
     jaxbApiVersion = '2.3.1'
     twilioVersion = '9.14.1'
     micaAutoVersion = '3.1.2'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '23.12.04.0-SNAPSHOT'
+version = '23.12.04.2-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
