@@ -33,7 +33,7 @@ public class BasicSortPage extends BasicPage {
     /**
      * 是否是升序排序
      */
-    @Parameter(description = "是否是升序排序", schema = @Schema(description = "是否是升序排序", allowableValues = {"false", "true"}))
+    @Parameter(description = "是否是升序排序（true/false）", schema = @Schema(description = "是否是升序排序"))
     private Boolean sortAsc;
 
 }
