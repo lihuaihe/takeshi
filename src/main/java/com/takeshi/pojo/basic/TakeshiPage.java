@@ -272,9 +272,7 @@ public class TakeshiPage<T> extends Page<T> {
     public static <E extends BasicPage, T> TakeshiPage<T> of(E basicPage, Class<T> resultClass) {
         TakeshiPage<T> page = TakeshiPage.of(basicPage.getPageNum(), basicPage.getPageSize(), resultClass);
         if (basicPage instanceof BasicSortPage basicSortPage) {
-            if (StrUtil.isNotBlank(basicSortPage.getSortColumn())) {
-                page.addOrder(new OrderItem(basicSortPage.getSortColumn(), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
-            }
+            page.addOrder(new OrderItem(TakeshiPage.sortColumnToUnderline(basicSortPage.getSortColumn()), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
         }
         return page;
     }
@@ -302,6 +300,16 @@ public class TakeshiPage<T> extends Page<T> {
     public <R> TakeshiPage<R> convert(Function<? super T, ? extends R> mapper) {
         List<R> collect = this.getRecords().stream().map(mapper).collect(toList());
         return ((TakeshiPage<R>) this).setRecords(collect);
+    }
+
+    /**
+     * 排序字段转下划线
+     *
+     * @param sortColumn 排序字段
+     * @return String
+     */
+    public static String sortColumnToUnderline(String sortColumn) {
+        return StrUtil.isBlank(sortColumn) ? "create_time" : StrUtil.toUnderlineCase(sortColumn);
     }
 
 }
