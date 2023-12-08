@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -38,6 +39,7 @@ public class ThreadPoolConfig {
      * @return ThreadPoolTaskExecutor
      */
     @Bean("threadPoolTaskExecutor")
+    @ConditionalOnMissingBean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(CORE);
@@ -61,6 +63,7 @@ public class ThreadPoolConfig {
      * @return ScheduledExecutorService
      */
     @Bean("scheduledExecutorService")
+    @ConditionalOnMissingBean
     protected ScheduledExecutorService scheduledExecutorService() {
         return new ScheduledThreadPoolExecutor(CORE,
                 ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),

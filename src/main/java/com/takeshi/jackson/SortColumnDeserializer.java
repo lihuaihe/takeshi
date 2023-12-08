@@ -1,7 +1,6 @@
 package com.takeshi.jackson;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -25,7 +24,7 @@ public class SortColumnDeserializer extends StdDeserializer<String> {
     }
 
     @Override
-    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         return TakeshiPage.sortColumnToUnderline(p.getText());
     }
 

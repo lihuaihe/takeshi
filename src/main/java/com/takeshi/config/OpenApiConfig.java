@@ -37,6 +37,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -72,6 +73,7 @@ public class OpenApiConfig {
      */
     @SuppressWarnings("unchecked")
     @Bean
+    @ConditionalOnMissingBean
     public List<GroupedOpenApi> groupedOpenApis(SpringWebProvider springWebProvider) {
         Map<String, LinkedHashSet<String>> groupMap = new LinkedHashMap<>();
         groupMap.put("default", new LinkedHashSet<>(Collections.singleton("/**")));
@@ -111,6 +113,7 @@ public class OpenApiConfig {
      * @return MultipleOpenApiWebMvcResource
      */
     @Bean
+    @ConditionalOnMissingBean
     @Lazy(false)
     public MultipleOpenApiWebMvcResource multipleOpenApiResource(List<GroupedOpenApi> groupedOpenApis,
                                                                  ObjectFactory<OpenAPIService> defaultOpenAPIBuilder,
@@ -134,6 +137,7 @@ public class OpenApiConfig {
      */
     @SuppressWarnings("unchecked")
     @Bean
+    @ConditionalOnMissingBean
     public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
         return openApi -> {
             if (CollUtil.isNotEmpty(openApi.getComponents().getSchemas())) {
@@ -163,6 +167,7 @@ public class OpenApiConfig {
      * @return GlobalOperationCustomizer
      */
     @Bean
+    @ConditionalOnMissingBean
     public GlobalOperationCustomizer globalOperationCustomizer() {
         // 查询TakeshiCode子类集合
         Set<Class<?>> classSet = new HashSet<>();
@@ -197,6 +202,7 @@ public class OpenApiConfig {
      * @return OpenAPI
      */
     @Bean
+    @ConditionalOnMissingBean
     public OpenAPI customOpenApi() {
         String tokenName = saTokenConfig.getTokenName();
         Info info = new Info()

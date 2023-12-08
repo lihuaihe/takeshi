@@ -3,11 +3,16 @@ package com.takeshi.config;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takeshi.jackson.SimpleJavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.PackageVersion;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -28,6 +33,8 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -55,6 +62,7 @@ public class TakeshiConfig {
      * @return FilterRegistrationBean
      */
     @Bean
+    @ConditionalOnMissingBean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOrigin("*");
@@ -76,6 +84,7 @@ public class TakeshiConfig {
      * @return LocaleResolver
      */
     @Bean
+    @ConditionalOnMissingBean
     public LocaleResolver localeResolver() {
         AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
         localeResolver.setDefaultLocale(Locale.US);
@@ -89,6 +98,7 @@ public class TakeshiConfig {
      * @return MessageSource
      */
     @Bean
+    @ConditionalOnMissingBean
     public MessageSource messageSource(@Value("${spring.messages.basename:null}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         if (StrUtil.isNotBlank(basename)) {
@@ -106,22 +116,35 @@ public class TakeshiConfig {
      * @return ObjectMapper
      */
     @Bean
+    @ConditionalOnMissingBean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+        SimpleModule simpleModule = new SimpleModule("LongToString", PackageVersion.VERSION)
+                .addSerializer(Long.class, ToStringSerializer.instance)
+                .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                .addSerializer(BigInteger.class, ToStringSerializer.instance)
+                .addSerializer(BigDecimal.class, ToStringSerializer.instance)
+                .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
+                .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
         return builder.createXmlMapper(false)
                 .build()
-                //                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .registerModule(new SimpleJavaTimeModule());
+                .findAndRegisterModules()
+                .registerModule(simpleModule)
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     /**
      * 配置cache缓存到redis
      *
-     * @param factory factory
+     * @param objectMapper objectMapper
+     * @param factory      factory
      * @return CacheManager
      */
     @Bean
-    public CacheManager cacheManager(RedisConnectionFactory factory) {
-        return TtlRedisCacheManager.defaultInstance(factory);
+    @ConditionalOnMissingBean
+    public CacheManager cacheManager(ObjectMapper objectMapper, RedisConnectionFactory factory) {
+        return TtlRedisCacheManager.defaultInstance(objectMapper, factory);
     }
 
     /**
@@ -139,6 +162,7 @@ public class TakeshiConfig {
      * @return PlatformTransactionManager
      */
     @Bean
+    @ConditionalOnMissingBean
     public PlatformTransactionManager platformTransactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
