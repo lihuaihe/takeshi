@@ -2,6 +2,7 @@ package com.takeshi.config;
 
 import cn.hutool.core.net.NetUtil;
 import cn.hutool.http.useragent.Platform;
+import com.takeshi.constants.TakeshiConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -38,7 +39,7 @@ public class ApplicationEventListener {
      */
     @EventListener(ContextRefreshedEvent.class)
     public void handleContextRefreshed() {
-        Platform.mobilePlatforms.add(4, new Platform("Android Tablet", "android.*tablet"));
+        Platform.mobilePlatforms.add(4, TakeshiConstants.ANDROID_TABLET);
         Platform.platforms.addAll(0, Platform.mobilePlatforms);
         log.info("ApplicationEventListener.handleContextRefreshed --> Add the Android tablet platform type to the Platform static variable of Hutool.");
     }

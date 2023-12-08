@@ -1,11 +1,18 @@
 package com.takeshi.constants;
 
+import cn.hutool.http.useragent.Platform;
+
 /**
  * 常量池
  *
  * @author 七濑武【Nanase Takeshi】
  */
 public interface TakeshiConstants {
+
+    /**
+     * 安卓平板
+     */
+    Platform ANDROID_TABLET = new Platform("AndroidTablet", "android.*tablet");
 
     /**
      * 接口请求的参数，放在request的attribute传递下去，以免频繁获取
