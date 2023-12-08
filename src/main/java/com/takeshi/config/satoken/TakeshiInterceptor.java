@@ -119,7 +119,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             paramBO.setMethodName(methodName);
             paramBO.setTakeshiLog(method.getAnnotation(TakeshiLog.class));
             log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, paramBO.getHttpMethod(), StrUtil.BRACKET_END, methodName));
-            log.info("Request Parameters: {}", paramBO.getParamObjectNode());
+            log.info("Request Parameters: {}", StaticConfig.objectMapper.writeValueAsString(paramBO.getParamObjectNode()));
             // 速率限制
             SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, paramBO);
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
@@ -140,7 +140,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param handlerMethod handlerMethod
      * @param paramBO       paramBO
      */
-    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ParamBO paramBO) {
+    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ParamBO paramBO) throws Exception {
         SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = paramBO.getClientIp();
@@ -257,7 +257,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatUrl", servletPath);
             map.put("repeatLoginId", paramBO.getLoginId());
-            map.put("repeatParams", paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName()));
+            map.put("repeatParams", StaticConfig.objectMapper.writeValueAsString(paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName())));
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = StaticConfig.redisComponent.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次

@@ -72,7 +72,7 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setMethodName(paramBO.getMethodName());
                     tbSysLog.setRequestUrl(paramBO.getRequestUrl());
                     tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-                    tbSysLog.setRequestParams(paramObjectNode.toString());
+                    tbSysLog.setRequestParams(objectMapper.writeValueAsString(paramObjectNode));
                     tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
                     tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                     tbSysLog.setSuccessful(this.successful(responseData));
