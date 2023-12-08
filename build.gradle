@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '23.12.08.7-SNAPSHOT'
+version = '23.12.08.8-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -121,7 +121,6 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-validation'
-    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     compileOnly 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
     api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"

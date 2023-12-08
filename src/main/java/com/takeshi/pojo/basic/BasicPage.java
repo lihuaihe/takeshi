@@ -31,7 +31,7 @@ public class BasicPage implements Serializable {
      */
     @NotNull
     @Positive
-    @Parameter(description = "当前页数", schema = @Schema(description = "当前页数", example = "1"))
+    @Parameter(description = "当前页数", example = "1", schema = @Schema(description = "当前页数", example = "1"))
     private Long pageNum;
 
     /**
@@ -39,7 +39,7 @@ public class BasicPage implements Serializable {
      */
     @NotNull
     @Min(-1)
-    @Parameter(description = "每页数据条数，传-1则不分页", schema = @Schema(description = "每页数据条数，传-1则不分页", example = "10"))
+    @Parameter(description = "每页数据条数，传-1则不分页", example = "10", schema = @Schema(description = "每页数据条数，传-1则不分页", example = "10"))
     private Long pageSize;
 
 }
