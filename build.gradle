@@ -13,19 +13,19 @@ configurations {
 }
 
 ext {
-    redissonVersion = '3.24.3'
+    redissonVersion = '3.25.0'
     tikaVersion = '2.9.1'
     jtsVersion = '1.19.0'
     ffmpegVersion = '6.0-1.5.9'
     javacvVersion = '1.5.9'
-    springdocVersion = '2.2.0'
     mybatisPlusVersion = '3.5.4.1'
-    knife4jVersion = '4.3.0'
-    awsJavaSdkVersion = '1.12.588'
+    knife4jVersion = '4.4.0'
+    awsJavaSdkVersion = '1.12.609'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.2.0'
     findbugsVersion = '3.0.1u2'
-    libphonenumberVersion = '8.13.25'
+    gsonVersion = '2.10.1'
+    libphonenumberVersion = '8.13.27'
     html2pdfVersion = '5.0.2'
     hutoolVersion = '5.8.23'
     saTokenVersion = '1.37.0'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '23.12.11.2-SNAPSHOT'
+version = '23.12.11.15-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -134,8 +134,6 @@ dependencies {
     compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
     compileOnly "org.bytedeco:javacv:${javacvVersion}"
 
-    api "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
-
     api "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
     api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
     compileOnly "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
@@ -143,6 +141,7 @@ dependencies {
     compileOnly "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
     compileOnly "com.google.firebase:firebase-admin:${firebaseVersion}"
     api "com.google.code.findbugs:annotations:${findbugsVersion}"
+    api "com.google.code.gson:gson:${gsonVersion}"
     api "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     compileOnly "com.itextpdf:html2pdf:${html2pdfVersion}"
 

@@ -22,13 +22,13 @@ import java.util.Locale;
 @Component
 public class ApplicationEventListener {
 
-    @Value("${spring.application.name}")
+    @Value("${spring.application.name:}")
     private String applicationName;
 
     @Value("${java.version}")
     private String javaVersion;
 
-    @Value("${server.port}")
+    @Value("${server.port:8080}")
     private Integer serverPort;
 
     @Value("${server.servlet.context-path:}")

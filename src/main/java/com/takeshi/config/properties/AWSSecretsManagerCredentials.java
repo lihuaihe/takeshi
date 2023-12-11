@@ -1,5 +1,7 @@
 package com.takeshi.config.properties;
 
+import cn.hutool.core.text.NamingCase;
+import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -38,9 +40,9 @@ public class AWSSecretsManagerCredentials {
     private String secretId;
 
     /**
-     * 存储桶名称，默认使用{takeshi.projectName}-bucket
+     * 存储桶名称，默认使用${takeshi.project-name}-bucket
      */
-    @Value("${takeshi.aws-secrets.bucket-name:#{T(cn.hutool.core.text.NamingCase).toKebabCase('${takeshi.project-name}').concat('-bucket')}}")
+    @Value("${takeshi.aws-secrets.bucket-name:#{T(com.takeshi.config.properties.AWSSecretsManagerCredentials).formatBucketName('${takeshi.project-name:null}')}}")
     private String bucketName;
 
     /**
@@ -62,5 +64,18 @@ public class AWSSecretsManagerCredentials {
      * 存储在AWS Secrets Manager中的 AWS s3 密钥名称
      */
     private String secretKeySecrets = "AWS-S3-Secret-access-key";
+
+    /**
+     * 格式化存储桶名称
+     *
+     * @param projectName 项目名称
+     * @return 格式化后的存储桶名称
+     */
+    public static String formatBucketName(String projectName) {
+        if (StrUtil.isBlank(projectName)) {
+            return null;
+        }
+        return NamingCase.toKebabCase(projectName).concat("-bucket");
+    }
 
 }

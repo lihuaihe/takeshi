@@ -25,8 +25,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @AutoConfiguration
 public class ThreadPoolConfig {
 
-    @Value("${server.port}")
-    private String serverPort;
+    @Value("${server.port:8080}")
+    private Integer serverPort;
 
     /**
      * 核心线程数 = cpu 核心数 + 1

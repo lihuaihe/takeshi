@@ -60,11 +60,6 @@ public class StaticConfig {
     public static String active;
 
     /**
-     * 服务器端口
-     */
-    public static String serverPort;
-
-    /**
      * RSA
      */
     public static RSA rsa;
@@ -74,46 +69,45 @@ public class StaticConfig {
      *
      * @param applicationName   applicationName
      * @param active            active
-     * @param serverPort        serverPort
      * @param objectMapper      objectMapper
      * @param messageSource     messageSource
      * @param redisComponent    redisComponent
      * @param takeshiProperties takeshiProperties
      * @throws InterruptedException 获取锁异常
      */
-    public StaticConfig(@Value("${spring.application.name}") String applicationName,
-                        @Value("${spring.profiles.active}") String active,
-                        @Value("${server.port}") String serverPort,
+    public StaticConfig(@Value("${spring.application.name:null}") String applicationName,
+                        @Value("${spring.profiles.active:null}") String active,
                         ObjectMapper objectMapper,
                         MessageSource messageSource,
                         RedisComponent redisComponent,
                         TakeshiProperties takeshiProperties) throws InterruptedException {
         StaticConfig.applicationName = applicationName;
         StaticConfig.active = active;
-        StaticConfig.serverPort = serverPort;
         StaticConfig.objectMapper = objectMapper;
         StaticConfig.messageSource = messageSource;
         StaticConfig.redisComponent = redisComponent;
         StaticConfig.takeshiProperties = takeshiProperties;
-        RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
-        if (lock.tryLock(10, TimeUnit.SECONDS)) {
-            // 保存rsa算法的公钥和私钥到redis中
-            try {
-                String rsaPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
-                String rsaPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
-                if (redisComponent.hasKey(rsaPrivateKey) && redisComponent.hasKey(rsaPublicKey)) {
-                    StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
-                } else {
-                    KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
-                    StaticConfig.rsa = SecureUtil.rsa(keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
-                    redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
-                    redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
+        if (StrUtil.isNotBlank(takeshiProperties.getProjectName())) {
+            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
+            if (lock.tryLock(10, TimeUnit.SECONDS)) {
+                // 保存rsa算法的公钥和私钥到redis中
+                try {
+                    String rsaPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
+                    String rsaPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
+                    if (redisComponent.hasKey(rsaPrivateKey) && redisComponent.hasKey(rsaPublicKey)) {
+                        StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
+                    } else {
+                        KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
+                        StaticConfig.rsa = SecureUtil.rsa(keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
+                        redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
+                        redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
+                    }
+                } finally {
+                    lock.unlock();
                 }
-            } finally {
-                lock.unlock();
+            } else {
+                throw new IllegalStateException("Creating RSA object using generated private and public keys failed to acquire lock.");
             }
-        } else {
-            throw new IllegalStateException("Creating RSA object using generated private and public keys failed to acquire lock.");
         }
     }
 

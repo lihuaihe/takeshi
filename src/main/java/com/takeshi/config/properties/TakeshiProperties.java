@@ -3,7 +3,6 @@ package com.takeshi.config.properties;
 import com.takeshi.constants.TakeshiConstants;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -24,7 +23,6 @@ public class TakeshiProperties {
     /**
      * 项目名称
      */
-    @NotBlank
     private String projectName;
 
     /**

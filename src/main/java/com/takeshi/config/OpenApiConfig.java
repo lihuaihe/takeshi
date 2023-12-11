@@ -59,7 +59,7 @@ public class OpenApiConfig {
     private final SaTokenConfig saTokenConfig;
     private final ApplicationContext applicationContext;
 
-    @Value("${spring.application.name}")
+    @Value("${spring.application.name:}")
     private String applicationName;
 
     /**
@@ -197,12 +197,12 @@ public class OpenApiConfig {
     public OpenAPI customOpenApi() {
         String tokenName = saTokenConfig.getTokenName();
         Info info = new Info()
-                // 设置页面标题
-                .title(applicationName)
-                // 设置接口描述
-                .description(applicationName + "通用框架接口")
-                // 设置联系方式
+                .description("七濑武【Nanase Takeshi】通用框架接口")
                 .contact(new Contact().name("七濑武【Nanase Takeshi】").email("takeshi@725.life").url("https://github.com/lihuaihe/takeshi"));
+        if (StrUtil.isNotBlank(applicationName)) {
+            info.title(applicationName)
+                    .description(applicationName + "通用框架接口");
+        }
         SecurityScheme securityScheme = new SecurityScheme()
                 .name(tokenName)
                 .type(SecurityScheme.Type.APIKEY)
