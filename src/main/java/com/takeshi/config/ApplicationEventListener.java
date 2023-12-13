@@ -40,7 +40,7 @@ public class ApplicationEventListener {
     @EventListener(ContextRefreshedEvent.class)
     public void handleContextRefreshed() {
         Platform.mobilePlatforms.add(4, TakeshiConstants.ANDROID_TABLET);
-        Platform.platforms.addAll(0, Platform.mobilePlatforms);
+        Platform.platforms.add(4, TakeshiConstants.ANDROID_TABLET);
         log.info("ApplicationEventListener.handleContextRefreshed --> Add the Android tablet platform type to the Platform static variable of Hutool.");
     }
 
