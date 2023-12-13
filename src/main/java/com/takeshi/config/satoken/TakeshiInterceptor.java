@@ -235,7 +235,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 if (iOpenBlacklist) {
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, servletPath, ipRate, ipOverwritten, Instant.now());
-                    StaticConfig.redisComponent.saveToMidnight(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
+                    StaticConfig.redisComponent.saveToEndOfDay(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
                 }
                 SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
