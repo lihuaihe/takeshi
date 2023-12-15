@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Schema(description = "操作状态枚举", enumAsRef = true)
+@Schema(description = "操作状态", enumAsRef = true)
 public enum BusinessStatusEnum {
 
     /**

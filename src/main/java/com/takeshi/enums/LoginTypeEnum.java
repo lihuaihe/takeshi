@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Schema(description = "登录类型枚举", enumAsRef = true)
+@Schema(description = "登录类型", enumAsRef = true)
 public enum LoginTypeEnum {
 
     /**
