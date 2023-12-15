@@ -29,7 +29,7 @@ public enum LoginTypeEnum {
     /**
      * 支付宝登录
      */
-    ALI_PAY("ali_pay"),
+    ALIPAY("alipay"),
     /**
      * 抖音登录
      */
