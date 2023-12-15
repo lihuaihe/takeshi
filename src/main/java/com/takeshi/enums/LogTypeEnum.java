@@ -1,75 +1,87 @@
 package com.takeshi.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 /**
  * 日志类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Getter
 @Schema(description = "日志类型", enumAsRef = true)
 public enum LogTypeEnum {
 
     /**
      * 新增
      */
-    INSERT,
+    INSERT("insert"),
     /**
      * 删除
      */
-    DELETE,
+    DELETE("delete"),
     /**
      * 更新
      */
-    UPDATE,
+    UPDATE("update"),
     /**
      * 查询
      */
-    SELECT,
+    SELECT("select"),
     /**
      * 导入
      */
-    IMPORT,
+    IMPORT("import"),
     /**
      * 导出
      */
-    EXPORT,
+    EXPORT("export"),
     /**
      * 上传文件
      */
-    UPLOAD,
+    UPLOAD("upload"),
     /**
      * 下载文件
      */
-    DOWNLOAD,
+    DOWNLOAD("download"),
     /**
      * 登录
      */
-    LOGIN,
+    LOGIN("login"),
     /**
      * 注册
      */
-    REGISTER,
+    REGISTER("register"),
     /**
      * 注销
      */
-    LOGOUT,
+    LOGOUT("logout"),
     /**
      * 验证
      */
-    VERIFY,
+    VERIFY("verify"),
     /**
-     * 授权
+     * 授权认证
      */
-    GRANT,
+    OAUTH("oauth"),
     /**
      * 回调
      */
-    CALLBACK,
+    CALLBACK("callback"),
     /**
      * 其它
      */
-    OTHER,
+    OTHER("other"),
     ;
+
+    @EnumValue
+    @JsonValue
+    private final String value;
+
+    LogTypeEnum(String value) {
+        this.value = value;
+    }
 
 }
