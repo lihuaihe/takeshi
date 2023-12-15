@@ -1,10 +1,13 @@
 package com.takeshi.enums;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Schema(description = "登录类型枚举")
 public enum LoginTypeEnum {
 
     /**
