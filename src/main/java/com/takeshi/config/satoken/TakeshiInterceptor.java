@@ -2,7 +2,6 @@ package com.takeshi.config.satoken;
 
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -52,7 +51,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * 认证函数：每次请求执行
      * <p> 参数：路由处理函数指针
      */
-    public SaParamFunction<Object> auth = handler -> StpUtil.checkLogin();
+    public SaParamFunction<Object> auth = handler -> {
+    };
 
 
     /**

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.cfg.PackageVersion;
 import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.takeshi.config.satoken.TakeshiInterceptor;
+import com.takeshi.config.satoken.TakeshiSaTokenConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -40,7 +42,7 @@ import java.util.Locale;
 
 /**
  * Bean配置<br/>
- * {@link EnableCaching} 启用 Spring 的注解驱动缓存管理功能<br/>
+ * {@link org.springframework.cache.annotation.EnableCaching} 启用 Spring 的注解驱动缓存管理功能<br/>
  * {@link EnableRetry} 启用 Spring 的重试功能<br/>
  * {@link EnableScheduling} 启用定时任务功能
  *
@@ -99,7 +101,7 @@ public class TakeshiConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    public MessageSource messageSource(@Value("${spring.messages.basename:null}") String basename) {
+    public MessageSource messageSource(@Value("${spring.messages.basename:}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         if (StrUtil.isNotBlank(basename)) {
             messageSource.addBasenames(basename);
@@ -132,6 +134,17 @@ public class TakeshiConfig {
                 .findAndRegisterModules()
                 .registerModule(simpleModule)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
+
+    /**
+     * 配置一个默认的不用校验登陆的Sa-Token配置
+     *
+     * @return TakeshiSaTokenConfig
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public TakeshiSaTokenConfig takeshiSaTokenConfig() {
+        return TakeshiInterceptor::newInstance;
     }
 
     /**

@@ -20,13 +20,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
 
     /**
-     * 基于路由的拦截式鉴权
+     * 基于路由的拦截式鉴权，实现此方法时需要手动进行鉴权，例如调用：StpUtil.checkLogin()
      *
      * @return TakeshiInterceptor
      */
-    default TakeshiInterceptor saRouteBuild() {
-        return TakeshiInterceptor.newInstance();
-    }
+    TakeshiInterceptor saRouteBuild();
 
     /**
      * 注册Sa-Token的注解拦截器，打开注解式鉴权功能

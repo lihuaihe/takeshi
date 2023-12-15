@@ -1,13 +1,11 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
-
 /**
  * 日志类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public enum LogTypeEnum implements IEnum<String> {
+public enum LogTypeEnum {
 
     /**
      * 新增
@@ -70,13 +68,5 @@ public enum LogTypeEnum implements IEnum<String> {
      */
     OTHER,
     ;
-
-    /**
-     * 枚举数据库存储值
-     */
-    @Override
-    public String getValue() {
-        return this.name();
-    }
 
 }

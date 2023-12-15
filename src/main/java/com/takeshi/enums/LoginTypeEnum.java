@@ -1,13 +1,11 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
-
 /**
  * 登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public enum LoginTypeEnum implements IEnum<String> {
+public enum LoginTypeEnum {
 
     /**
      * 验证码登陆
@@ -50,13 +48,5 @@ public enum LoginTypeEnum implements IEnum<String> {
      */
     Facebook,
     ;
-
-    /**
-     * 枚举数据库存储值
-     */
-    @Override
-    public String getValue() {
-        return this.name();
-    }
 
 }

@@ -8,8 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,6 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  **/
 @Slf4j
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ThreadPoolConfig {
 
     @Value("${server.port:8080}")
@@ -38,7 +41,7 @@ public class ThreadPoolConfig {
      *
      * @return ThreadPoolTaskExecutor
      */
-    @Bean("threadPoolTaskExecutor")
+    @Bean
     @ConditionalOnMissingBean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -62,7 +65,7 @@ public class ThreadPoolConfig {
      *
      * @return ScheduledExecutorService
      */
-    @Bean("scheduledExecutorService")
+    @Bean
     @ConditionalOnMissingBean
     protected ScheduledExecutorService scheduledExecutorService() {
         return new ScheduledThreadPoolExecutor(CORE,
