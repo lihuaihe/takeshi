@@ -104,7 +104,7 @@ public class TakeshiConfig {
     public MessageSource messageSource(@Value("${spring.messages.basename:}") String basename) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         if (StrUtil.isNotBlank(basename)) {
-            messageSource.addBasenames(basename);
+            messageSource.addBasenames(StrUtil.splitToArray(basename, StrUtil.C_COMMA));
         }
         messageSource.addBasenames("takeshi-i18n/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
