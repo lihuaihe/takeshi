@@ -19,11 +19,11 @@ public interface EnvValueFormat {
     Object getDevValue();
 
     /**
-     * 获取测试环境的值
+     * 获取沙箱环境的值
      *
      * @return Object
      */
-    Object getTestValue();
+    Object getSandboxValue();
 
     /**
      * 获取正式环境的值
@@ -41,7 +41,7 @@ public interface EnvValueFormat {
     default Object getEnvValue(Object... params) {
         Object envValue = switch (StaticConfig.active) {
             case "dev" -> this.getDevValue();
-            case "test" -> this.getTestValue();
+            case "sandbox" -> this.getSandboxValue();
             case "prod" -> this.getProdValue();
             default -> null;
         };
@@ -62,7 +62,7 @@ public interface EnvValueFormat {
     default <T> T getEnvValue(Class<T> beanClass) {
         Object envValue = switch (StaticConfig.active) {
             case "dev" -> this.getDevValue();
-            case "test" -> this.getTestValue();
+            case "sandbox" -> this.getSandboxValue();
             case "prod" -> this.getProdValue();
             default -> null;
         };

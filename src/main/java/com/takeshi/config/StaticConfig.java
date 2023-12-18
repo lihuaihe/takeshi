@@ -121,12 +121,12 @@ public class StaticConfig {
     }
 
     /**
-     * 是test环境
+     * 是sandbox环境
      *
      * @return boolean
      */
-    public static boolean isTestActive() {
-        return StrUtil.equals("test", StaticConfig.active);
+    public static boolean isSandboxActive() {
+        return StrUtil.equals("sandbox", StaticConfig.active);
     }
 
     /**
