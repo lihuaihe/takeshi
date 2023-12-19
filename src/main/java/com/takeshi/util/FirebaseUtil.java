@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -47,12 +48,14 @@ public final class FirebaseUtil {
                             log.error("FirebaseUtil.static --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
                         } else {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                            String databaseUrl = StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
-                                    ? firebase.getDatabaseUrl()
-                                    : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText();
+                            String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
+                                            ? firebase.getDatabaseUrl()
+                                            : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
+                                    , StrUtil.SLASH);
                             FirebaseOptions options = FirebaseOptions.builder()
                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
                                     .setDatabaseUrl(databaseUrl)
+                                    .setJsonFactory(GsonFactory.getDefaultInstance())
                                     .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
                             log.info("FirebaseUtil.static --> FirebaseApp Initialization successful");
@@ -172,7 +175,7 @@ public final class FirebaseUtil {
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
          * @param pathString 子路径，例如：/child
-         * @param value      值，不需要特地转JSON字符串，
+         * @param value      值，可以不特地转JSON字符串，<font color="yellow">注意：数值类型的值过大时web端展示会精度丢失</font>
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
