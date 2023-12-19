@@ -175,7 +175,7 @@ public final class FirebaseUtil {
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
          * @param pathString 子路径，例如：/child
-         * @param value      值，可以不特地转JSON字符串，<font color="yellow">注意：数值类型的值过大时web端展示会精度丢失</font>
+         * @param value      值，可以不特地转JSON字符串，<span style="color:yellow;">注意：数值类型的值过大时web端展示会精度丢失</span>
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
