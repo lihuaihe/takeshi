@@ -11,10 +11,15 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.takeshi.config.satoken.TakeshiInterceptor;
 import com.takeshi.config.satoken.TakeshiSaTokenConfig;
 import lombok.RequiredArgsConstructor;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -145,6 +150,25 @@ public class TakeshiConfig {
     @ConditionalOnMissingBean
     public TakeshiSaTokenConfig takeshiSaTokenConfig() {
         return TakeshiInterceptor::newInstance;
+    }
+
+    /**
+     * 配置redisson客户端
+     *
+     * @param redisProperties redisProperties
+     * @param objectMapper    objectMapper
+     * @return RedissonClient
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public RedissonClient redissonClient(RedisProperties redisProperties, ObjectMapper objectMapper) {
+        Config config = new Config();
+        config.setCodec(new JsonJacksonCodec(objectMapper));
+        config.useSingleServer()
+                .setClientName(redisProperties.getClientName())
+                .setAddress(redisProperties.getUrl())
+                .setDatabase(redisProperties.getDatabase());
+        return Redisson.create(config);
     }
 
     /**

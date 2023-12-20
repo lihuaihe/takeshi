@@ -255,16 +255,6 @@ public class RedisComponent {
     }
 
     /**
-     * 发送短信验证码后写入缓存设置失效时间5分钟
-     *
-     * @param key   key
-     * @param value value
-     */
-    public void saveSmsCaptcha(String key, String value) {
-        this.boundValueOps(key).set(value, 5L, TimeUnit.MINUTES);
-    }
-
-    /**
      * 读取缓存
      *
      * @param key key
