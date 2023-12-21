@@ -76,12 +76,13 @@ header中传递参数：
     - `x-nonce`: 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
 - 必传参数:
     - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
-    - `User-Agent`：
-        - 当前设备名/当前APP版本号 系统时区
+    - `x-timezone`：当前设备所在的时区 (Asia/Shanghai)
+    - `User-Agent`：当前项目名/当前APP版本号 (当前设备名 当前设备系统版本; 系统时区)
         - 例如：
-            - iPhone/1.0.0 Asia/Shanghai
-            - Android/1.0.0 Asia/Shanghai
-            - iPad/1.0.0 Asia/Shanghai
+            - takeshi/1.0.0 (iPhone 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (iPad 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5 Tablet; Asia/Shanghai)
 - 国际化消息(接口返回值中的message语言，实际看配置的国际化文件名):
     - `Accept-Language`
         - `en-US`(返回英文)

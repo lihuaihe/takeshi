@@ -25,6 +25,11 @@ public interface TakeshiConstants {
     String TIMESTAMP_NAME = "x-timestamp";
 
     /**
+     * 调用接口header里面传的时区字段(Asia/Shanghai)
+     */
+    String TIMEZONE_NAME = "x-timezone";
+
+    /**
      * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
      */
     String NONCE_NAME = "x-nonce";

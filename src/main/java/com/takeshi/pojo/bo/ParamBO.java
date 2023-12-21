@@ -174,6 +174,8 @@ public class ParamBO extends AbstractBasicSerializable {
         map.put("Request UserAgent", userAgent);
         map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, this.httpMethod, StrUtil.BRACKET_END, this.getRequestUrl()));
         map.put("Requesting UserId", this.loginId);
+        String timezone = this.headerParam.get(TakeshiConstants.TIMEZONE_NAME);
+        map.put("Header Timezone", timezone);
         String timestamp = this.headerParam.get(TakeshiConstants.TIMESTAMP_NAME);
         map.put("Header Timestamp", timestamp);
         String nonce = this.headerParam.get(TakeshiConstants.NONCE_NAME);
