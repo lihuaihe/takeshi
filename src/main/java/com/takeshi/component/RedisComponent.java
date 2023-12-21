@@ -509,6 +509,30 @@ public class RedisComponent {
     }
 
     /**
+     * 哈希 自增
+     *
+     * @param key     key
+     * @param hashKey hashKey
+     * @param delta   delta
+     * @return Long
+     */
+    public Long hashIncrement(String key, String hashKey, long delta) {
+        return this.boundHashOps(key).increment(hashKey, delta);
+    }
+
+    /**
+     * 哈希 自增
+     *
+     * @param key     key
+     * @param hashKey hashKey
+     * @param delta   delta
+     * @return Double
+     */
+    public Double hashIncrement(String key, String hashKey, double delta) {
+        return this.boundHashOps(key).increment(hashKey, delta);
+    }
+
+    /**
      * 哈希 添加，仅当 hashKey 不存在时，才设置哈希 hashKey 的 value
      *
      * @param key     key

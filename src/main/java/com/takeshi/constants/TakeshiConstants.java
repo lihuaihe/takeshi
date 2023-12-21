@@ -71,21 +71,4 @@ public interface TakeshiConstants {
      */
     String DATE_US_REGEXP = "^([0-2]\\d|30|31) (Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May?|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?) \\d{4}$";
 
-    /**
-     * BYTES
-     */
-    byte[] BYTES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    /**
-     * INTS
-     */
-    int[] INTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    /**
-     * LONGS
-     */
-    long[] LONGS = {0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L};
-    /**
-     * STRINGS
-     */
-    String[] STRINGS = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
-
 }

@@ -177,7 +177,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 SaRouter.back(ResponseData.retData(TakeshiCode.PARAMETER_ERROR));
             }
             long seconds = Duration.between(Instant.ofEpochMilli(Long.parseLong(timestamp)), Instant.now()).getSeconds();
-            if (seconds > maxTimeDiff || seconds < TakeshiConstants.LONGS[0]) {
+            if (seconds > maxTimeDiff || seconds < 0L) {
                 // 请求时间与当前时间相差过早
                 SaRouter.back(ResponseData.retData(TakeshiCode.CLIENT_DATE_TIME_ERROR));
             }
