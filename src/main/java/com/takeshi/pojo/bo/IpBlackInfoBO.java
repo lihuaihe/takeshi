@@ -49,7 +49,7 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     /**
      * 加入黑名单的时间
      */
-    @Schema(description = "加入黑名单的时间")
+    @Schema(description = "加入黑名单的时间", example = "2023-12-07T03:08:09.000Z")
     private Instant instant;
 
 }

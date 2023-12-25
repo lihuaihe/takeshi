@@ -21,9 +21,9 @@ public class TakeshiInstantSerializer extends InstantSerializerBase<Instant> {
      */
     public static final TakeshiInstantSerializer INSTANCE = new TakeshiInstantSerializer();
     /**
-     * 格式化，例如：2022-01-01T04:34:56Z
+     * 格式化，例如：2022-01-01T04:34:56.000Z
      */
-    public static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().parseCaseInsensitive().appendInstant(0).toFormatter();
+    public static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().parseCaseInsensitive().appendInstant(3).toFormatter();
 
     /**
      * 构造方法

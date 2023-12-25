@@ -60,7 +60,7 @@ public class ResponseData<T> implements Serializable {
     /**
      * 返回时间
      */
-    @Schema(description = "返回时间")
+    @Schema(description = "返回时间", example = "2023-12-07T03:08:09.000Z")
     private Instant time;
 
     /**

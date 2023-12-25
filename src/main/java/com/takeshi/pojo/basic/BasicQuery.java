@@ -32,13 +32,13 @@ public class BasicQuery extends BasicPage {
     /**
      * 开始时间
      */
-    @Parameter(description = "开始时间", example = "2023-12-07T03:08:09Z", schema = @Schema(description = "开始时间", example = "2023-12-07T03:08:09Z"))
+    @Parameter(description = "开始时间", example = "2023-12-07T03:08:09.000Z", schema = @Schema(description = "开始时间", example = "2023-12-07T03:08:09.000Z"))
     private Instant startTime;
 
     /**
      * 结束时间
      */
-    @Parameter(description = "结束时间", example = "2023-12-07T03:08:09Z", schema = @Schema(description = "结束时间", example = "2023-12-07T03:08:09Z"))
+    @Parameter(description = "结束时间", example = "2023-12-07T03:08:09.000Z", schema = @Schema(description = "结束时间", example = "2023-12-07T03:08:09.000Z"))
     private Instant endTime;
 
 }
