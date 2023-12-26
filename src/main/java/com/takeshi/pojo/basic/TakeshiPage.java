@@ -272,7 +272,7 @@ public class TakeshiPage<T> extends Page<T> {
     public static <E extends BasicPage, T> TakeshiPage<T> of(E basicPage, Class<T> resultClass) {
         TakeshiPage<T> page = TakeshiPage.of(basicPage.getPageNum(), basicPage.getPageSize(), resultClass);
         if (basicPage instanceof BasicSortPage basicSortPage) {
-            page.addOrder(new OrderItem(TakeshiPage.sortColumnToUnderline(basicSortPage.getSortColumn()), BooleanUtil.isTrue(basicSortPage.getSortAsc())));
+            page.addOrder(new OrderItem().setColumn(TakeshiPage.sortColumnToUnderline(basicSortPage.getSortColumn())).setAsc(BooleanUtil.isTrue(basicSortPage.getSortAsc())));
         }
         return page;
     }
