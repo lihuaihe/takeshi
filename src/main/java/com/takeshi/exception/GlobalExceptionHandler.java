@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseData<Object> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
-        if (exception.getCause().toString().startsWith(SQL_CAUSE)) {
+        if (null != exception.getCause() && exception.getCause().toString().startsWith(SQL_CAUSE)) {
             return ResponseData.retData(TakeshiCode.DB_ERROR);
         } else {
             return ResponseData.fail(exception.getMessage());
