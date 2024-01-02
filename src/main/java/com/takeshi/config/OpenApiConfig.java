@@ -13,9 +13,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.IntegerSchema;
-import io.swagger.v3.oas.models.media.NumberSchema;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -142,7 +140,15 @@ public class OpenApiConfig {
                             if (CollUtil.isNotEmpty(properties)) {
                                 properties.forEach((k, v) -> {
                                     String format = v.getFormat();
-                                    if (v instanceof NumberSchema || (v instanceof IntegerSchema && (StrUtil.equals(format, "int64") || StrUtil.isBlank(format)))) {
+                                    if (v instanceof DateSchema) {
+                                        if (!v.getExampleSetFlag()) {
+                                            v.setExample("2024-01-01");
+                                        }
+                                    } else if (v instanceof DateTimeSchema) {
+                                        if (!v.getExampleSetFlag()) {
+                                            v.setExample("2024-01-01T00:00:00.000Z");
+                                        }
+                                    } else if (v instanceof NumberSchema || (v instanceof IntegerSchema && (StrUtil.equals(format, "int64") || StrUtil.isBlank(format)))) {
                                         // Long，BigInteger，BigDecimal
                                         v.setType("string");
                                         v.setFormat(null);
