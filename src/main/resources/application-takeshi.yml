@@ -24,8 +24,6 @@ springdoc:
   default-flat-param-object: true
   cache:
     disabled: true
-  api-docs:
-    version: openapi_3_1
 
 server:
   shutdown: graceful

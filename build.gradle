@@ -27,7 +27,7 @@ ext {
     gsonVersion = '2.10.1'
     libphonenumberVersion = '8.13.27'
     html2pdfVersion = '5.0.2'
-    hutoolVersion = '5.8.23'
+    hutoolVersion = '5.8.24'
     saTokenVersion = '1.37.0'
     ognlVersion = '3.3.4' // 使用高于这个版本会提示java.lang.NoSuchMethodError
     jaxbApiVersion = '2.3.1'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '23.12.29.0-SNAPSHOT'
+version = '24.01.02.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
