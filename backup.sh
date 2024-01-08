@@ -7,9 +7,9 @@
 CRT_DIR=$(pwd)
 echo "当前目录：$CRT_DIR"
 cd ../
-BACKUP_DIR="$CRT_DIR/backup/mysql"
-sudo mkdir -p "$BACKUP_DIR"
-sudo chown centos:centos "$BACKUP_DIR"
+sudo mkdir -p "backup"
+sudo chown centos:centos "backup"
+BACKUP_DIR="$pwd/backup"
 
 # 获取用户输入的字符串，直到输入为非空值
 function get_non_empty_input() {
