@@ -4,6 +4,12 @@
 # 将该脚本放在jar包同级目录下运行
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
 
+# 检查当前用户是否是 root
+if [[ $EUID -eq 0 ]]; then
+    echo "请使用centos用户执行此脚本"
+    exit 1
+fi
+
 CRT_DIR=$(pwd)
 echo "当前目录：$CRT_DIR"
 cd ../
@@ -53,6 +59,7 @@ if ! command -v aws &> /dev/null; then
   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
   unzip -u awscliv2.zip
   sudo ./aws/install
+  aws --verison
   # 根据提示添加密钥和区域
   aws configure
 fi
@@ -83,3 +90,4 @@ sudo chmod 777 $LOG_SCRIPT_FILE
 (crontab -l 2>/dev/null; echo "15 0 * * 1 $LOG_SCRIPT_FILE") | crontab -
 
 echo "定时备份脚本配置完成。"
+crontab -l
