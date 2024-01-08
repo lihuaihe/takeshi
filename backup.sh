@@ -33,12 +33,12 @@ DB_PASSWORD=$(get_non_empty_input "请输入mysql的root用户密码: ")
 
 # 保留备份文件的数量
 read -p "请输入保留备份文件的数量（直接回车可使用默认值，默认是 3）: " MAX_BACKUP_FILES
+MAX_BACKUP_FILES=${MAX_BACKUP_FILES:-3}
 # 使用正则表达式检查输入是否为数字
 if [[ ! "$MAX_BACKUP_FILES" =~ ^[0-9]+$ ]]; then
   echo "输入无效，使用默认值 3。"
   MAX_BACKUP_FILES="3"
 fi
-MAX_BACKUP_FILES=${MAX_BACKUP_FILES:-3}
 
 # 检测是否已安装 aws-cli
 if ! command -v aws &> /dev/null; then
@@ -61,6 +61,8 @@ ls -t $BACKUP_DIR | tail -n +\$((MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$BA
 aws s3 sync $BACKUP_DIR s3://$BUCKET_NAME/backup/mysql
 EOL
 )
+
+echo "$MYSQL_SCRIPT"
 
 LOG_SCRIPT=$(cat <<EOL
 aws s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
