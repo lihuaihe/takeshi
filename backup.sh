@@ -5,7 +5,8 @@
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
 
 CRT_DIR=$(pwd)
-cd ..
+echo "当前目录：$CRT_DIR"
+cd ../
 BACKUP_DIR="$CRT_DIR/backup/mysql"
 sudo mkdir -p "$BACKUP_DIR"
 sudo chown centos:centos "$BACKUP_DIR"
