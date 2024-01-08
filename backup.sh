@@ -7,9 +7,14 @@
 CRT_DIR=$(pwd)
 echo "当前目录：$CRT_DIR"
 cd ../
-sudo mkdir "backup"
-sudo chown centos:centos "backup"
-BACKUP_DIR="$(pwd)/backup"
+sudo mkdir -p backup
+sudo chmod 777 backup
+BACKUP_DIR="$(pwd)/backup/mysql"
+mkdir -p $BACKUP_DIR
+
+echo "备份的mysql数据目录是：$BACKUP_DIR"
+echo "备份的jar日志目录是： $CRT_DIR/logs"
+
 
 # 获取用户输入的字符串，直到输入为非空值
 function get_non_empty_input() {
@@ -53,25 +58,28 @@ if ! command -v aws &> /dev/null; then
 fi
 
 # 定义cron脚本内容
-MYSQL_SCRIPT=$(cat <<EOL
+MYSQL_SCRIPT_FILE="$(pwd)/backup/backup_mysql.sh"
+cat <<EOL > $MYSQL_SCRIPT_FILE
+#!/bin/bash
 DATE=\$(date +"%Y%m%d%H%M%S")
 RANDOM_STRING=\$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
 BACKUP_FILE="$BACKUP_DIR/backup_all_databases_\${DATE}_\${RANDOM_STRING}.sql"
 mysqldump -u root -p$DB_PASSWORD -h localhost --all-databases > \$BACKUP_FILE
-ls -t $BACKUP_DIR | tail -n +\$((MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$BACKUP_DIR/{}"
+ls -t $BACKUP_DIR | tail -n +\$(($MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$BACKUP_DIR/{}"
 aws s3 sync $BACKUP_DIR s3://$BUCKET_NAME/backup/mysql
 EOL
-)
 
-echo "$MYSQL_SCRIPT"
-
-LOG_SCRIPT=$(cat <<EOL
+LOG_SCRIPT_FILE="$(pwd)/backup/backup_log.sh"
+cat <<EOL > $LOG_SCRIPT_FILE
+#!/bin/bash
 aws s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
 EOL
-)
+
+sudo chmod 777 $MYSQL_SCRIPT_FILE
+sudo chmod 777 $LOG_SCRIPT_FILE
 
 # 将任务添加到当前用户的 crontab
-(crontab -l 2>/dev/null; echo "0 0 * * 1 /bin/bash -c \"$MYSQL_SCRIPT\"") | crontab -
-(crontab -l 2>/dev/null; echo "15 0 * * 1 /bin/bash -c \"$LOG_SCRIPT\"") | crontab -
+(crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE") | crontab -
+(crontab -l 2>/dev/null; echo "15 0 * * 1 $LOG_SCRIPT_FILE") | crontab -
 
 echo "定时备份脚本配置完成。"
