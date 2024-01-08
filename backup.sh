@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 备份mysql数据库和jar包运行日志到aws的s3中的备份脚本
 # 将该脚本放在jar包同级目录下运行
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
 
