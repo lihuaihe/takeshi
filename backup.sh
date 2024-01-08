@@ -32,12 +32,13 @@ BUCKET_NAME=$(get_non_empty_input "请输入存储桶名称: ")
 DB_PASSWORD=$(get_non_empty_input "请输入mysql的root用户密码: ")
 
 # 保留备份文件的数量
-read -p "请输入保留备份文件的数量（直接回车可使用默认值，默认是 3）: " -e -i "3" MAX_BACKUP_FILES
+read -p "请输入保留备份文件的数量（直接回车可使用默认值，默认是 3）: " MAX_BACKUP_FILES
 # 使用正则表达式检查输入是否为数字
 if [[ ! "$MAX_BACKUP_FILES" =~ ^[0-9]+$ ]]; then
   echo "输入无效，使用默认值 3。"
   MAX_BACKUP_FILES="3"
 fi
+MAX_BACKUP_FILES=${MAX_BACKUP_FILES:-3}
 
 # 检测是否已安装 aws-cli
 if ! command -v aws &> /dev/null; then
@@ -70,4 +71,4 @@ EOL
 (crontab -l 2>/dev/null; echo "0 0 * * 1 /bin/bash -c \"$MYSQL_SCRIPT\"") | crontab -
 (crontab -l 2>/dev/null; echo "15 0 * * 1 /bin/bash -c \"$LOG_SCRIPT\"") | crontab -
 
-echo "脚本配置完成。"
+echo "定时备份脚本配置完成。"
