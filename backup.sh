@@ -22,37 +22,6 @@ error_message() {
     echo -e "${RED}错误: $1${NC}"
 }
 
-# 检查当前用户是否是 root
-if [[ $EUID -eq 0 ]]; then
-    error_message "请不要使用root用户执行此脚本"
-    exit 1
-fi
-
-CRT_DIR=$(pwd)
-tip_message "当前执行脚本的目录是：$CRT_DIR"
-
-# 检查是否不存在 *.jar 文件
-if ! [ -e "$CRT_DIR"/*.jar ]; then
-    error_message "请在jar包目录下执行此脚本"
-    exit 1
-fi
-
-# 检查是否不存在 logs 目录
-if [ ! -d "$CRT_DIR/logs" ]; then
-    error_message "当前执行脚本的目录没有logs目录，请先启动jar包生成logs目录"
-    exit 1
-fi
-
-cd ../
-sudo mkdir -p backup
-sudo chmod 777 backup
-BACKUP_DIR="$(pwd)/backup/mysql"
-mkdir -p $BACKUP_DIR
-
-tip_message "备份的mysql数据目录是：$BACKUP_DIR"
-tip_message "备份的jar日志目录是： $CRT_DIR/logs"
-
-
 # 获取用户输入的字符串，直到输入为非空值
 function get_non_empty_input() {
   local prompt="$1"
@@ -67,6 +36,53 @@ function get_non_empty_input() {
     fi
   done
 }
+
+# 检查当前用户是否是 root
+if [[ $EUID -eq 0 ]]; then
+    error_message "请不要使用root用户执行此脚本"
+    exit 1
+fi
+
+CRT_DIR=$(pwd)
+tip_message "当前执行脚本的目录是：$CRT_DIR"
+
+# 检查是否不存在 *.jar 文件
+if [ ! "$(find . -maxdepth 1 -name '*.jar' -print -quit)" ]; then
+    error_message "请在jar包目录下执行此脚本"
+    exit 1
+fi
+
+# 检查是否不存在 logs 目录
+if [ ! -d "logs" ]; then
+    error_message "当前执行脚本的目录没有logs目录，请先启动jar包生成logs目录"
+    exit 1
+fi
+
+cd ..
+sudo mkdir -p backup
+sudo chmod 777 backup
+cd backup
+mkdir -p mysql
+BACKUP_DIR=$(pwd)
+
+tip_message "备份的mysql数据目录是：$BACKUP_DIR"
+tip_message "备份的jar日志目录是： $CRT_DIR/logs"
+
+# 检测是否已安装 aws-cli
+if ! command -v aws &> /dev/null; then
+  # aws-cli 未安装，执行安装命令
+  sudo yum remove -y awscli
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip -u awscliv2.zip
+  sudo ./aws/install
+  # 根据提示添加密钥和区域
+  aws configure
+  aws --verison
+fi
+
+# 列出存储桶列表
+tip_message "这是是你的存储桶列表："
+aws s3 ls
 
 # 存储桶名称
 BUCKET_NAME=$(get_non_empty_input "请输入存储桶名称: ")
@@ -83,20 +99,8 @@ if [[ ! "$MAX_BACKUP_FILES" =~ ^[0-9]+$ ]]; then
   MAX_BACKUP_FILES="3"
 fi
 
-# 检测是否已安装 aws-cli
-if ! command -v aws &> /dev/null; then
-  # aws-cli 未安装，执行安装命令
-  sudo yum remove -y awscli
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  unzip -u awscliv2.zip
-  sudo ./aws/install
-  aws --verison
-  # 根据提示添加密钥和区域
-  aws configure
-fi
-
 # 定义cron脚本内容
-MYSQL_SCRIPT_FILE="$(pwd)/backup/backup_mysql.sh"
+MYSQL_SCRIPT_FILE="$(pwd)/backup_mysql.sh"
 cat <<EOL > $MYSQL_SCRIPT_FILE
 #!/bin/bash
 DATE=\$(date +"%Y%m%d%H%M%S")
@@ -107,7 +111,7 @@ ls -t $BACKUP_DIR | tail -n +\$(($MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$B
 aws s3 sync $BACKUP_DIR s3://$BUCKET_NAME/backup/mysql
 EOL
 
-LOG_SCRIPT_FILE="$(pwd)/backup/backup_log.sh"
+LOG_SCRIPT_FILE="$(pwd)/backup_log.sh"
 cat <<EOL > $LOG_SCRIPT_FILE
 #!/bin/bash
 aws s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
