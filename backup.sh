@@ -4,24 +4,42 @@
 # 将该脚本放在jar包同级目录下运行
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
 
+# ANSI颜色和格式定义
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+# 警告消息
+warning_message() {
+    echo -e "${YELLOW}警告: $1${NC}"
+}
+# 提示消息
+tip_message() {
+    echo -e "${CYAN}提示: $1${NC}"
+}
+# 错误消息
+error_message() {
+    echo -e "${RED}错误: $1${NC}"
+}
+
 # 检查当前用户是否是 root
 if [[ $EUID -eq 0 ]]; then
-    echo "请不要使用root用户执行此脚本"
+    error_message "请不要使用root用户执行此脚本"
     exit 1
 fi
 
 CRT_DIR=$(pwd)
-echo "当前目录：$CRT_DIR"
+tip_message "当前执行脚本的目录是：$CRT_DIR"
 
 # 检查是否不存在 *.jar 文件
 if ! [ -e "$CRT_DIR"/*.jar ]; then
-    echo "请在jar包目录下执行此脚本"
+    error_message "请在jar包目录下执行此脚本"
     exit 1
 fi
 
 # 检查是否不存在 logs 目录
 if [ ! -d "$CRT_DIR/logs" ]; then
-    echo "当前执行脚本的目录没有logs目录，请先启动jar包生成logs目录"
+    error_message "当前执行脚本的目录没有logs目录，请先启动jar包生成logs目录"
     exit 1
 fi
 
@@ -31,8 +49,8 @@ sudo chmod 777 backup
 BACKUP_DIR="$(pwd)/backup/mysql"
 mkdir -p $BACKUP_DIR
 
-echo "备份的mysql数据目录是：$BACKUP_DIR"
-echo "备份的jar日志目录是： $CRT_DIR/logs"
+tip_message "备份的mysql数据目录是：$BACKUP_DIR"
+tip_message "备份的jar日志目录是： $CRT_DIR/logs"
 
 
 # 获取用户输入的字符串，直到输入为非空值
@@ -45,7 +63,7 @@ function get_non_empty_input() {
       echo "$input"
       break
     else
-      echo "输入无效，$prompt"
+      warning_message "输入无效，$prompt"
     fi
   done
 }
@@ -61,7 +79,7 @@ read -p "请输入保留备份文件的数量（直接回车可使用默认值�
 MAX_BACKUP_FILES=${MAX_BACKUP_FILES:-3}
 # 使用正则表达式检查输入是否为数字
 if [[ ! "$MAX_BACKUP_FILES" =~ ^[0-9]+$ ]]; then
-  echo "输入无效，使用默认值 3。"
+  warning_message "输入无效，使用默认值 3。"
   MAX_BACKUP_FILES="3"
 fi
 
@@ -102,5 +120,5 @@ sudo chmod 777 $LOG_SCRIPT_FILE
 (crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE") | crontab -
 (crontab -l 2>/dev/null; echo "15 0 * * 1 $LOG_SCRIPT_FILE") | crontab -
 
-echo "定时备份脚本配置完成。"
+tip_message "定时备份脚本配置完成。"
 crontab -l
