@@ -6,12 +6,25 @@
 
 # 检查当前用户是否是 root
 if [[ $EUID -eq 0 ]]; then
-    echo "请使用centos用户执行此脚本"
+    echo "请不要使用root用户执行此脚本"
     exit 1
 fi
 
 CRT_DIR=$(pwd)
 echo "当前目录：$CRT_DIR"
+
+# 检查是否不存在 *.jar 文件
+if ! [ -e "$CRT_DIR"/*.jar ]; then
+    echo "请在jar包目录下执行此脚本"
+    exit 1
+fi
+
+# 检查是否不存在 logs 目录
+if [ ! -d "$CRT_DIR/logs" ]; then
+    echo "当前执行脚本的目录没有logs目录，请先启动jar包生成logs目录"
+    exit 1
+fi
+
 cd ../
 sudo mkdir -p backup
 sudo chmod 777 backup
