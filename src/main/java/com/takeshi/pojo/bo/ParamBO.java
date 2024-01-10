@@ -168,20 +168,15 @@ public class ParamBO extends AbstractBasicSerializable {
      * @return String
      */
     public String filterInfo() {
-        Map<String, Object> map = new LinkedHashMap<>(16);
-        map.put("Request IP", this.clientIp);
-        String userAgent = this.headerParam.get(Header.USER_AGENT.getValue());
-        map.put("Request UserAgent", userAgent);
+        Map<String, Object> map = new LinkedHashMap<>(20);
         map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, this.httpMethod, StrUtil.BRACKET_END, this.getRequestUrl()));
         map.put("Requesting UserId", this.loginId);
-        String timezone = this.headerParam.get(TakeshiConstants.TIMEZONE_NAME);
-        map.put("Header Timezone", timezone);
-        String timestamp = this.headerParam.get(TakeshiConstants.TIMESTAMP_NAME);
-        map.put("Header Timestamp", timestamp);
-        String nonce = this.headerParam.get(TakeshiConstants.NONCE_NAME);
-        map.put("Header Nonce", nonce);
-        String geoPoint = this.headerParam.get(TakeshiConstants.GEO_POINT_NAME);
-        map.put("Header GeoPoint", geoPoint);
+        map.put("Request IP", this.clientIp);
+        map.put("Request UserAgent", this.headerParam.get(Header.USER_AGENT.getValue()));
+        map.put("Header GeoPoint", this.headerParam.get(TakeshiConstants.GEO_POINT_NAME));
+        map.put("Header Timezone", this.headerParam.get(TakeshiConstants.TIMEZONE_NAME));
+        map.put("Header Timestamp", this.headerParam.get(TakeshiConstants.TIMESTAMP_NAME));
+        map.put("Header Nonce", this.headerParam.get(TakeshiConstants.NONCE_NAME));
         return GsonUtil.toJson(map);
     }
 
