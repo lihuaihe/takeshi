@@ -39,8 +39,8 @@ import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
-import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.pojo.bo.GeoPointBO;
+import com.takeshi.pojo.bo.RetBO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -484,6 +484,24 @@ public final class TakeshiUtil {
             }
         }
         return verify;
+    }
+
+    /**
+     * 截取纳秒部份，只保留前3位
+     *
+     * @param nano 纳秒
+     * @return 截取后的值
+     */
+    public static int interceptNano(int nano) {
+        int div = 100_000_000;
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            int digit = nano / div;
+            buf.append((char) (digit + '0'));
+            nano = nano - (digit * div);
+            div = div / 10;
+        }
+        return Integer.parseInt(buf.toString()) * 1_000_000;
     }
 
 }

@@ -1,8 +1,11 @@
 package com.takeshi.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.takeshi.mybatisplus.typehandler.TakeshiInstantTypeHandler;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -58,4 +61,17 @@ public class MybatisPlusConfig {
         return interceptor;
     }
 
+    /**
+     * mybatis Plus 配置定制器
+     *
+     * @return ConfigurationCustomizer
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ConfigurationCustomizer mybatisPlusConfigurationCustomizer() {
+        return configuration -> {
+            TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+            typeHandlerRegistry.register(TakeshiInstantTypeHandler.class);
+        };
+    }
 }
