@@ -10,10 +10,10 @@ import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -43,26 +43,9 @@ public final class PdfUtil {
     /**
      * 配置一个默认的HtmlConverter将使用的属性
      */
-    private static volatile ConverterProperties defaultConverterProperties;
+    private static final ConverterProperties DEFAULT_CONVERTER_PROPERTIES = new ConverterProperties().setCharset("UTF_8").setFontProvider(new DefaultFontProvider());
 
     private PdfUtil() {
-    }
-
-    static {
-        if (ObjUtil.isNull(defaultConverterProperties)) {
-            synchronized (PdfUtil.class) {
-                if (ObjUtil.isNull(defaultConverterProperties)) {
-                    try {
-                        defaultConverterProperties = new ConverterProperties()
-                                .setCharset("UTF_8")
-                                .setFontProvider(new DefaultFontProvider());
-                        log.info("PdfUtil.static --> defaultConverterProperties Initialization successful");
-                    } catch (Exception e) {
-                        log.error("PdfUtil.static --> defaultConverterProperties initialization failed, e: ", e);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -72,12 +55,22 @@ public final class PdfUtil {
      * @param map          绑定的参数，此Map中的参数会替换模板中的变量
      * @param response     HttpServletResponse
      */
+    @SneakyThrows
     public static void preview(String templateName, Map<?, ?> map, HttpServletResponse response) {
-        try {
-            generatePdf(templateName, map, response.getOutputStream());
-        } catch (IOException e) {
-            log.error("PdfUtil.preview --> ", e);
-        }
+        generatePdf(templateName, map, response.getOutputStream());
+    }
+
+    /**
+     * PDF预览（通过浏览器GET请求直接访问可直接预览显示PDF）
+     *
+     * @param templateName        模板文件名称
+     * @param map                 绑定的参数，此Map中的参数会替换模板中的变量
+     * @param response            HttpServletResponse
+     * @param converterProperties HtmlConverter将使用的属性
+     */
+    @SneakyThrows
+    public static void preview(String templateName, Map<?, ?> map, HttpServletResponse response, ConverterProperties converterProperties) {
+        generatePdf(templateName, map, response.getOutputStream(), converterProperties);
     }
 
     /**
@@ -88,16 +81,37 @@ public final class PdfUtil {
      * @param response     HttpServletResponse
      */
     public static void download(String templateName, Map<?, ?> map, HttpServletResponse response) {
-        try {
-            String fileName = IdUtil.fastSimpleUUID() + ".pdf";
-            // 配置文件下载
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/pdf;charset=utf-8");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLUtil.encode(fileName));
-            generatePdf(templateName, map, response.getOutputStream());
-        } catch (IOException e) {
-            log.error("PdfUtil.download --> ", e);
-        }
+        download(templateName, map, response, IdUtil.fastSimpleUUID());
+    }
+
+    /**
+     * 以文件流形式下载到浏览器
+     *
+     * @param templateName 模板文件名称
+     * @param map          绑定的参数，此Map中的参数会替换模板中的变量
+     * @param response     HttpServletResponse
+     * @param fileName     文件名，不需要带扩展名，会自动添加扩展名(.pdf)
+     */
+    public static void download(String templateName, Map<?, ?> map, HttpServletResponse response, String fileName) {
+        download(templateName, map, response, fileName, DEFAULT_CONVERTER_PROPERTIES);
+    }
+
+    /**
+     * 以文件流形式下载到浏览器
+     *
+     * @param templateName        模板文件名称
+     * @param map                 绑定的参数，此Map中的参数会替换模板中的变量
+     * @param response            HttpServletResponse
+     * @param fileName            文件名，不需要带扩展名，会自动添加扩展名(.pdf)
+     * @param converterProperties HtmlConverter将使用的属性
+     */
+    @SneakyThrows
+    public static void download(String templateName, Map<?, ?> map, HttpServletResponse response, String fileName, ConverterProperties converterProperties) {
+        // 配置文件下载
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/pdf;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLUtil.encode(fileName) + ".pdf");
+        generatePdf(templateName, map, response.getOutputStream(), converterProperties);
     }
 
     /**
@@ -108,11 +122,19 @@ public final class PdfUtil {
      * @param file         下载文件存放位置
      */
     public static void save(String templateName, Map<?, ?> map, File file) {
-        try {
-            generatePdf(templateName, map, FileUtil.getOutputStream(file));
-        } catch (IOException e) {
-            log.error("PdfUtil.save --> e: ", e);
-        }
+        generatePdf(templateName, map, FileUtil.getOutputStream(file));
+    }
+
+    /**
+     * PDF下载到特定位置
+     *
+     * @param templateName        模板文件名称
+     * @param map                 绑定的参数，此Map中的参数会替换模板中的变量
+     * @param file                下载文件存放位置
+     * @param converterProperties HtmlConverter将使用的属性
+     */
+    public static void save(String templateName, Map<?, ?> map, File file, ConverterProperties converterProperties) {
+        generatePdf(templateName, map, FileUtil.getOutputStream(file), converterProperties);
     }
 
     /**
@@ -133,12 +155,9 @@ public final class PdfUtil {
      * @param templateName 模板文件名称
      * @param bindingMap   绑定的参数，此Map中的参数会替换模板中的变量
      * @param out          输出流
-     * @throws IOException IO异常
      */
-    public static void generatePdf(String templateName, Map<?, ?> bindingMap, OutputStream out) throws IOException {
-        String templateContent = getTemplateContent(templateName, bindingMap);
-        HtmlConverter.convertToPdf(templateContent, out, defaultConverterProperties);
-        out.close();
+    public static void generatePdf(String templateName, Map<?, ?> bindingMap, OutputStream out) {
+        generatePdf(templateName, bindingMap, out, DEFAULT_CONVERTER_PROPERTIES);
     }
 
     /**
@@ -148,13 +167,14 @@ public final class PdfUtil {
      * @param bindingMap          绑定的参数，此Map中的参数会替换模板中的变量
      * @param out                 输出流
      * @param converterProperties HtmlConverter将使用的属性
-     * @throws IOException IO异常
      */
+    @SneakyThrows
     public static void generatePdf(String templateName, Map<?, ?> bindingMap, OutputStream out,
-                                   ConverterProperties converterProperties) throws IOException {
-        String templateContent = getTemplateContent(templateName, bindingMap);
-        HtmlConverter.convertToPdf(templateContent, out, converterProperties);
-        out.close();
+                                   ConverterProperties converterProperties) {
+        try (out) {
+            String templateContent = getTemplateContent(templateName, bindingMap);
+            HtmlConverter.convertToPdf(templateContent, out, ObjUtil.defaultIfNull(converterProperties, DEFAULT_CONVERTER_PROPERTIES));
+        }
     }
 
 }
