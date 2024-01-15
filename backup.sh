@@ -66,7 +66,7 @@ cd backup
 mkdir -p mysql
 BACKUP_DIR=$(pwd)
 
-tip_message "备份的mysql数据目录是：$BACKUP_DIR"
+tip_message "备份的mysql数据目录是：$BACKUP_DIR/mysql"
 tip_message "备份的jar日志目录是： $CRT_DIR/logs"
 
 # 检测是否已安装 aws-cli
@@ -76,11 +76,14 @@ if ! command -v aws &> /dev/null; then
   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
   unzip -u awscliv2.zip
   sudo ./aws/install
+  # 删除下载的文件
+  rm -rf awscliv2.zip aws
   # 根据提示添加密钥和区域
   aws configure
   aws --verison
 fi
-
+AWS_PATH=$(which aws)
+warning_message "aws命令路径是：$AWS_PATH"
 # 列出存储桶列表
 tip_message "这是是你的存储桶列表："
 aws s3 ls
@@ -101,29 +104,33 @@ if [[ ! "$MAX_BACKUP_FILES" =~ ^[0-9]+$ ]]; then
 fi
 
 # 定义cron脚本内容
-MYSQL_SCRIPT_FILE="$(pwd)/backup_mysql.sh"
+MYSQL_SCRIPT_FILE="$BACKUP_DIR/backup_mysql.sh"
 cat <<EOL > $MYSQL_SCRIPT_FILE
 #!/bin/bash
+echo "mysql备份脚本执行开始：\$(date)"
 DATE=\$(date +"%Y%m%d%H%M%S")
 RANDOM_STRING=\$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
-BACKUP_FILE="$BACKUP_DIR/backup_all_databases_\${DATE}_\${RANDOM_STRING}.sql"
+BACKUP_FILE="$BACKUP_DIR/mysql/backup_all_databases_\${DATE}_\${RANDOM_STRING}.sql"
 mysqldump -u root -p$DB_PASSWORD -h localhost --all-databases > \$BACKUP_FILE
-ls -t $BACKUP_DIR | tail -n +\$(($MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$BACKUP_DIR/{}"
-aws s3 sync $BACKUP_DIR s3://$BUCKET_NAME/backup/mysql
+ls -t $BACKUP_DIR/mysql | tail -n +\$(($MAX_BACKUP_FILES + 1)) | xargs -I {} rm -- "$BACKUP_DIR/mysql/{}"
+$AWS_PATH s3 sync $BACKUP_DIR/mysql s3://$BUCKET_NAME/backup/mysql
+echo -e "mysql备份脚本执行完毕：\$(date)\n\n"
 EOL
 
-LOG_SCRIPT_FILE="$(pwd)/backup_log.sh"
+LOG_SCRIPT_FILE="$BACKUP_DIR/backup_log.sh"
 cat <<EOL > $LOG_SCRIPT_FILE
 #!/bin/bash
-aws s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
+echo "log备份脚本执行开始：\$(date)"
+$AWS_PATH s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
+echo -e "log备份脚本执行完毕：\$(date)\n\n"
 EOL
 
 sudo chmod 777 $MYSQL_SCRIPT_FILE
 sudo chmod 777 $LOG_SCRIPT_FILE
 
 # 将任务添加到当前用户的 crontab
-(crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE") | crontab -
-(crontab -l 2>/dev/null; echo "15 0 * * 1 $LOG_SCRIPT_FILE") | crontab -
+(crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE >> $BACKUP_DIR/backup-mysql-info.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "15 0 * * 1 $LOG_SCRIPT_FILE >> $BACKUP_DIR/backup-log-info.log 2>&1") | crontab -
 
 tip_message "定时备份脚本配置完成。"
 crontab -l
