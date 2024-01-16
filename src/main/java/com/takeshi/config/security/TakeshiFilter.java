@@ -125,6 +125,7 @@ public class TakeshiFilter implements Filter {
         paramBO.setClientIp(clientIp);
         // paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
         paramBO.setLoginId(StpUtil.getLoginIdDefaultNull());
+        paramBO.setDataMap(StpUtil.getSession().getDataMap());
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
 

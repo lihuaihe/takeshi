@@ -54,6 +54,12 @@ public class ParamBO extends AbstractBasicSerializable {
     private Object loginId;
 
     /**
+     * SaSession里存储的数据
+     */
+    @Schema(description = "SaSession里存储的数据")
+    private Map<String, Object> dataMap;
+
+    /**
      * 请求URL地址
      */
     @Schema(description = "请求URL地址")
@@ -171,6 +177,7 @@ public class ParamBO extends AbstractBasicSerializable {
         Map<String, Object> map = new LinkedHashMap<>(20);
         map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, this.httpMethod, StrUtil.BRACKET_END, this.getRequestUrl()));
         map.put("Requesting UserId", this.loginId);
+        map.put("Requesting SaSessionData", this.dataMap);
         map.put("Request IP", this.clientIp);
         map.put("Request UserAgent", this.headerParam.get(Header.USER_AGENT.getValue()));
         map.put("Header GeoPoint", this.headerParam.get(TakeshiConstants.GEO_POINT_NAME));
