@@ -128,7 +128,7 @@ public class TakeshiFilter implements Filter {
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
         if (ObjUtil.isNotNull(loginIdDefaultNull)) {
             paramBO.setLoginId(loginIdDefaultNull);
-            paramBO.setDataMap(StpUtil.getSession().getDataMap());
+            paramBO.setSaSessionDataMap(StpUtil.getSession().getDataMap());
         }
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
