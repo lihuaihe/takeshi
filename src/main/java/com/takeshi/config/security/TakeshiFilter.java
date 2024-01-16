@@ -6,6 +6,7 @@ import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.map.CaseInsensitiveMap;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -124,8 +125,11 @@ public class TakeshiFilter implements Filter {
         String clientIp = TakeshiUtil.getClientIp(request);
         paramBO.setClientIp(clientIp);
         // paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
-        paramBO.setLoginId(StpUtil.getLoginIdDefaultNull());
-        paramBO.setDataMap(StpUtil.getSession().getDataMap());
+        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        if (ObjUtil.isNotNull(loginIdDefaultNull)) {
+            paramBO.setLoginId(loginIdDefaultNull);
+            paramBO.setDataMap(StpUtil.getSession().getDataMap());
+        }
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
 
