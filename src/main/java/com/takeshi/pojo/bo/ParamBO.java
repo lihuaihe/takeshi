@@ -177,7 +177,9 @@ public class ParamBO extends AbstractBasicSerializable {
         Map<String, Object> map = new LinkedHashMap<>(20);
         map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, this.httpMethod, StrUtil.BRACKET_END, this.getRequestUrl()));
         map.put("Requesting UserId", this.loginId);
-        map.put("Requesting SaSessionData", MapUtil.defaultIfEmpty(this.saSessionDataMap, null));
+        if (CollUtil.isNotEmpty(this.saSessionDataMap)) {
+            map.put("Requesting SaSessionData", this.saSessionDataMap);
+        }
         map.put("Request IP", this.clientIp);
         map.put("Request UserAgent", this.headerParam.get(Header.USER_AGENT.getValue()));
         map.put("Header GeoPoint", this.headerParam.get(TakeshiConstants.GEO_POINT_NAME));
