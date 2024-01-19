@@ -4,6 +4,7 @@ import com.takeshi.constants.TakeshiConstants;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -51,6 +52,12 @@ public class TakeshiProperties {
      * 需要额外排除的URL，排除的URL将不会进入TakeshiFilter和TakeshiInterceptor和TakeshiSaTokenConfig逻辑
      */
     private String[] excludeUrl;
+
+    /**
+     * AES加密使用的key，长度必须为16位
+     */
+    @Size(min = 16, max = 16)
+    private String aesKey;
 
     /**
      * 接口速率限制配置

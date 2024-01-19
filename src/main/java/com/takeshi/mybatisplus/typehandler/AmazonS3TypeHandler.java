@@ -11,11 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * <p>AmazonS3TypeHandler</p>
+ * <p>对S3的key进行处理，key存入数据库时不处理，从数据库取出来时通过key获取临时预签名 URL</p>
  * <p>注意！！ 使用typeHandler，必须开启autoResultMap映射注解</p>
  * <p>@TableName(autoResultMap = true)</p>
  * <p>@TableField(typeHandler = AmazonS3TypeHandler.class)</p>
- * <p>S3的key存入数据库，不处理，从数据库取出来时通过key获取临时URL返回</p>
  *
  * @author 七濑武【Nanase Takeshi】
  */

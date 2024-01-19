@@ -2,9 +2,11 @@ package com.takeshi.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
+import com.baomidou.mybatisplus.extension.handlers.GsonTypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.takeshi.mybatisplus.typehandler.TakeshiInstantTypeHandler;
+import com.takeshi.util.GsonUtil;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,7 +23,7 @@ public class MybatisPlusConfig {
     /**
      * CiphertextTypeHandler的typeHandler路径
      */
-    public static final String MAPPING_CIPHERTEXT_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.CiphertextTypeHandler";
+    public static final String MAPPING_CIPHERTEXT_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.AesCiphertextTypeHandler";
 
     /**
      * GeoPointTypeHandler的typeHandler路径
@@ -41,7 +43,7 @@ public class MybatisPlusConfig {
     /**
      * ZonedDateTimeTypeHandler的typeHandler路径
      */
-    public static final String MAPPING_ZONED_DATE_TIME_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.ZonedDateTimeTypeHandler";
+    public static final String MAPPING_ZONED_DATE_TIME_TYPE_HANDLER = "typeHandler=com.takeshi.mybatisplus.typehandler.TakeshiZonedDateTimeTypeHandler";
 
     /**
      * AmazonS3TypeHandler的typeHandler路径
@@ -58,6 +60,8 @@ public class MybatisPlusConfig {
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        // 设置GsonTypeHandler中的GSON
+        GsonTypeHandler.setGson(GsonUtil.gson());
         return interceptor;
     }
 

@@ -4,9 +4,12 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
 import cn.hutool.crypto.asymmetric.RSA;
+import cn.hutool.crypto.symmetric.AES;
+import cn.hutool.http.useragent.Platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.component.RedisComponent;
 import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +68,11 @@ public class StaticConfig {
     public static RSA rsa;
 
     /**
+     * AES
+     */
+    public static AES aes;
+
+    /**
      * 构造函数
      *
      * @param applicationName   applicationName
@@ -102,6 +110,16 @@ public class StaticConfig {
                         redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
                         redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
                     }
+                    String aesKey = takeshiProperties.getAesKey();
+                    if (StrUtil.isBlank(aesKey)) {
+                        // 如果没有指定aes的key，则使用默认的aesKey对项目名+环境进行加密后截取前16位得到新的aesKey
+                        aesKey = StrUtil.subPre(
+                                SecureUtil.aes("NT0Z1y2X725C6b7A".getBytes(StandardCharsets.UTF_8))
+                                        .encryptBase64(takeshiProperties.getProjectName() + StrUtil.DASHED + active)
+                                , 16
+                        );
+                    }
+                    StaticConfig.aes = SecureUtil.aes(aesKey.getBytes(StandardCharsets.UTF_8));
                 } finally {
                     lock.unlock();
                 }
@@ -109,6 +127,9 @@ public class StaticConfig {
                 throw new IllegalStateException("Creating RSA object using generated private and public keys failed to acquire lock.");
             }
         }
+        // 将Android平板平台类型添加到Hutool的Platform静态变量中。
+        Platform.mobilePlatforms.add(4, TakeshiConstants.ANDROID_TABLET);
+        Platform.platforms.add(4, TakeshiConstants.ANDROID_TABLET);
     }
 
     /**
