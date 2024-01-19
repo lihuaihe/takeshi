@@ -83,8 +83,8 @@ public class StaticConfig {
      * @param takeshiProperties takeshiProperties
      * @throws InterruptedException 获取锁异常
      */
-    public StaticConfig(@Value("${spring.application.name:null}") String applicationName,
-                        @Value("${spring.profiles.active:null}") String active,
+    public StaticConfig(@Value("${spring.application.name:}") String applicationName,
+                        @Value("${spring.profiles.active:}") String active,
                         ObjectMapper objectMapper,
                         MessageSource messageSource,
                         RedisComponent redisComponent,
@@ -95,6 +95,16 @@ public class StaticConfig {
         StaticConfig.messageSource = messageSource;
         StaticConfig.redisComponent = redisComponent;
         StaticConfig.takeshiProperties = takeshiProperties;
+        String aesKey = takeshiProperties.getAesKey();
+        if (StrUtil.isBlank(aesKey)) {
+            // 如果没有指定aes的key，则使用默认的aesKey对项目名+环境进行加密后截取前16位得到新的aesKey
+            String data = StrUtil.concat(true, StrUtil.blankToDefault(takeshiProperties.getProjectName(), applicationName), StrUtil.DASHED, active);
+            aesKey = StrUtil.subPre(
+                    SecureUtil.aes("NT0Z1y2X725C6b7A".getBytes(StandardCharsets.UTF_8)).encryptBase64(data)
+                    , 16
+            );
+        }
+        StaticConfig.aes = SecureUtil.aes(aesKey.getBytes(StandardCharsets.UTF_8));
         if (StrUtil.isNotBlank(takeshiProperties.getProjectName())) {
             RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
             if (lock.tryLock(10, TimeUnit.SECONDS)) {
@@ -110,16 +120,6 @@ public class StaticConfig {
                         redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
                         redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
                     }
-                    String aesKey = takeshiProperties.getAesKey();
-                    if (StrUtil.isBlank(aesKey)) {
-                        // 如果没有指定aes的key，则使用默认的aesKey对项目名+环境进行加密后截取前16位得到新的aesKey
-                        aesKey = StrUtil.subPre(
-                                SecureUtil.aes("NT0Z1y2X725C6b7A".getBytes(StandardCharsets.UTF_8))
-                                        .encryptBase64(takeshiProperties.getProjectName() + StrUtil.DASHED + active)
-                                , 16
-                        );
-                    }
-                    StaticConfig.aes = SecureUtil.aes(aesKey.getBytes(StandardCharsets.UTF_8));
                 } finally {
                     lock.unlock();
                 }

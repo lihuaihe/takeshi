@@ -42,7 +42,7 @@ public class AWSSecretsManagerCredentials {
     /**
      * 存储桶名称，默认使用${takeshi.project-name}-bucket
      */
-    @Value("${takeshi.aws-secrets.bucket-name:#{T(com.takeshi.config.properties.AWSSecretsManagerCredentials).formatBucketName('${takeshi.project-name:null}')}}")
+    @Value("${takeshi.aws-secrets.bucket-name:#{T(com.takeshi.config.properties.AWSSecretsManagerCredentials).formatBucketName('${takeshi.project-name:}')}}")
     private String bucketName;
 
     /**
