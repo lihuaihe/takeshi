@@ -54,15 +54,15 @@ public final class MandrillUtil {
     /**
      * 收件人列表
      */
-    private List<MandrillMessage.Recipient> to = new ArrayList<>();
+    private final List<MandrillMessage.Recipient> to = new ArrayList<>();
     /**
      * 附件列表
      */
-    private List<MandrillMessage.MessageContent> attachments = new ArrayList<>();
+    private final List<MandrillMessage.MessageContent> attachments = new ArrayList<>();
     /**
      * 嵌入的图像列表
      */
-    private List<MandrillMessage.MessageContent> images = new ArrayList<>();
+    private final List<MandrillMessage.MessageContent> images = new ArrayList<>();
 
     static {
         if (ObjUtil.isNull(MANDRILL_API)) {
@@ -287,9 +287,46 @@ public final class MandrillUtil {
     }
 
     /**
-     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true
+     * 设置附件
+     *
+     * @param inputStream 附件文件流
+     * @param name        附件的名称
+     * @return this
+     */
+    @SneakyThrows
+    public MandrillUtil addAttachment(InputStream inputStream, String name) {
+        try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+            MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+            messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
+            messageContent.setName(name);
+            messageContent.setContent(Base64.encode(tikaInputStream));
+            this.attachments.add(messageContent);
+            return this;
+        }
+    }
+
+    /**
+     * 设置附件
+     *
+     * @param bytes 附件文件字节数组
+     * @param name  附件的名称
+     * @return this
+     */
+    public MandrillUtil addAttachment(byte[] bytes, String name) {
+        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+        messageContent.setType(TakeshiUtil.getTika().detect(bytes));
+        messageContent.setName(name);
+        messageContent.setContent(Base64.encode(bytes));
+        this.attachments.add(messageContent);
+        return this;
+    }
+
+    /**
+     * 使用cid引用设置嵌入的图像
      * <br/>
-     * 正文中需要使用 img 标签 src="cid: 名称"
+     * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * 例如：src="cid:logo.png"，name就必须是logo.png
      * <br/>
      * 该名称要与下面代码中的 setName 中的值一值
      *
@@ -309,9 +346,11 @@ public final class MandrillUtil {
     }
 
     /**
-     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true，读取完毕后关闭流
+     * 使用cid引用设置嵌入的图像，读取完毕后关闭流
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * 例如：src="cid:logo.png"，name就必须是logo.png
      * <br/>
      * 该名称要与下面代码中的 setName 中的值一值
      *
@@ -329,6 +368,28 @@ public final class MandrillUtil {
             this.images.add(messageContent);
             return this;
         }
+    }
+
+    /**
+     * 使用cid引用设置嵌入的图像，读取完毕后关闭流
+     * <br/>
+     * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * 例如：src="cid:logo.png"，name就必须是logo.png
+     * <br/>
+     * 该名称要与下面代码中的 setName 中的值一值
+     *
+     * @param bytes 嵌入的图像文件字节数组
+     * @param name  cid的名称
+     * @return this
+     */
+    public MandrillUtil addImages(byte[] bytes, String name) {
+        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+        messageContent.setType(TakeshiUtil.getTika().detect(bytes));
+        messageContent.setName(name);
+        messageContent.setContent(Base64.encode(bytes));
+        this.images.add(messageContent);
+        return this;
     }
 
     /**
