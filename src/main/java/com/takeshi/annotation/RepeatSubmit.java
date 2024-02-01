@@ -19,6 +19,8 @@ import java.lang.annotation.*;
 @Validated
 public @interface RepeatSubmit {
 
+    // ---------begin 此部分可对某个接口进行防重复提交限制---------
+
     /**
      * <p style="color:yellow;">若要使用防重功能，此值需要设置大于0</p>
      * 间隔时间，小于此时间视为重复提交
@@ -52,10 +54,10 @@ public @interface RepeatSubmit {
      */
     String msg() default "";
 
-    // ---------此以上部分可对某个接口进行防重复提交限制---------
+    // ---------end 此部分可对某个接口进行防重复提交限制---------
 
     /**
-     * 此处可覆盖${takeshi.rate.max-time-diff}的值<br/>
+     * 可覆盖${takeshi.rate.max-time-diff}的值<br/>
      * 默认-1，即不覆盖，0则不校验<br/>
      * 例如：如果takeshi.rate.max-time-diff=60，此处是-1则不覆盖，此处是0则此接口不校验，其他接口正常校验，此处大于0则覆盖值<br/>
      * 详情请参考{@link RateLimitProperties#maxTimeDiff}
@@ -65,7 +67,7 @@ public @interface RepeatSubmit {
     @PositiveOrZero
     int maxTimeDiff() default -1;
 
-    // ---------begin 此部分可对 takeshi.rate.nonce 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效 ---------
+    // ---------begin 此部分可对 takeshi.rate.nonce 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
 
     /**
      * 可覆盖${takeshi.rate.nonce.rate}值<br/>
@@ -79,13 +81,14 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.nonce.rate-interval}值<br/>
+     * 默认-1，即不覆盖，0则不校验<br/>
      * nonceRateInterval大于0则nonceRate，nonceRateInterval，nonceRateIntervalUnit都会覆盖takeshi.rate.nonce里的值<br/>
      * 详情请参考{@link RateLimitProperties.NonceRate#rateInterval}
      *
      * @return int
      */
     @PositiveOrZero
-    int nonceRateInterval() default 0;
+    int nonceRateInterval() default -1;
 
     /**
      * 可覆盖${takeshi.rate.nonce.rate-interval-unit}值<br/>
@@ -95,9 +98,9 @@ public @interface RepeatSubmit {
      */
     RateIntervalUnit nonceRateIntervalUnit() default RateIntervalUnit.SECONDS;
 
-    // ---------end 此部分可对 takeshi.rate.nonce 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效 ---------
+    // ---------end 此部分可对 takeshi.rate.nonce 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
 
-    // ---------begin 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效 ---------
+    // ---------begin 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
 
     /**
      * 可覆盖${takeshi.rate.ip.rate}值<br/>
@@ -110,13 +113,14 @@ public @interface RepeatSubmit {
 
     /**
      * 可覆盖${takeshi.rate.ip.rate-interval}值<br/>
+     * 默认-1，即不覆盖，0则不校验<br/>
      * ipRateInterval大于0则ipRate，ipRateInterval，ipRateIntervalUnit，ipRateOpenBlacklist都会覆盖takeshi.rate.ip里的值<br/>
      * 详情请参考{@link RateLimitProperties.IpRate#rateInterval}
      *
      * @return int
      */
     @PositiveOrZero
-    int ipRateInterval() default 0;
+    int ipRateInterval() default -1;
 
     /**
      * 可覆盖${takeshi.rate.ip.rate-interval-unit}值<br/>
@@ -134,6 +138,6 @@ public @interface RepeatSubmit {
      */
     boolean ipRateOpenBlacklist() default true;
 
-    // ---------end 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效 ---------
+    // ---------end 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
 
 }

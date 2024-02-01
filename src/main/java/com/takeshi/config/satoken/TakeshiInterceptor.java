@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
@@ -46,6 +47,8 @@ import java.util.Optional;
  */
 @Slf4j
 public class TakeshiInterceptor implements HandlerInterceptor {
+
+    private final Duration DURATION = Duration.ofDays(7);
 
     /**
      * 认证函数：每次请求执行
@@ -162,7 +165,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         RateLimitProperties rate = takeshiProperties.getRate();
         String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
         String nonce = request.getHeader(TakeshiConstants.NONCE_NAME);
+        String httpMethod = request.getMethod();
         String servletPath = request.getServletPath();
+        String rateLimitPathKey = StrUtil.COLON + StrUtil.BRACKET_START + httpMethod + StrUtil.BRACKET_END + servletPath;
 
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
         if (StaticConfig.redisComponent.hasKey(ipBlacklistKey)) {
@@ -170,7 +175,37 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
         }
 
-        int maxTimeDiff = ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0 ? repeatSubmit.maxTimeDiff() : rate.getMaxTimeDiff();
+        // 最大时间差校验
+        this.verifyMaxTimeDiff(repeatSubmit, rate.getMaxTimeDiff(), timestamp);
+
+        String signatureKey = takeshiProperties.getSignatureKey();
+        // 是否开启了sign校验
+        boolean signVerify = StrUtil.isNotBlank(signatureKey) && !passSignature;
+
+        // nonce速率校验
+        this.verifyNonce(repeatSubmit, rate.getNonce(), clientIp, nonce, rateLimitPathKey, signVerify);
+
+        // ip速率校验
+        this.verifyIp(repeatSubmit, rate.getIp(), clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
+
+        // sign校验
+        this.verifySign(signVerify, request.getHeader(TakeshiConstants.SIGN_NAME), paramBO, signatureKey, nonce, timestamp);
+
+        // 重复提交校验
+        this.verifyRepeatSubmit(repeatSubmit, paramBO, clientIp, httpMethod, servletPath);
+
+        return systemSecurity;
+    }
+
+    /**
+     * 最大时间差校验
+     *
+     * @param repeatSubmit    注解
+     * @param rateMaxTimeDiff 配置中的最大时间差
+     * @param timestamp       时间戳
+     */
+    private void verifyMaxTimeDiff(RepeatSubmit repeatSubmit, int rateMaxTimeDiff, String timestamp) {
+        int maxTimeDiff = ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0 ? repeatSubmit.maxTimeDiff() : rateMaxTimeDiff;
         // 请求时间校验
         if (maxTimeDiff > 0) {
             if (StrUtil.isBlank(timestamp)) {
@@ -182,93 +217,152 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 SaRouter.back(ResponseData.retData(TakeshiCode.CLIENT_DATE_TIME_ERROR));
             }
         }
-        String signatureKey = takeshiProperties.getSignatureKey();
-        // 开启了sign校验
-        boolean signVerify = StrUtil.isNotBlank(signatureKey) && !passSignature;
+    }
 
-        // nonce校验
-        RateLimitProperties.NonceRate nonceRate = rate.getNonce();
+    /**
+     * nonce速率校验
+     *
+     * @param repeatSubmit     注解
+     * @param nonceRate        nonce限制
+     * @param clientIp         客户端IP
+     * @param nonce            nonce值
+     * @param rateLimitPathKey 针对接口的限制key
+     * @param signVerify       是否开启了sign校验
+     */
+    private void verifyNonce(RepeatSubmit repeatSubmit, RateLimitProperties.NonceRate nonceRate, String clientIp,
+                             String nonce, String rateLimitPathKey, boolean signVerify) {
         int nRate = nonceRate.getRate();
         int nRateInterval = nonceRate.getRateInterval();
         RateIntervalUnit nRateIntervalUnit = nonceRate.getRateIntervalUnit();
-        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.nonceRateInterval() > 0) {
+        String nonceRateLimitKeyParam = clientIp + StrUtil.COLON + nonce;
+        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.nonceRateInterval() >= 0) {
             nRate = repeatSubmit.nonceRate();
-            nRateInterval = repeatSubmit.rateInterval();
+            nRateInterval = repeatSubmit.nonceRateInterval();
             nRateIntervalUnit = repeatSubmit.nonceRateIntervalUnit();
+            nonceRateLimitKeyParam += rateLimitPathKey;
         }
         if (signVerify && nRateInterval > 0) {
-            String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonce);
+            String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonceRateLimitKeyParam);
             RRateLimiter nonceRateLimiter = StaticConfig.redisComponent.getRateLimiter(nonceRateLimitKey);
+            if (nonceRateLimiter.getConfig().getRate() != nRate
+                    || nonceRateLimiter.getConfig().getRateInterval() != nRateIntervalUnit.toMillis(nRateInterval)) {
+                nonceRateLimiter.delete();
+            }
             // nonce限流
-            nonceRateLimiter.trySetRate(RateType.PER_CLIENT, nRate, nRateInterval, nRateIntervalUnit);
+            nonceRateLimiter.trySetRate(RateType.OVERALL, nRate, nRateInterval, nRateIntervalUnit);
             // 设置限流器过期时间
-            nonceRateLimiter.expire(Duration.ofMillis(nRateIntervalUnit.toMillis(nRateInterval)));
+            nonceRateLimiter.expire(DURATION);
             if (!nonceRateLimiter.tryAcquire()) {
                 // nonce重复使用
                 SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
         }
+    }
 
-        // ip校验
-        RateLimitProperties.IpRate ipRate = rate.getIp();
+    /**
+     * ip速率校验
+     *
+     * @param repeatSubmit     注解
+     * @param ipRate           ip限制
+     * @param clientIp         客户端IP
+     * @param rateLimitPathKey 针对接口的限制key
+     * @param httpMethod       接口方法类型
+     * @param servletPath      接口路径
+     * @param ipBlacklistKey   是否开启了黑名单
+     */
+    private void verifyIp(RepeatSubmit repeatSubmit, RateLimitProperties.IpRate ipRate, String clientIp,
+                          String rateLimitPathKey, String httpMethod, String servletPath, String ipBlacklistKey) {
         boolean ipOverwritten = false;
         int iRate = ipRate.getRate();
         int iRateInterval = ipRate.getRateInterval();
         RateIntervalUnit iRateIntervalUnit = ipRate.getRateIntervalUnit();
         boolean iOpenBlacklist = ipRate.isOpenBlacklist();
-        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() > 0) {
+        String ipRateLimitKeyParam = clientIp;
+        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() >= 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
-            ipOverwritten = true;
             iRate = repeatSubmit.ipRate();
             iRateInterval = repeatSubmit.ipRateInterval();
             iRateIntervalUnit = repeatSubmit.ipRateIntervalUnit();
             iOpenBlacklist = repeatSubmit.ipRateOpenBlacklist();
+            ipOverwritten = true;
+            ipRateLimitKeyParam += rateLimitPathKey;
         }
         if (iRateInterval > 0) {
-            String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(clientIp);
+            String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(ipRateLimitKeyParam);
             RRateLimiter ipRateLimiter = StaticConfig.redisComponent.getRateLimiter(ipRateLimitKey);
+            if (ipRateLimiter.getConfig().getRate() != iRate
+                    || ipRateLimiter.getConfig().getRateInterval() != iRateIntervalUnit.toMillis(iRateInterval)) {
+                ipRateLimiter.delete();
+            }
             // 接口IP限流
-            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, iRateInterval, iRateIntervalUnit);
-            // 设置限流器过期时间为1天
-            ipRateLimiter.expire(Duration.ofDays(1));
+            ipRateLimiter.trySetRate(RateType.OVERALL, iRate, iRateInterval, iRateIntervalUnit);
+            // 设置限流器过期时间
+            ipRateLimiter.expire(DURATION);
             if (!ipRateLimiter.tryAcquire()) {
                 if (iOpenBlacklist) {
+                    IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval, iRateIntervalUnit, iOpenBlacklist, ipOverwritten);
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
-                    IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, servletPath, ipRate, ipOverwritten, Instant.now());
+                    IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, httpMethod, servletPath, ipBlackInfoIpRate, Instant.now());
                     StaticConfig.redisComponent.saveToEndOfDay(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
                 }
                 SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
         }
+    }
 
+    /**
+     * sign校验
+     *
+     * @param signVerify   是否开启了sign校验
+     * @param sign         sign
+     * @param paramBO      paramBO
+     * @param signatureKey 参数签名使用的key
+     * @param nonce        nonce
+     * @param timestamp    时间戳
+     */
+    private void verifySign(boolean signVerify, String sign, ParamBO paramBO, String signatureKey, String nonce,
+                            String timestamp) {
         if (signVerify) {
             // 校验参数签名，如果body参数是非JsonObject值，则直接将值与其他值直接拼接
-            String sign = request.getHeader(TakeshiConstants.SIGN_NAME);
             String signParamsMd5 = SecureUtil.signParamsMd5(paramBO.getParamMap(), StrUtil.toStringOrNull(paramBO.getBodyOther()), signatureKey, nonce, timestamp);
             if (!StrUtil.equals(sign, signParamsMd5)) {
                 // 签名验证错误
                 SaRouter.back(ResponseData.retData(TakeshiCode.SIGN_ERROR));
             }
         }
+    }
 
+    /**
+     * 重复提交校验
+     *
+     * @param repeatSubmit 注解
+     * @param paramBO      paramBO
+     * @param clientIp     客户端IP
+     * @param httpMethod   接口方法类型
+     * @param servletPath  接口路径
+     * @throws JsonProcessingException JsonProcessingException
+     */
+    private void verifyRepeatSubmit(RepeatSubmit repeatSubmit, ParamBO paramBO, String clientIp, String httpMethod,
+                                    String servletPath) throws JsonProcessingException {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
             RetBO retBO = StrUtil.isBlank(repeatSubmit.msg()) ? TakeshiCode.REPEAT_SUBMIT : TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
             long rateInterval = repeatSubmit.rateInterval();
             Map<String, Object> map = new HashMap<>(8);
+            map.put("repeatIp", clientIp);
+            map.put("repeatMethod", httpMethod);
             map.put("repeatUrl", servletPath);
             map.put("repeatLoginId", paramBO.getLoginId());
             map.put("repeatParams", StaticConfig.objectMapper.writeValueAsString(paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName())));
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = StaticConfig.redisComponent.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次
-            rateLimiter.trySetRate(RateType.PER_CLIENT, 1, rateInterval, repeatSubmit.rateIntervalUnit());
+            rateLimiter.trySetRate(RateType.OVERALL, 1, rateInterval, repeatSubmit.rateIntervalUnit());
             // 设置限流器过期时间
-            rateLimiter.expire(Duration.ofMillis(repeatSubmit.rateIntervalUnit().toMillis(rateInterval)));
+            rateLimiter.expire(DURATION);
             if (!rateLimiter.tryAcquire()) {
                 SaRouter.back(ResponseData.retData(retBO));
             }
         }
-        return systemSecurity;
     }
 
 }
