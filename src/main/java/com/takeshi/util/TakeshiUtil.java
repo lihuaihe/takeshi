@@ -17,6 +17,7 @@ import cn.hutool.core.util.URLUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.crypto.KeyUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
@@ -502,6 +503,20 @@ public final class TakeshiUtil {
             div = div / 10;
         }
         return Integer.parseInt(buf.toString()) * 1_000_000;
+    }
+
+    /**
+     * 私钥解密
+     *
+     * @param data 数据
+     * @return 解密后的数据
+     */
+    public static String decryptByPrivateKey(String data) {
+        try {
+            return StaticConfig.rsa.decryptStr(data, KeyType.PrivateKey);
+        } catch (Exception e) {
+            throw new TakeshiException(TakeshiCode.PARAMETER_ERROR);
+        }
     }
 
 }
