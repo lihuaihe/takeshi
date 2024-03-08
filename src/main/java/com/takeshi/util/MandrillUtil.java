@@ -132,12 +132,23 @@ public final class MandrillUtil {
      * 创建一个可以发送邮件的对象
      *
      * @param subject 主题
-     * @param email   收件人邮箱
-     * @param name    收件人名称
+     * @param toEmail 收件人邮箱
      * @return MandrillUtil
      */
-    public static MandrillUtil create(String subject, String email, String name) {
-        return new MandrillUtil().message(subject, email, name);
+    public static MandrillUtil create(String subject, String toEmail) {
+        return new MandrillUtil().message(subject, toEmail, null);
+    }
+
+    /**
+     * 创建一个可以发送邮件的对象
+     *
+     * @param subject 主题
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
+     * @return MandrillUtil
+     */
+    public static MandrillUtil create(String subject, String toEmail, String toName) {
+        return new MandrillUtil().message(subject, toEmail, toName);
     }
 
     /**
@@ -218,14 +229,14 @@ public final class MandrillUtil {
     /**
      * 设置收件人信息
      *
-     * @param email 收件人邮箱
-     * @param name  收件人名称
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
      * @return this
      */
-    public MandrillUtil addRecipient(String email, String name) {
+    public MandrillUtil addRecipient(String toEmail, String toName) {
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
-        recipient.setEmail(email);
-        recipient.setName(name);
+        recipient.setEmail(toEmail);
+        recipient.setName(toName);
         this.to.add(recipient);
         return this;
     }
@@ -233,15 +244,15 @@ public final class MandrillUtil {
     /**
      * 设置收件人信息
      *
-     * @param email 收件人邮箱
-     * @param name  收件人名称
-     * @param type  收件人类型，可以通过调用{@link MandrillMessage.Recipient.Type}设置是否类型
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
+     * @param type    收件人类型，可以通过调用{@link MandrillMessage.Recipient.Type}设置是否类型
      * @return this
      */
-    public MandrillUtil addRecipient(String email, String name, MandrillMessage.Recipient.Type type) {
+    public MandrillUtil addRecipient(String toEmail, String toName, MandrillMessage.Recipient.Type type) {
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
-        recipient.setEmail(email);
-        recipient.setName(name);
+        recipient.setEmail(toEmail);
+        recipient.setName(toName);
         recipient.setType(type);
         this.to.add(recipient);
         return this;
@@ -290,15 +301,15 @@ public final class MandrillUtil {
      * 设置附件
      *
      * @param inputStream 附件文件流
-     * @param name        附件的名称
+     * @param fileName    附件的名称
      * @return this
      */
     @SneakyThrows
-    public MandrillUtil addAttachment(InputStream inputStream, String name) {
+    public MandrillUtil addAttachment(InputStream inputStream, String fileName) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
             MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
             messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
-            messageContent.setName(name);
+            messageContent.setName(fileName);
             messageContent.setContent(Base64.encode(tikaInputStream));
             this.attachments.add(messageContent);
             return this;
@@ -308,14 +319,14 @@ public final class MandrillUtil {
     /**
      * 设置附件
      *
-     * @param bytes 附件文件字节数组
-     * @param name  附件的名称
+     * @param bytes    附件文件字节数组
+     * @param fileName 附件的名称
      * @return this
      */
-    public MandrillUtil addAttachment(byte[] bytes, String name) {
+    public MandrillUtil addAttachment(byte[] bytes, String fileName) {
         MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
         messageContent.setType(TakeshiUtil.getTika().detect(bytes));
-        messageContent.setName(name);
+        messageContent.setName(fileName);
         messageContent.setContent(Base64.encode(bytes));
         this.attachments.add(messageContent);
         return this;
@@ -350,20 +361,20 @@ public final class MandrillUtil {
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
      * <br/>
-     * 例如：src="cid:logo.png"，name就必须是logo.png
+     * src中的名称要与下面代码中的 setName 中的值一值
      * <br/>
-     * 该名称要与下面代码中的 setName 中的值一值
+     * 例如：src="cid:logo.png"，imageName就必须是logo.png
      *
      * @param inputStream 嵌入的图像文件流
-     * @param name        cid的名称
+     * @param imageName   cid的名称
      * @return this
      */
     @SneakyThrows
-    public MandrillUtil addImages(InputStream inputStream, String name) {
+    public MandrillUtil addImages(InputStream inputStream, String imageName) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
             MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
             messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
-            messageContent.setName(name);
+            messageContent.setName(imageName);
             messageContent.setContent(Base64.encode(tikaInputStream));
             this.images.add(messageContent);
             return this;
@@ -375,18 +386,18 @@ public final class MandrillUtil {
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
      * <br/>
-     * 例如：src="cid:logo.png"，name就必须是logo.png
+     * src中的名称要与下面代码中的 setName 中的值一值
      * <br/>
-     * 该名称要与下面代码中的 setName 中的值一值
+     * 例如：src="cid:logo.png"，imageName就必须是logo.png
      *
-     * @param bytes 嵌入的图像文件字节数组
-     * @param name  cid的名称
+     * @param bytes     嵌入的图像文件字节数组
+     * @param imageName cid的名称
      * @return this
      */
-    public MandrillUtil addImages(byte[] bytes, String name) {
+    public MandrillUtil addImages(byte[] bytes, String imageName) {
         MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
         messageContent.setType(TakeshiUtil.getTika().detect(bytes));
-        messageContent.setName(name);
+        messageContent.setName(imageName);
         messageContent.setContent(Base64.encode(bytes));
         this.images.add(messageContent);
         return this;
