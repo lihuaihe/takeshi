@@ -219,7 +219,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      *
      * @param column 查询的字段
      * @param val    查询的值
-     * @param retBO  异常信息对象
+     * @param retBO  查询的值存在返回的信息对象
      */
     default void columnExists(SFunction<T, ?> column, Object val, RetBO retBO) {
         if (this.exists(Wrappers.lambdaQuery(this.getEntityClass()).eq(column, val))) {
@@ -232,7 +232,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      *
      * @param column 查询的字段
      * @param val    查询的值
-     * @param retBO  异常信息对象
+     * @param retBO  查询的值存在返回的信息对象
      * @param args   将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     default void columnExists(SFunction<T, ?> column, Object val, RetBO retBO, Object... args) {
@@ -242,7 +242,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 判断当前实体对象中某个字段值是否已存在，不包括本身
+     * 判断当前实体对象中某个字段值是否已存在，不包括指定主键ID值
      *
      * @param column 查询的字段
      * @param val    查询的值
@@ -255,17 +255,55 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 判断当前实体对象中某个字段值是否已存在，不包括本身，已存在时抛出异常
+     * 判断当前实体对象中某个字段值是否已存在，不包括指定主键ID值，已存在时抛出异常
      *
      * @param column 查询的字段
      * @param val    查询的值
      * @param id     主键ID值
-     * @param retBO  结果对象
+     * @param retBO  查询的值存在返回的信息对象
      * @param args   将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     default void columnExists(SFunction<T, ?> column, Object val, Serializable id, RetBO retBO, Object... args) {
         TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
         if (this.exists(new QueryWrapper<T>().ne(tableInfo.getKeyColumn(), id).lambda().eq(column, val))) {
+            throw new TakeshiException(retBO, args);
+        }
+    }
+
+    /**
+     * 判断当前实体对象中某个字段值是否不存在
+     *
+     * @param column 查询的字段
+     * @param val    查询的值
+     * @return boolean
+     */
+    default boolean columnNotExists(SFunction<T, ?> column, Object val) {
+        return !this.exists(Wrappers.lambdaQuery(this.getEntityClass()).eq(column, val));
+    }
+
+    /**
+     * 判断当前实体对象中某个字段值是否不存在，不存在时抛出异常
+     *
+     * @param column 查询的字段
+     * @param val    查询的值
+     * @param retBO  查询的值不存在返回的信息对象
+     */
+    default void columnNotExists(SFunction<T, ?> column, Object val, RetBO retBO) {
+        if (!this.exists(Wrappers.lambdaQuery(this.getEntityClass()).eq(column, val))) {
+            throw new TakeshiException(retBO);
+        }
+    }
+
+    /**
+     * 判断当前实体对象中某个字段值是否不存在，不存在时抛出异常
+     *
+     * @param column 查询的字段
+     * @param val    查询的值
+     * @param retBO  查询的值不存在返回的信息对象
+     * @param args   将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     */
+    default void columnNotExists(SFunction<T, ?> column, Object val, RetBO retBO, Object... args) {
+        if (!this.exists(Wrappers.lambdaQuery(this.getEntityClass()).eq(column, val))) {
             throw new TakeshiException(retBO, args);
         }
     }
