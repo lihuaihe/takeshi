@@ -54,6 +54,14 @@ public enum LoginTypeEnum {
      * 脸书登录
      */
     FACEBOOK("facebook"),
+    /**
+     * 注册后自动登录
+     */
+    REGISTER_AFTER_LOGIN("register_after_login"),
+    /**
+     * 其它
+     */
+    OTHER("other"),
     ;
 
     @EnumValue
