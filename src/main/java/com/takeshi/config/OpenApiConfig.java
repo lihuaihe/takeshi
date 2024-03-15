@@ -6,24 +6,30 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverter;
+import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.*;
+import io.swagger.v3.oas.models.media.DateSchema;
+import io.swagger.v3.oas.models.media.DateTimeSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springdoc.core.customizers.SpringDocCustomizers;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.providers.ObjectMapperProvider;
 import org.springdoc.core.providers.SpringDocProviders;
 import org.springdoc.core.providers.SpringWebProvider;
 import org.springdoc.core.service.AbstractRequestService;
@@ -39,9 +45,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
 import java.util.*;
 
 /**
@@ -59,6 +70,74 @@ public class OpenApiConfig {
 
     @Value("${spring.application.name:}")
     private String applicationName;
+
+    /**
+     * 自定义ModelConverter
+     */
+    @Component
+    @RequiredArgsConstructor
+    public static class CustomModelConverter implements ModelConverter {
+
+        private final ObjectMapperProvider objectMapperProvider;
+
+        @Nullable
+        @Override
+        public Schema<?> resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
+            JavaType javaType = objectMapperProvider.jsonMapper().constructType(type.getType());
+            Class<?> clazz = javaType.getRawClass();
+            if (clazz == Long.class || clazz == BigDecimal.class || clazz == BigInteger.class) {
+                type.setType(String.class);
+                return chain.next().resolve(type, context, chain);
+            } else if (clazz == LocalTime.class) {
+                type.setType(String.class);
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setFormat("time");
+                    schema.setExample("01:02:03");
+                }
+                return schema;
+            } else if (clazz == Year.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample("2024");
+                }
+                return schema;
+            } else if (clazz == YearMonth.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample("2024-01");
+                }
+                return schema;
+            } else if (clazz == MonthDay.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample("--01-01");
+                }
+                return schema;
+            } else if (clazz == OffsetTime.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample("10:15:30+01:00");
+                }
+                return schema;
+            }
+            if (chain.hasNext()) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (schema instanceof DateSchema) {
+                    if (!schema.getExampleSetFlag()) {
+                        schema.setExample("2024-01-01");
+                    }
+                } else if (schema instanceof DateTimeSchema) {
+                    if (!schema.getExampleSetFlag()) {
+                        schema.setExample("2024-01-01T00:00:00.000Z");
+                    }
+                }
+                return schema;
+            }
+            return null;
+        }
+
+    }
 
     /**
      * GroupedOpenApi
@@ -123,42 +202,28 @@ public class OpenApiConfig {
                 springDocProviders, springDocCustomizers);
     }
 
-    /**
-     * 自定义
-     *
-     * @return GlobalOpenApiCustomizer
-     */
-    @SuppressWarnings("unchecked")
-    @Bean
-    public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
-        return openApi -> {
-            if (CollUtil.isNotEmpty(openApi.getComponents().getSchemas())) {
-                openApi.getComponents()
-                        .getSchemas()
-                        .forEach((name, schema) -> {
-                            Map<String, Schema<?>> properties = schema.getProperties();
-                            if (CollUtil.isNotEmpty(properties)) {
-                                properties.forEach((k, v) -> {
-                                    String format = v.getFormat();
-                                    if (v instanceof DateSchema) {
-                                        if (!v.getExampleSetFlag()) {
-                                            v.setExample("2024-01-01");
-                                        }
-                                    } else if (v instanceof DateTimeSchema) {
-                                        if (!v.getExampleSetFlag()) {
-                                            v.setExample("2024-01-01T00:00:00.000Z");
-                                        }
-                                    } else if (v instanceof NumberSchema || (v instanceof IntegerSchema && (StrUtil.equals(format, "int64") || StrUtil.isBlank(format)))) {
-                                        // Long，BigInteger，BigDecimal
-                                        v.setType("string");
-                                        v.setFormat(null);
-                                    }
-                                });
-                            }
-                        });
-            }
-        };
-    }
+    // /**
+    //  * 自定义
+    //  *
+    //  * @return GlobalOpenApiCustomizer
+    //  */
+    // @SuppressWarnings("unchecked")
+    // @Bean
+    // public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
+    //     return openApi -> {
+    //         if (CollUtil.isNotEmpty(openApi.getComponents().getSchemas())) {
+    //             openApi.getComponents()
+    //                     .getSchemas()
+    //                     .forEach((name, schema) -> {
+    //                         Map<String, Schema<?>> properties = schema.getProperties();
+    //                         if (CollUtil.isNotEmpty(properties)) {
+    //                             properties.forEach((k, v) -> {
+    //                             });
+    //                         }
+    //                     });
+    //         }
+    //     };
+    // }
 
     /**
      * 自定义
