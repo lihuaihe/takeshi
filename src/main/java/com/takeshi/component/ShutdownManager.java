@@ -32,12 +32,7 @@ public class ShutdownManager {
      */
     @PreDestroy
     public void destroy() {
-        try {
-            log.info("Close the background task in the task thread pool...");
-            TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
-        } catch (Exception e) {
-            log.error("ShutdownManager.destroy --> e: ", e);
-        }
+        TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
         try {
             if (ObjUtil.isNotNull(redissonClient) && !redissonClient.isShuttingDown()) {
                 log.info("Close the Redisson client connection...");

@@ -42,16 +42,17 @@ public final class TakeshiThreadUtil {
      */
     public static void shutdownAndAwaitTermination(ExecutorService pool, long timeout) {
         if (pool != null && !pool.isShutdown()) {
-//            if (pool instanceof ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
-//                BlockingQueue<Runnable> queue = scheduledThreadPoolExecutor.getQueue();
-//                queue.removeIf(item -> {
-//                    if (item instanceof RunnableScheduledFuture<?> runnableScheduledFuture) {
-//                        long delay = runnableScheduledFuture.getDelay(TimeUnit.SECONDS);
-//                        return delay > timeout;
-//                    }
-//                    return false;
-//                });
-//            }
+            log.info("Close the background task in the task thread pool...");
+            //            if (pool instanceof ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+            //                BlockingQueue<Runnable> queue = scheduledThreadPoolExecutor.getQueue();
+            //                queue.removeIf(item -> {
+            //                    if (item instanceof RunnableScheduledFuture<?> runnableScheduledFuture) {
+            //                        long delay = runnableScheduledFuture.getDelay(TimeUnit.SECONDS);
+            //                        return delay > timeout;
+            //                    }
+            //                    return false;
+            //                });
+            //            }
             pool.shutdown();
             try {
                 if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
