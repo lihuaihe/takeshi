@@ -9,7 +9,6 @@ import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,7 +24,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class ShutdownManager {
 
     private final ScheduledExecutorService scheduledExecutorService;
-    private final RedissonClient redissonClient;
 
     /**
      * destroy
@@ -33,14 +31,6 @@ public class ShutdownManager {
     @PreDestroy
     public void destroy() {
         TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
-        try {
-            if (ObjUtil.isNotNull(redissonClient) && !redissonClient.isShuttingDown()) {
-                log.info("Close the Redisson client connection...");
-                redissonClient.shutdown();
-            }
-        } catch (Exception e) {
-            log.error("ShutdownManager.destroy --> e: ", e);
-        }
         try {
             // 关闭 TransferManager，释放资源
             AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();

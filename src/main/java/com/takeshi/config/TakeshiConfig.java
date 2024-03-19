@@ -159,7 +159,7 @@ public class TakeshiConfig {
      * @param objectMapper    objectMapper
      * @return RedissonClient
      */
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     @ConditionalOnMissingBean
     public RedissonClient redissonClient(RedisProperties redisProperties, ObjectMapper objectMapper) {
         Config config = new Config();
