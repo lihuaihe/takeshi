@@ -3,6 +3,7 @@ package com.takeshi.component;
 import cn.hutool.core.util.ObjUtil;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.takeshi.config.StaticConfig;
+import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
@@ -34,15 +35,26 @@ public class ShutdownManager {
         try {
             log.info("Close the background task in the task thread pool...");
             TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
+        } catch (Exception e) {
+            log.error("ShutdownManager.destroy --> e: ", e);
+        }
+        try {
             if (ObjUtil.isNotNull(redissonClient) && !redissonClient.isShuttingDown()) {
                 log.info("Close the Redisson client connection...");
                 redissonClient.shutdown();
             }
+        } catch (Exception e) {
+            log.error("ShutdownManager.destroy --> e: ", e);
+        }
+        try {
             // 关闭 TransferManager，释放资源
-            TransferManager transferManager = AmazonS3Util.transferManager;
-            if (ObjUtil.isNotNull(transferManager)) {
-                log.info("Close the TransferManager instance...");
-                transferManager.shutdownNow();
+            AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
+            if (awsSecrets.isEnabled()) {
+                TransferManager transferManager = AmazonS3Util.transferManager;
+                if (ObjUtil.isNotNull(transferManager)) {
+                    log.info("Close the TransferManager instance...");
+                    transferManager.shutdownNow();
+                }
             }
         } catch (Exception e) {
             log.error("ShutdownManager.destroy --> e: ", e);
