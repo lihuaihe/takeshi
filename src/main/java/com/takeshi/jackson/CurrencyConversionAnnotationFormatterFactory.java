@@ -2,13 +2,13 @@ package com.takeshi.jackson;
 
 import cn.hutool.core.util.NumberUtil;
 import com.takeshi.annotation.CurrencyConversion;
+import com.takeshi.util.TakeshiUtil;
 import org.springframework.format.AnnotationFormatterFactory;
 import org.springframework.format.Formatter;
 import org.springframework.format.Parser;
 import org.springframework.format.Printer;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Locale;
@@ -46,13 +46,12 @@ public class CurrencyConversionAnnotationFormatterFactory implements AnnotationF
         return new Formatter<>() {
             @Override
             public String print(BigDecimal value, Locale locale) {
-                BigDecimal bigDecimal = NumberUtil.toBigDecimal(value).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
-                return NumberUtil.decimalFormat(annotation.pattern(), bigDecimal);
+                return NumberUtil.decimalFormat(annotation.pattern(), TakeshiUtil.currencyToYuan(value));
             }
 
             @Override
             public BigDecimal parse(String text, Locale locale) throws ParseException {
-                return NumberUtil.toBigDecimal(text).movePointRight(2);
+                return TakeshiUtil.currencyToCent(NumberUtil.toBigDecimal(text));
             }
         };
     }

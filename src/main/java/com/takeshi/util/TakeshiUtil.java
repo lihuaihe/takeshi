@@ -55,6 +55,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
@@ -404,6 +406,26 @@ public final class TakeshiUtil {
      */
     public static Long lastDayOfMonth(YearMonth yearMonth) {
         return LocalDateTimeUtil.toEpochMilli(yearMonth.atEndOfMonth().atTime(LocalTime.MAX));
+    }
+
+    /**
+     * 货币元转分
+     *
+     * @param decimal 元
+     * @return 分
+     */
+    public static BigDecimal currencyToCent(BigDecimal decimal) {
+        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointRight(2);
+    }
+
+    /**
+     * 货币分转元
+     *
+     * @param decimal 分
+     * @return 元
+     */
+    public static BigDecimal currencyToYuan(BigDecimal decimal) {
+        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
     }
 
     /**

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.takeshi.util.TakeshiUtil;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,7 +27,7 @@ public class CurrencyToCentDeserializer extends StdDeserializer<BigDecimal> {
 
     @Override
     public BigDecimal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        return NumberUtil.toBigDecimal(p.getText()).movePointRight(2);
+        return TakeshiUtil.currencyToCent(NumberUtil.toBigDecimal(p.getText()));
     }
 
 }

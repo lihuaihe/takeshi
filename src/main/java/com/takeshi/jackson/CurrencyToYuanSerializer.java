@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.takeshi.annotation.CurrencyConversion;
+import com.takeshi.util.TakeshiUtil;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * CurrencyToYuanSerializer
@@ -47,8 +47,7 @@ public class CurrencyToYuanSerializer extends StdSerializer<BigDecimal> implemen
 
     @Override
     public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        BigDecimal bigDecimal = NumberUtil.toBigDecimal(value).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
-        gen.writeString(NumberUtil.decimalFormat(pattern, bigDecimal));
+        gen.writeString(NumberUtil.decimalFormat(pattern, TakeshiUtil.currencyToYuan(value)));
     }
 
     @Override
