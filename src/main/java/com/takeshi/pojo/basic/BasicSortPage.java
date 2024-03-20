@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 import org.springdoc.core.annotations.ParameterObject;
 
 /**
- * 分页参数
+ * BasicSortPage
  *
  * @author 七濑武【Nanase Takeshi】
  */

@@ -166,14 +166,14 @@ public interface ITakeshiService<T> extends IService<T> {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         String keyword = null;
         Instant startTime = null, endTime = null;
-        if (basicPage instanceof BasicSortQuery basicSortQuery) {
-            keyword = basicSortQuery.getKeyword();
-            startTime = basicSortQuery.getStartTime();
-            endTime = basicSortQuery.getEndTime();
-        } else if (basicPage instanceof BasicQuery basicQuery) {
-            keyword = basicQuery.getKeyword();
-            startTime = basicQuery.getStartTime();
-            endTime = basicQuery.getEndTime();
+        if (basicPage instanceof BasicSortQueryPage basicSortQueryPage) {
+            keyword = basicSortQueryPage.getKeyword();
+            startTime = basicSortQueryPage.getStartTime();
+            endTime = basicSortQueryPage.getEndTime();
+        } else if (basicPage instanceof BasicQueryPage basicQueryPage) {
+            keyword = basicQueryPage.getKeyword();
+            startTime = basicQueryPage.getStartTime();
+            endTime = basicQueryPage.getEndTime();
         }
         String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
         queryWrapper.ge(ObjUtil.isNotNull(startTime), createTime, startTime)

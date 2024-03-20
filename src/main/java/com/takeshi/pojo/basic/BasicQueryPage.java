@@ -11,16 +11,16 @@ import org.springdoc.core.annotations.ParameterObject;
 import java.time.Instant;
 
 /**
- * BasicSortQuery
+ * BasicQueryPage
  *
  * @author 七濑武【Nanase Takeshi】
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Schema(description = "列表分页条件自定义排序查询参数")
+@Schema(description = "列表分页条件自定义查询参数")
 @Accessors(chain = true)
 @ParameterObject
-public class BasicSortQuery extends BasicSortPage {
+public class BasicQueryPage extends BasicPage {
 
     /**
      * 关键字模糊搜索
