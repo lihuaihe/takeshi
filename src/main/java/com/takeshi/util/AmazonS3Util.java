@@ -128,7 +128,7 @@ public final class AmazonS3Util {
                                     // 将跨域规则设置到桶中
                                     amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
                                     // 为指定的存储桶启用传输加速
-                                    amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                                    // amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
                                 }
                                 transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
                                 log.info("AmazonS3Util.static --> TransferManager Initialization successful");
