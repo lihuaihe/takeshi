@@ -145,7 +145,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      */
     private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ParamBO paramBO) throws Exception {
         SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
-                .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
+                                                .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = paramBO.getClientIp();
         TakeshiProperties takeshiProperties = StaticConfig.takeshiProperties;
         boolean passPlatform = false;
@@ -345,7 +345,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     private void verifyRepeatSubmit(RepeatSubmit repeatSubmit, ParamBO paramBO, String clientIp, String httpMethod,
                                     String servletPath) throws JsonProcessingException {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
-            RetBO retBO = StrUtil.isBlank(repeatSubmit.msg()) ? TakeshiCode.REPEAT_SUBMIT : TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
+            RetBO retBO = TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
             long rateInterval = repeatSubmit.rateInterval();
             Map<String, Object> map = new HashMap<>(8);
             map.put("repeatIp", clientIp);

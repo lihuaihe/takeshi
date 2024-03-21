@@ -1,6 +1,7 @@
 package com.takeshi.annotation;
 
 import com.takeshi.config.properties.RateLimitProperties;
+import com.takeshi.constants.TakeshiCode;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.redisson.api.RateIntervalUnit;
@@ -52,7 +53,7 @@ public @interface RepeatSubmit {
      *
      * @return msg
      */
-    String msg() default "";
+    String msg() default TakeshiCode.REPEAT_SUBMIT_STR;
 
     // ---------end 此部分可对某个接口进行防重复提交限制---------
 

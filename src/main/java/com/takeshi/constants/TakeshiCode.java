@@ -30,6 +30,11 @@ public interface TakeshiCode {
     String NUMBER_DIGITS_STR = "{numberDigits.message}";
 
     /**
+     * 不允许重复提交，请稍候再试
+     */
+    String REPEAT_SUBMIT_STR = "{repeatSubmit.message}";
+
+    /**
      * 成功
      */
     RetBO SUCCESS = new RetBO(200, "success.message");
