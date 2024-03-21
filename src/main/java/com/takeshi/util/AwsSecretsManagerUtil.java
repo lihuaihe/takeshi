@@ -43,9 +43,9 @@ public final class AwsSecretsManagerUtil {
                     try {
                         if (StrUtil.isAllNotBlank(awsSecrets.getSecretKey(), awsSecrets.getSecretKey())) {
                             AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
-                                    .withRegion(awsSecrets.getRegion())
-                                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
-                                    .build();
+                                                                                                .withRegion(awsSecrets.getRegion())
+                                                                                                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
+                                                                                                .build();
                             GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
                             GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                             String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
@@ -71,7 +71,7 @@ public final class AwsSecretsManagerUtil {
      * @return T
      */
     public static <T> T getSecret(Class<T> beanClass) {
-        return StaticConfig.objectMapper.convertValue(jsonNode, beanClass);
+        return StaticConfig.objectMapper.convertValue(getSecret(), beanClass);
     }
 
 }

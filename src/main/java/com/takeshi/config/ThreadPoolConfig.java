@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Lion Li
  **/
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(value = "ThreadPoolConfig")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ThreadPoolConfig {
 

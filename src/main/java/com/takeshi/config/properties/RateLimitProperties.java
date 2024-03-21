@@ -14,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "RateLimitProperties")
 @ConfigurationProperties(prefix = "takeshi.rate")
 @Validated
 public class RateLimitProperties {

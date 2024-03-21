@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
  * @author 七濑武【Nanase Takeshi】
  */
 @Slf4j
+@Deprecated
 public final class AmazonS3Util {
 
     // 保存到S3的时间

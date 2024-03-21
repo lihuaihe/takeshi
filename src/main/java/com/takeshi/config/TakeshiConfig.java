@@ -53,7 +53,7 @@ import java.util.Locale;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration
+@AutoConfiguration(value = "TakeshiConfig")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableCaching
 @EnableRetry

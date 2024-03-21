@@ -18,7 +18,7 @@ import java.util.concurrent.Executor;
  * @author 七濑武【Nanase Takeshi】
  */
 @EnableAsync
-@AutoConfiguration
+@AutoConfiguration(value = "AsyncConfig")
 @RequiredArgsConstructor
 public class AsyncConfig implements AsyncConfigurer {
 

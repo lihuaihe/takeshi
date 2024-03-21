@@ -16,7 +16,7 @@ import org.springframework.validation.annotation.Validated;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "TakeshiProperties")
 @ConfigurationProperties(prefix = "takeshi")
 @Validated
 public class TakeshiProperties {

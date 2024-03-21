@@ -15,7 +15,7 @@ import java.time.Duration;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "AWSSecretsManagerCredentials")
 @ConfigurationProperties(prefix = "takeshi.aws-secrets")
 public class AWSSecretsManagerCredentials {
 

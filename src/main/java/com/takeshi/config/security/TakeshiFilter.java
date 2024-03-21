@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * TakeshiFilter
  */
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(value = "TakeshiFilter")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class TakeshiFilter implements Filter {

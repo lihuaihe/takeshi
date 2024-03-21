@@ -11,6 +11,7 @@ import com.takeshi.component.RedisComponent;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -28,7 +29,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration(before = TakeshiConfig.class)
+@Slf4j
+@AutoConfiguration(value = "StaticConfig", before = TakeshiConfig.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
 
@@ -89,6 +91,7 @@ public class StaticConfig {
                         MessageSource messageSource,
                         RedisComponent redisComponent,
                         TakeshiProperties takeshiProperties) throws InterruptedException {
+        log.info("StaticConfig Bean initialization...");
         StaticConfig.applicationName = applicationName;
         StaticConfig.active = active;
         StaticConfig.objectMapper = objectMapper;
