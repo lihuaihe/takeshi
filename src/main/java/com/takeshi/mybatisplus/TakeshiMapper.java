@@ -129,9 +129,9 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         LambdaUpdateWrapper<T> updateWrapper =
                 new UpdateWrapper<T>().lambda()
-                        .setSql(columnName + " = " + columnName + " + 1")
-                        .ge(sortColumn, val)
-                        .func(ObjUtil.isNotNull(consumer), consumer);
+                                      .setSql(columnName + " = " + columnName + " + 1")
+                                      .ge(sortColumn, val)
+                                      .func(ObjUtil.isNotNull(consumer), consumer);
         return SqlHelper.retBool(this.update(null, updateWrapper));
     }
 
@@ -158,9 +158,9 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         Integer oldVal = (Integer) ts.get(0);
         LambdaUpdateWrapper<T> updateWrapper =
                 new UpdateWrapper<T>().lambda()
-                        .setSql(columnName + " = " + columnName + " - 1")
-                        .gt(sortColumn, oldVal)
-                        .func(ObjUtil.isNotNull(consumer), consumer);
+                                      .setSql(columnName + " = " + columnName + " - 1")
+                                      .gt(sortColumn, oldVal)
+                                      .func(ObjUtil.isNotNull(consumer), consumer);
         return SqlHelper.retBool(this.update(null, updateWrapper));
     }
 
@@ -192,14 +192,14 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         LambdaUpdateWrapper<T> updateWrapper =
                 Wrappers.lambdaUpdate(entityClass)
                         .setSql(columnName +
-                                " = CASE " +
-                                " WHEN " + tableInfo.getKeyColumn() + " = " + id + " THEN " + newVal + "" +
-                                " WHEN " + columnName + " < " + oldVal + " THEN " + columnName + " + 1" +
-                                " WHEN " + columnName + " > " + oldVal + " THEN " + columnName + " - 1 " +
-                                " ELSE " + columnName +
-                                " END")
+                                        " = CASE " +
+                                        " WHEN " + tableInfo.getKeyColumn() + " = " + id + " THEN " + newVal +
+                                        " WHEN " + columnName + " < " + oldVal + " THEN " + columnName + " + 1" +
+                                        " WHEN " + columnName + " > " + oldVal + " THEN " + columnName + " - 1 " +
+                                        " ELSE " + columnName +
+                                        " END")
                         .func(ObjUtil.isNotNull(consumer), consumer);
-        updateWrapper.last(StringUtils.isBlank(updateWrapper.getCustomSqlSegment()) ? " WHERE " : " and " + columnName + " >= LEAST(" + oldVal + "," + newVal + ") and " + columnName + " <= GREATEST(" + oldVal + "," + newVal + ")");
+        updateWrapper.last((StringUtils.isBlank(updateWrapper.getCustomSqlSegment()) ? " WHERE " : " and ") + columnName + " >= LEAST(" + oldVal + "," + newVal + ") and " + columnName + " <= GREATEST(" + oldVal + "," + newVal + ")");
         return SqlHelper.retBool(this.update(null, updateWrapper));
     }
 

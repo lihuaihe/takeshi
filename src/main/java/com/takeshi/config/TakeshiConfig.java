@@ -13,7 +13,7 @@ import com.takeshi.config.satoken.TakeshiSaTokenConfig;
 import lombok.RequiredArgsConstructor;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.codec.TypedJsonJacksonCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -135,10 +135,10 @@ public class TakeshiConfig {
                 .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
                 .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
         return builder.createXmlMapper(false)
-                .build()
-                .findAndRegisterModules()
-                .registerModule(simpleModule)
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                      .build()
+                      .findAndRegisterModules()
+                      .registerModule(simpleModule)
+                      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     /**
@@ -163,11 +163,11 @@ public class TakeshiConfig {
     @ConditionalOnMissingBean
     public RedissonClient redissonClient(RedisProperties redisProperties, ObjectMapper objectMapper) {
         Config config = new Config();
-        config.setCodec(new JsonJacksonCodec(objectMapper));
+        config.setCodec(new TypedJsonJacksonCodec((Class<?>) null, objectMapper));
         config.useSingleServer()
-                .setClientName(redisProperties.getClientName())
-                .setAddress(redisProperties.getUrl())
-                .setDatabase(redisProperties.getDatabase());
+              .setClientName(redisProperties.getClientName())
+              .setAddress(redisProperties.getUrl())
+              .setDatabase(redisProperties.getDatabase());
         return Redisson.create(config);
     }
 
