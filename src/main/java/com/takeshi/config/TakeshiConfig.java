@@ -13,7 +13,7 @@ import com.takeshi.config.satoken.TakeshiSaTokenConfig;
 import lombok.RequiredArgsConstructor;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.TypedJsonJacksonCodec;
+import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -163,7 +163,7 @@ public class TakeshiConfig {
     @ConditionalOnMissingBean
     public RedissonClient redissonClient(RedisProperties redisProperties, ObjectMapper objectMapper) {
         Config config = new Config();
-        config.setCodec(new TypedJsonJacksonCodec((Class<?>) null, objectMapper));
+        config.setCodec(new JsonJacksonCodec(objectMapper));
         config.useSingleServer()
               .setClientName(redisProperties.getClientName())
               .setAddress(redisProperties.getUrl())
