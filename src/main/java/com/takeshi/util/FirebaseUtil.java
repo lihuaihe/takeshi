@@ -435,9 +435,12 @@ public final class FirebaseUtil {
          * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
-            Aps.Builder apsBuilder = Aps.builder()
-                                        .setSound("default")
-                                        .setCategory(clickAction);
+            AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
+            Aps.Builder apsBuilder = Aps.builder().setSound("default");
+            if (StrUtil.isNotBlank(clickAction)) {
+                androidBuilder.setClickAction(clickAction);
+                apsBuilder.setCategory(clickAction);
+            }
             if (ObjUtil.isNotNull(iosBadge)) {
                 apsBuilder.setBadge(iosBadge);
             }
@@ -448,11 +451,7 @@ public final class FirebaseUtil {
                            .setAndroidConfig(
                                    AndroidConfig.builder()
                                                 .setPriority(AndroidConfig.Priority.HIGH)
-                                                .setNotification(
-                                                        AndroidNotification.builder()
-                                                                           .setSound("default")
-                                                                           .setClickAction(clickAction)
-                                                                           .build())
+                                                .setNotification(androidBuilder.build())
                                                 .build())
                            .setApnsConfig(
                                    ApnsConfig.builder()
@@ -477,9 +476,12 @@ public final class FirebaseUtil {
          * @return 多播消息
          */
         private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
-            Aps.Builder apsBuilder = Aps.builder()
-                                        .setSound("default")
-                                        .setCategory(clickAction);
+            AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
+            Aps.Builder apsBuilder = Aps.builder().setSound("default");
+            if (StrUtil.isNotBlank(clickAction)) {
+                androidBuilder.setClickAction(clickAction);
+                apsBuilder.setCategory(clickAction);
+            }
             if (ObjUtil.isNotNull(iosBadge)) {
                 apsBuilder.setBadge(iosBadge);
             }
@@ -490,12 +492,7 @@ public final class FirebaseUtil {
                                     .setAndroidConfig(
                                             AndroidConfig.builder()
                                                          .setPriority(AndroidConfig.Priority.HIGH)
-                                                         .setNotification(
-                                                                 AndroidNotification.builder()
-                                                                                    .setSound("default")
-                                                                                    .setClickAction(clickAction)
-                                                                                    .build()
-                                                         )
+                                                         .setNotification(androidBuilder.build())
                                                          .build())
                                     .setApnsConfig(
                                             ApnsConfig.builder()
