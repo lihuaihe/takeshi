@@ -49,14 +49,14 @@ public final class FirebaseUtil {
                         } else {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
                             String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
-                                            ? firebase.getDatabaseUrl()
-                                            : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
+                                                                              ? firebase.getDatabaseUrl()
+                                                                              : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
                                     , StrUtil.SLASH);
                             FirebaseOptions options = FirebaseOptions.builder()
-                                    .setCredentials(GoogleCredentials.fromStream(inputStream))
-                                    .setDatabaseUrl(databaseUrl)
-                                    .setJsonFactory(GsonFactory.getDefaultInstance())
-                                    .build();
+                                                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
+                                                                     .setDatabaseUrl(databaseUrl)
+                                                                     .setJsonFactory(GsonFactory.getDefaultInstance())
+                                                                     .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
                             log.info("FirebaseUtil.static --> FirebaseApp Initialization successful");
                         }
@@ -96,17 +96,17 @@ public final class FirebaseUtil {
         public static DataSnapshot getValue(String pathString) {
             CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
             DATABASE_REFERENCE.child(pathString)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot snapshot) {
-                            completableFuture.complete(snapshot);
-                        }
+                              .addListenerForSingleValueEvent(new ValueEventListener() {
+                                  @Override
+                                  public void onDataChange(DataSnapshot snapshot) {
+                                      completableFuture.complete(snapshot);
+                                  }
 
-                        @Override
-                        public void onCancelled(DatabaseError error) {
-                            completableFuture.completeExceptionally(error.toException());
-                        }
-                    });
+                                  @Override
+                                  public void onCancelled(DatabaseError error) {
+                                      completableFuture.completeExceptionally(error.toException());
+                                  }
+                              });
             return completableFuture.join();
         }
 
@@ -151,23 +151,23 @@ public final class FirebaseUtil {
         public static DataSnapshot runTransactionOfSelfChange(String pathString, int delta) {
             CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
             DATABASE_REFERENCE.child(pathString)
-                    .runTransaction(new Transaction.Handler() {
-                        @Override
-                        public Transaction.Result doTransaction(MutableData currentData) {
-                            Integer finalValue = (0 == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Integer.class), 0) + delta;
-                            currentData.setValue(finalValue);
-                            return Transaction.success(currentData);
-                        }
+                              .runTransaction(new Transaction.Handler() {
+                                  @Override
+                                  public Transaction.Result doTransaction(MutableData currentData) {
+                                      Integer finalValue = (0 == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Integer.class), 0) + delta;
+                                      currentData.setValue(finalValue);
+                                      return Transaction.success(currentData);
+                                  }
 
-                        @Override
-                        public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
-                            if (error != null) {
-                                log.error("Database.onComplete --> error: ", error.toException());
-                            } else {
-                                completableFuture.complete(currentData);
-                            }
-                        }
-                    });
+                                  @Override
+                                  public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
+                                      if (error != null) {
+                                          log.error("Database.onComplete --> error: ", error.toException());
+                                      } else {
+                                          completableFuture.complete(currentData);
+                                      }
+                                  }
+                              });
             return completableFuture.join();
         }
 
@@ -435,20 +435,30 @@ public final class FirebaseUtil {
          * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
-            Message.Builder builder = Message.builder()
-                    .setToken(token)
-                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
-                    .setAndroidConfig(AndroidConfig.builder()
-                            .setPriority(AndroidConfig.Priority.HIGH)
-                            .setNotification(AndroidNotification.builder()
-                                    .setSound("default")
-                                    .setClickAction(clickAction)
-                                    .build())
-                            .build())
-                    .setApnsConfig(ApnsConfig.builder()
-                            .putHeader("apns-priority", "10")
-                            .setAps(Aps.builder().setSound("default").setCategory(clickAction).setBadge(iosBadge).build())
-                            .build());
+            Aps.Builder apsBuilder = Aps.builder()
+                                        .setSound("default")
+                                        .setCategory(clickAction);
+            if (ObjUtil.isNotNull(iosBadge)) {
+                apsBuilder.setBadge(iosBadge);
+            }
+            Message.Builder builder =
+                    Message.builder()
+                           .setToken(token)
+                           .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                           .setAndroidConfig(
+                                   AndroidConfig.builder()
+                                                .setPriority(AndroidConfig.Priority.HIGH)
+                                                .setNotification(
+                                                        AndroidNotification.builder()
+                                                                           .setSound("default")
+                                                                           .setClickAction(clickAction)
+                                                                           .build())
+                                                .build())
+                           .setApnsConfig(
+                                   ApnsConfig.builder()
+                                             .putHeader("apns-priority", "10")
+                                             .setAps(apsBuilder.build())
+                                             .build());
             if (CollUtil.isNotEmpty(map)) {
                 builder.putAllData(map);
             }
@@ -467,20 +477,31 @@ public final class FirebaseUtil {
          * @return 多播消息
          */
         private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
-            MulticastMessage.Builder builder = MulticastMessage.builder()
-                    .addAllTokens(tokens)
-                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
-                    .setAndroidConfig(AndroidConfig.builder()
-                            .setPriority(AndroidConfig.Priority.HIGH)
-                            .setNotification(AndroidNotification.builder()
-                                    .setSound("default")
-                                    .setClickAction(clickAction)
-                                    .build())
-                            .build())
-                    .setApnsConfig(ApnsConfig.builder()
-                            .putHeader("apns-priority", "10")
-                            .setAps(Aps.builder().setSound("default").setCategory(clickAction).setBadge(iosBadge).build())
-                            .build());
+            Aps.Builder apsBuilder = Aps.builder()
+                                        .setSound("default")
+                                        .setCategory(clickAction);
+            if (ObjUtil.isNotNull(iosBadge)) {
+                apsBuilder.setBadge(iosBadge);
+            }
+            MulticastMessage.Builder builder =
+                    MulticastMessage.builder()
+                                    .addAllTokens(tokens)
+                                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                                    .setAndroidConfig(
+                                            AndroidConfig.builder()
+                                                         .setPriority(AndroidConfig.Priority.HIGH)
+                                                         .setNotification(
+                                                                 AndroidNotification.builder()
+                                                                                    .setSound("default")
+                                                                                    .setClickAction(clickAction)
+                                                                                    .build()
+                                                         )
+                                                         .build())
+                                    .setApnsConfig(
+                                            ApnsConfig.builder()
+                                                      .putHeader("apns-priority", "10")
+                                                      .setAps(apsBuilder.build())
+                                                      .build());
             if (CollUtil.isNotEmpty(map)) {
                 builder.putAllData(map);
             }
