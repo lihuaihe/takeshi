@@ -317,7 +317,7 @@ public final class FirebaseUtil {
          * @param token 设备的注册令牌
          * @param title 通知的标题
          * @param body  通知正文
-         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
@@ -330,7 +330,7 @@ public final class FirebaseUtil {
          *
          * @param token 设备的注册令牌
          * @param body  通知正文
-         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map) {
@@ -343,7 +343,7 @@ public final class FirebaseUtil {
          * @param token    设备的注册令牌
          * @param title    通知的标题
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -357,7 +357,7 @@ public final class FirebaseUtil {
          *
          * @param token    设备的注册令牌
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -372,7 +372,7 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction, Map<String, String> map) {
@@ -386,7 +386,7 @@ public final class FirebaseUtil {
          * @param token       设备的注册令牌
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map) {
@@ -400,7 +400,7 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -415,7 +415,7 @@ public final class FirebaseUtil {
          * @param token       设备的注册令牌
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -532,7 +532,7 @@ public final class FirebaseUtil {
          * @param tokens 设备注册令牌的集合
          * @param title  通知的标题
          * @param body   通知正文
-         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
@@ -545,7 +545,7 @@ public final class FirebaseUtil {
          *
          * @param tokens 设备注册令牌的集合
          * @param body   通知正文
-         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map) {
@@ -558,7 +558,7 @@ public final class FirebaseUtil {
          * @param tokens   设备注册令牌的集合
          * @param title    通知的标题
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -572,7 +572,7 @@ public final class FirebaseUtil {
          *
          * @param tokens   设备注册令牌的集合
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -587,7 +587,7 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
@@ -601,7 +601,7 @@ public final class FirebaseUtil {
          * @param tokens      设备注册令牌的集合
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Map<String, String> map) {
@@ -615,7 +615,7 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -630,7 +630,7 @@ public final class FirebaseUtil {
          * @param tokens      设备注册令牌的集合
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -646,7 +646,7 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
@@ -674,6 +674,8 @@ public final class FirebaseUtil {
                                              .setAps(apsBuilder.build())
                                              .build());
             if (CollUtil.isNotEmpty(map)) {
+                // 将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空，移除key或value为null的数据
+                map.entrySet().removeIf(entry -> ObjUtil.hasNull(entry.getKey(), entry.getValue()));
                 builder.putAllData(map);
             }
             return builder.build();
@@ -686,7 +688,7 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return 多播消息
          */
@@ -715,6 +717,8 @@ public final class FirebaseUtil {
                                                       .setAps(apsBuilder.build())
                                                       .build());
             if (CollUtil.isNotEmpty(map)) {
+                // 将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空，移除key或value为null的数据
+                map.entrySet().removeIf(entry -> ObjUtil.hasNull(entry.getKey(), entry.getValue()));
                 builder.putAllData(map);
             }
             return builder.build();
