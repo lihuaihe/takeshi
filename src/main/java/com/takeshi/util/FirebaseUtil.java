@@ -221,6 +221,18 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token    设备的注册令牌
          * @param title    通知的标题
@@ -234,6 +246,19 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token       设备的注册令牌
          * @param title       通知的标题
@@ -243,6 +268,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, null));
         }
 
         /**
@@ -261,6 +299,20 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token 设备的注册令牌
          * @param title 通知的标题
@@ -270,6 +322,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, null, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, map));
         }
 
         /**
@@ -288,6 +353,20 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token       设备的注册令牌
          * @param title       通知的标题
@@ -298,6 +377,20 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, map));
         }
 
         /**
@@ -316,6 +409,21 @@ public final class FirebaseUtil {
         }
 
         /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, map));
+        }
+
+        /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens 设备注册令牌的集合
@@ -325,6 +433,18 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, null, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, null, null));
         }
 
         /**
@@ -342,6 +462,19 @@ public final class FirebaseUtil {
 
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens      设备注册令牌的集合
          * @param title       通知的标题
@@ -351,6 +484,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, null, null));
         }
 
         /**
@@ -370,6 +516,19 @@ public final class FirebaseUtil {
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
          * @param tokens 设备注册令牌的集合
          * @param title  通知的标题
          * @param body   通知正文
@@ -378,6 +537,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, null, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, map, null));
         }
 
         /**
@@ -396,6 +568,20 @@ public final class FirebaseUtil {
 
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens      设备注册令牌的集合
          * @param title       通知的标题
@@ -406,6 +592,20 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, map, null));
         }
 
         /**
@@ -421,6 +621,21 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, map, iosBadge));
         }
 
         /**
