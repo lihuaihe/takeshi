@@ -3,8 +3,8 @@ package com.takeshi.config.properties;
 import com.takeshi.constants.TakeshiConstants;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,7 +16,7 @@ import org.springframework.validation.annotation.Validated;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "TakeshiProperties")
 @ConfigurationProperties(prefix = "takeshi")
 @Validated
 public class TakeshiProperties {
@@ -24,7 +24,6 @@ public class TakeshiProperties {
     /**
      * 项目名称
      */
-    @NotBlank
     private String projectName;
 
     /**
@@ -35,7 +34,7 @@ public class TakeshiProperties {
     /**
      * 是否开启移动端请求工具限制
      */
-    private boolean appPlatform;
+    private boolean appPlatform = false;
 
     /**
      * 是否Controller方法参数绑定错误时错误信息包含字段名
@@ -53,6 +52,12 @@ public class TakeshiProperties {
      * 需要额外排除的URL，排除的URL将不会进入TakeshiFilter和TakeshiInterceptor和TakeshiSaTokenConfig逻辑
      */
     private String[] excludeUrl;
+
+    /**
+     * AES加密使用的key，长度必须为16位
+     */
+    @Size(min = 16, max = 16)
+    private String aesKey;
 
     /**
      * 接口速率限制配置

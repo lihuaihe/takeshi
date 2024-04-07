@@ -48,19 +48,18 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 * spring-boot-starter-aop
 * spring-boot-starter-data-redis
 * spring-boot-starter-validation
-* spring-boot-starter-thymeleaf
 * spring-retry
 * redisson-spring-boot-starter
 
-| 依赖                                                                                                                                     | 介绍                            |
-|:---------------------------------------------------------------------------------------------------------------------------------------|:------------------------------|
-| [sa-token](https://sa-token.cc/)                                                                                                       | 一个轻量级 java 权限认证框架，让鉴权变得简单、优雅！ |
-| [mybatis-plus-boot-starter](https://baomidou.com/)                                                                                     | 为简化开发而生                       |
-| [knife4j-openapi3-jakarta-spring-boot-starter](https://doc.xiaominfo.com/)                                                             | 帮助开发者快速聚合使用OpenAPI规范.         |
-| [aws-java-sdk-s3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                                  | 对象存储服务                        |
-| [aws-java-sdk-secretsmanager](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/java_secrets-manager_code_examples.html) | 密钥管理器                         |
-| [firebase-admin](https://firebase.google.com/docs/admin/setup?hl=zh-cn)                                                                | 读写 Realtime Database 数据       |
-| [hutool-all](https://www.hutool.cn/docs/#/)                                                                                            | Hutool是一个小而全的Java工具类库         |
+| 依赖                                                                                                                                     | 介绍                                                           |
+|:---------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------|
+| [sa-token](https://sa-token.cc/)                                                                                                       | 一个轻量级 java 权限认证框架，让鉴权变得简单、优雅！                                |
+| [mybatis-plus-boot-starter](https://baomidou.com/)                                                                                     | 为简化开发而生                                                      |
+| [knife4j-openapi3-jakarta-spring-boot-starter](https://doc.xiaominfo.com/)                                                             | 帮助开发者快速聚合使用OpenAPI规范.                                        |
+| [aws-java-sdk-s3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                                  | 对象存储服务，<font color="#FFFF00">需要自行导入包</font>                  |
+| [aws-java-sdk-secretsmanager](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/java_secrets-manager_code_examples.html) | 密钥管理器                                                        |
+| [firebase-admin](https://firebase.google.com/docs/admin/setup?hl=zh-cn)                                                                | 读写 Realtime Database 数据，<font color="#FFFF00">需要自行导入包</font> |
+| [hutool-all](https://www.hutool.cn/docs/#/)                                                                                            | Hutool是一个小而全的Java工具类库                                        |
 
 ### 🚪代码
 
@@ -77,19 +76,20 @@ header中传递参数：
     - `x-nonce`: 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
 - 必传参数:
     - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
-    - `User-Agent`：
-        - 当前设备名/当前APP版本号 系统时区
+    - `x-timezone`：当前设备所在的时区 (Asia/Shanghai)
+    - `User-Agent`：当前项目名/当前APP版本号 (当前设备名 当前设备系统版本; 系统时区)
         - 例如：
-            - iPhone/1.0.0 Asia/Shanghai
-            - Android/1.0.0 Asia/Shanghai
-            - iPad/1.0.0 Asia/Shanghai
+            - takeshi/1.0.0 (iPhone 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (iPad 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5 Tablet; Asia/Shanghai)
 - 国际化消息(接口返回值中的message语言，实际看配置的国际化文件名):
     - `Accept-Language`
         - `en-US`(返回英文)
         - `zh-CN`(返回中文)
 - 经纬度:
     - `x-geo-point`: 传一个JSON字符串
-      - 例如: `{"long":1.0,"lat":1.0}`
+        - 例如: `{"long":1.0,"lat":1.0}`
 
 加解密(<font color="#FFFF00">看系统是否开启了加解密</font>)
 

@@ -67,13 +67,12 @@ public class TakeshiAsyncComponent {
                     tbSysLog.setLoginId(paramBO.getLoginId());
                     tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
                     Map<String, String> headerParam = paramBO.getHeaderParam();
-                    tbSysLog.setClientIpAddress(paramBO.getClientIpAddress());
                     tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
                     tbSysLog.setHttpMethod(paramBO.getHttpMethod());
                     tbSysLog.setMethodName(paramBO.getMethodName());
                     tbSysLog.setRequestUrl(paramBO.getRequestUrl());
                     tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-                    tbSysLog.setRequestParams(paramObjectNode.toString());
+                    tbSysLog.setRequestParams(objectMapper.writeValueAsString(paramObjectNode));
                     tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
                     tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
                     tbSysLog.setSuccessful(this.successful(responseData));

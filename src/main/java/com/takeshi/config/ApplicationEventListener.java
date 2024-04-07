@@ -19,13 +19,13 @@ import java.util.Locale;
 @Component
 public class ApplicationEventListener {
 
-    @Value("${spring.application.name}")
+    @Value("${spring.application.name:}")
     private String applicationName;
 
     @Value("${java.version}")
     private String javaVersion;
 
-    @Value("${server.port}")
+    @Value("${server.port:8080}")
     private Integer serverPort;
 
     @Value("${server.servlet.context-path:}")
@@ -33,11 +33,9 @@ public class ApplicationEventListener {
 
     /**
      * 应用程序就绪事件
-     *
-     * @param event event
      */
-    @EventListener
-    public void applicationReadyEvent(ApplicationReadyEvent event) {
+    @EventListener(ApplicationReadyEvent.class)
+    public void handleApplicationReady() {
         log.info("""
 
                          ________    _______   ________

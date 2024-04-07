@@ -1,7 +1,7 @@
 package com.takeshi.config.properties;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Regions;
+import cn.hutool.core.text.NamingCase;
+import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -15,9 +15,14 @@ import java.time.Duration;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "AWSSecretsManagerCredentials")
 @ConfigurationProperties(prefix = "takeshi.aws-secrets")
-public class AWSSecretsManagerCredentials implements AWSCredentials {
+public class AWSSecretsManagerCredentials {
+
+    /**
+     * 是否启用AWS S3文件存储功能
+     */
+    private boolean enabled = false;
 
     /**
      * SecretsManager 使用的 accessKey
@@ -35,15 +40,15 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
     private String secretId;
 
     /**
-     * 存储桶名称，默认使用{takeshi.projectName}-bucket
+     * 存储桶名称，默认使用${takeshi.project-name}-bucket
      */
-    @Value("${takeshi.aws-secrets.bucket-name:#{T(cn.hutool.core.text.NamingCase).toKebabCase('${takeshi.project-name}').concat('-bucket')}}")
+    @Value("${takeshi.aws-secrets.bucket-name:#{T(com.takeshi.config.properties.AWSSecretsManagerCredentials).formatBucketName('${takeshi.project-name:}')}}")
     private String bucketName;
 
     /**
      * 设置客户端使用的区域（例如：us-west-2）
      */
-    private Regions region = Regions.DEFAULT_REGION;
+    private String region = "us-west-2";
 
     /**
      * S3临时URL的有效时间，默认7天
@@ -60,14 +65,17 @@ public class AWSSecretsManagerCredentials implements AWSCredentials {
      */
     private String secretKeySecrets = "AWS-S3-Secret-access-key";
 
-    @Override
-    public String getAWSAccessKeyId() {
-        return accessKey;
-    }
-
-    @Override
-    public String getAWSSecretKey() {
-        return secretKey;
+    /**
+     * 格式化存储桶名称
+     *
+     * @param projectName 项目名称
+     * @return 格式化后的存储桶名称
+     */
+    public static String formatBucketName(String projectName) {
+        if (StrUtil.isBlank(projectName)) {
+            return null;
+        }
+        return NamingCase.toKebabCase(projectName).concat("-bucket");
     }
 
 }

@@ -1,58 +1,75 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.IEnum;
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 /**
  * 登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public enum LoginTypeEnum implements IEnum<String> {
+@Getter
+@Schema(description = "登录类型", enumAsRef = true)
+public enum LoginTypeEnum {
 
+    /**
+     * 验证码登陆
+     */
+    CAPTCHA("captcha"),
     /**
      * 密码登录
      */
-    Password,
+    PASSWORD("password"),
     /**
      * 微信登录
      */
-    WeChat,
+    WE_CHAT("we_chat"),
     /**
      * 支付宝登录
      */
-    Alipay,
+    ALIPAY("alipay"),
     /**
      * 抖音登录
      */
-    Tiktok,
+    TIKTOK("tiktok"),
     /**
      * 油管登录
      */
-    YouTube,
+    YOU_TUBE("you_tube"),
     /**
      * 电报登录
      */
-    Telegram,
+    TELEGRAM("telegram"),
     /**
      * 苹果登录
      */
-    Apple,
+    APPLE("apple"),
     /**
      * 谷歌登录
      */
-    Google,
+    GOOGLE("google"),
     /**
      * 脸书登录
      */
-    Facebook,
+    FACEBOOK("facebook"),
+    /**
+     * 注册后自动登录
+     */
+    REGISTER_AFTER_LOGIN("register_after_login"),
+    /**
+     * 其它
+     */
+    OTHER("other"),
     ;
 
-    /**
-     * 枚举数据库存储值
-     */
-    @Override
-    public String getValue() {
-        return this.name();
+    @EnumValue
+    @JsonValue
+    private final String value;
+
+    LoginTypeEnum(String value) {
+        this.value = value;
     }
 
 }

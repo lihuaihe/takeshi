@@ -14,13 +14,13 @@ import org.springframework.validation.annotation.Validated;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration
+@AutoConfiguration(value = "RateLimitProperties")
 @ConfigurationProperties(prefix = "takeshi.rate")
 @Validated
 public class RateLimitProperties {
 
     /**
-     * 接口header里传递的timestamp最多只能早于系统当前时间{maxTimeDiff}秒<br/>
+     * 接口header里传递的timestamp最多只能早于或晚于系统当前时间{maxTimeDiff}秒<br/>
      * 设置0则不校验
      */
     @PositiveOrZero

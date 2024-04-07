@@ -1,7 +1,8 @@
 package com.takeshi.pojo.basic;
 
-import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.takeshi.constraints.VerifySortColumn;
+import com.takeshi.jackson.SortColumnDeserializer;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.experimental.Accessors;
 import org.springdoc.core.annotations.ParameterObject;
 
 /**
- * 分页参数
+ * BasicSortPage
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -25,24 +26,14 @@ public class BasicSortPage extends BasicPage {
      * 排序字段
      */
     @VerifySortColumn
+    @JsonDeserialize(using = SortColumnDeserializer.class)
     @Parameter(description = "排序字段", schema = @Schema(description = "排序字段"))
     private String sortColumn;
 
     /**
      * 是否是升序排序
      */
-    @Parameter(description = "是否是升序排序", schema = @Schema(description = "是否是升序排序", allowableValues = {"false", "true"}))
+    @Parameter(description = "是否是升序排序（true/false）", schema = @Schema(description = "是否是升序排序"))
     private Boolean sortAsc;
-
-    /**
-     * 将传入的参数转成下划线方式
-     *
-     * @param sortColumn 排序字段
-     * @return BasicSortPage
-     */
-    public BasicSortPage setSortColumn(String sortColumn) {
-        this.sortColumn = StrUtil.isBlank(sortColumn) ? "create_time" : StrUtil.toUnderlineCase(sortColumn);
-        return this;
-    }
 
 }

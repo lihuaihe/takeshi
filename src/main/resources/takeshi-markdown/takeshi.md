@@ -14,12 +14,13 @@ header中传递参数：
         - `zh-CN`(返回中文)
 - 必传参数:
     - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
-    - `User-Agent`：
-        - 当前设备名/当前APP版本号 系统时区
+    - `x-timezone`：当前设备所在的时区 (Asia/Shanghai)
+    - `User-Agent`：当前项目名/当前APP版本号 (当前设备名 当前设备系统版本; 系统时区)
         - 例如：
-            - iPhone/1.0.0 Asia/Shanghai
-            - Android/1.0.0 Asia/Shanghai
-            - iPad/1.0.0 Asia/Shanghai
+            - takeshi/1.0.0 (iPhone 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (iPad 16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5; Asia/Shanghai)
+            - takeshi/1.0.0 (Android 8.5 Tablet; Asia/Shanghai)
 - 参数签名：
     - `x-sign`：签名的值(看系统是否开启了需要参数签名)
         - 对参数做MD5签名

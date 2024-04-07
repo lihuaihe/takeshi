@@ -1,7 +1,7 @@
 package com.takeshi.config;
 
+import cn.hutool.core.thread.ThreadException;
 import cn.hutool.core.util.ArrayUtil;
-import com.takeshi.exception.TakeshiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -18,7 +18,7 @@ import java.util.concurrent.Executor;
  * @author 七濑武【Nanase Takeshi】
  */
 @EnableAsync
-@AutoConfiguration
+@AutoConfiguration(value = "AsyncConfig")
 @RequiredArgsConstructor
 public class AsyncConfig implements AsyncConfigurer {
 
@@ -36,15 +36,15 @@ public class AsyncConfig implements AsyncConfigurer {
      * 异步执行异常处理
      */
     @Override
+    @SuppressWarnings("all")
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (throwable, method, objects) -> {
-            throwable.printStackTrace();
             StringBuilder sb = new StringBuilder();
             sb.append("Exception message - ").append(throwable.getMessage()).append(", Method name - ").append(method.getName());
             if (ArrayUtil.isNotEmpty(objects)) {
                 sb.append(", Parameter value - ").append(Arrays.toString(objects));
             }
-            throw new TakeshiException(sb.toString());
+            throw new ThreadException(sb.toString(), throwable);
         };
     }
 

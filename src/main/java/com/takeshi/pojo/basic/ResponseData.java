@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.bo.RetBO;
+import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -59,7 +60,7 @@ public class ResponseData<T> implements Serializable {
     /**
      * 返回时间
      */
-    @Schema(description = "返回时间")
+    @Schema(description = "返回时间", example = "2023-12-07T03:08:09.000Z")
     private Instant time;
 
     /**
@@ -249,14 +250,14 @@ public class ResponseData<T> implements Serializable {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag  标志
-     * @param RetBO 消息
-     * @param args  将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
-     * @param <T>   T
+     * @param flag         标志
+     * @param retBOOfFalse flag为false该返回的结果
+     * @param args         将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>          T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO RetBO, Object... args) {
-        return flag ? success() : retData(RetBO, args);
+    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfFalse, Object... args) {
+        return flag ? success() : retData(retBOOfFalse, args);
     }
 
     /**
@@ -284,6 +285,18 @@ public class ResponseData<T> implements Serializable {
      */
     public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object... args) {
         return flag ? retData(retBOOfTrue, args) : retData(retBOOfFalse, args);
+    }
+
+    /**
+     * 根据布尔值返回结果状态信息，数据是否存在
+     *
+     * @param flag 标志
+     * @param args 将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>  T
+     * @return {@link ResponseData}
+     */
+    public static <T> ResponseData<T> retExist(boolean flag, Object... args) {
+        return flag ? retData(TakeshiCode.IS_EXIST, null, args) : retData(TakeshiCode.NOT_EXIST, null, args);
     }
 
     private ResponseData() {
@@ -351,6 +364,11 @@ public class ResponseData<T> implements Serializable {
         this.data = data;
         this.time = Instant.now();
         this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
+    }
+
+    @Override
+    public String toString() {
+        return GsonUtil.toJson(this);
     }
 
 }

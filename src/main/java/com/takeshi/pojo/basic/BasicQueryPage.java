@@ -11,7 +11,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import java.time.Instant;
 
 /**
- * BasicSortQuery
+ * BasicQueryPage
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -20,7 +20,7 @@ import java.time.Instant;
 @Schema(description = "列表分页条件自定义查询参数")
 @Accessors(chain = true)
 @ParameterObject
-public class BasicQuery extends BasicPage {
+public class BasicQueryPage extends BasicPage {
 
     /**
      * 关键字模糊搜索
@@ -32,13 +32,13 @@ public class BasicQuery extends BasicPage {
     /**
      * 开始时间
      */
-    @Parameter(description = "开始时间", schema = @Schema(description = "开始时间"))
+    @Parameter(description = "开始时间", example = "2023-12-07T03:08:09.000Z", schema = @Schema(description = "开始时间", example = "2023-12-07T03:08:09.000Z"))
     private Instant startTime;
 
     /**
      * 结束时间
      */
-    @Parameter(description = "结束时间", schema = @Schema(description = "结束时间"))
+    @Parameter(description = "结束时间", example = "2023-12-07T03:08:09.000Z", schema = @Schema(description = "结束时间", example = "2023-12-07T03:08:09.000Z"))
     private Instant endTime;
 
 }

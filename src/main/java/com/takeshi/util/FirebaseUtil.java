@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -47,13 +48,15 @@ public final class FirebaseUtil {
                             log.error("FirebaseUtil.static --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
                         } else {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                            String databaseUrl = StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
-                                    ? firebase.getDatabaseUrl()
-                                    : AmazonS3Util.getSecret().get(firebase.getDatabaseUrlSecrets()).asText();
+                            String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
+                                                                              ? firebase.getDatabaseUrl()
+                                                                              : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
+                                    , StrUtil.SLASH);
                             FirebaseOptions options = FirebaseOptions.builder()
-                                    .setCredentials(GoogleCredentials.fromStream(inputStream))
-                                    .setDatabaseUrl(databaseUrl)
-                                    .build();
+                                                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
+                                                                     .setDatabaseUrl(databaseUrl)
+                                                                     .setJsonFactory(GsonFactory.getDefaultInstance())
+                                                                     .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
                             log.info("FirebaseUtil.static --> FirebaseApp Initialization successful");
                         }
@@ -87,30 +90,30 @@ public final class FirebaseUtil {
         /**
          * 获取指定位置的的值
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot getValue(String pathString) {
             CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
             DATABASE_REFERENCE.child(pathString)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot snapshot) {
-                            completableFuture.complete(snapshot);
-                        }
+                              .addListenerForSingleValueEvent(new ValueEventListener() {
+                                  @Override
+                                  public void onDataChange(DataSnapshot snapshot) {
+                                      completableFuture.complete(snapshot);
+                                  }
 
-                        @Override
-                        public void onCancelled(DatabaseError error) {
-                            completableFuture.completeExceptionally(error.toException());
-                        }
-                    });
+                                  @Override
+                                  public void onCancelled(DatabaseError error) {
+                                      completableFuture.completeExceptionally(error.toException());
+                                  }
+                              });
             return completableFuture.join();
         }
 
         /**
          * 对路径下的值自增1
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot increment(String pathString) {
@@ -120,7 +123,7 @@ public final class FirebaseUtil {
         /**
          * 对路径下的值自减1
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot decrement(String pathString) {
@@ -130,7 +133,7 @@ public final class FirebaseUtil {
         /**
          * 清空初始化该路径下的值，也就是将值设置为0
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return 数据库位置的数据
          */
         public static DataSnapshot initialize(String pathString) {
@@ -141,38 +144,38 @@ public final class FirebaseUtil {
          * <p>对路径下的值自增delta</p>
          * <p style="color:yellow;">注意：如果传了0，则直接将值设置为0，不进行加减</p>
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @param delta      值，如果传了0，则直接将值设置为0，不进行加减
          * @return 数据库位置的数据
          */
         public static DataSnapshot runTransactionOfSelfChange(String pathString, int delta) {
             CompletableFuture<DataSnapshot> completableFuture = new CompletableFuture<>();
             DATABASE_REFERENCE.child(pathString)
-                    .runTransaction(new Transaction.Handler() {
-                        @Override
-                        public Transaction.Result doTransaction(MutableData currentData) {
-                            Integer finalValue = (0 == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Integer.class), 0) + delta;
-                            currentData.setValue(finalValue);
-                            return Transaction.success(currentData);
-                        }
+                              .runTransaction(new Transaction.Handler() {
+                                  @Override
+                                  public Transaction.Result doTransaction(MutableData currentData) {
+                                      Integer finalValue = (0 == delta) ? delta : ObjUtil.defaultIfNull(currentData.getValue(Integer.class), 0) + delta;
+                                      currentData.setValue(finalValue);
+                                      return Transaction.success(currentData);
+                                  }
 
-                        @Override
-                        public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
-                            if (error != null) {
-                                log.error("Database.onComplete --> error: ", error.toException());
-                            } else {
-                                completableFuture.complete(currentData);
-                            }
-                        }
-                    });
+                                  @Override
+                                  public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
+                                      if (error != null) {
+                                          log.error("Database.onComplete --> error: ", error.toException());
+                                      } else {
+                                          completableFuture.complete(currentData);
+                                      }
+                                  }
+                              });
             return completableFuture.join();
         }
 
         /**
          * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
          *
-         * @param pathString 子路径
-         * @param value      值，不需要特地转JSON字符串，
+         * @param pathString 子路径，例如：/child
+         * @param value      值，可以不特地转JSON字符串，<span style="color:yellow;">注意：数值类型的值过大时web端展示会精度丢失</span>
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
@@ -182,7 +185,7 @@ public final class FirebaseUtil {
         /**
          * 将此位置的值设置为 null，即删除指定位置的数据
          *
-         * @param pathString 子路径
+         * @param pathString 子路径，例如：/child
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> removeValueAsync(String pathString) {
@@ -218,6 +221,18 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token    设备的注册令牌
          * @param title    通知的标题
@@ -231,6 +246,19 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token       设备的注册令牌
          * @param title       通知的标题
@@ -240,6 +268,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, null));
         }
 
         /**
@@ -258,11 +299,25 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token 设备的注册令牌
          * @param title 通知的标题
          * @param body  通知正文
-         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, Map<String, String> map) {
@@ -271,11 +326,24 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
          *
          * @param token    设备的注册令牌
          * @param title    通知的标题
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -285,16 +353,16 @@ public final class FirebaseUtil {
 
         /**
          * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
          *
-         * @param token       设备的注册令牌
-         * @param title       通知的标题
-         * @param body        通知正文
-         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
-        public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null, map));
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, map));
         }
 
         /**
@@ -304,12 +372,55 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, title, body, clickAction, iosBadge, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, map));
         }
 
         /**
@@ -322,6 +433,18 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, null, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, null, null));
         }
 
         /**
@@ -339,6 +462,19 @@ public final class FirebaseUtil {
 
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens      设备注册令牌的集合
          * @param title       通知的标题
@@ -348,6 +484,19 @@ public final class FirebaseUtil {
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, null, null));
         }
 
         /**
@@ -367,10 +516,23 @@ public final class FirebaseUtil {
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
          * @param tokens 设备注册令牌的集合
          * @param title  通知的标题
          * @param body   通知正文
-         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
@@ -379,11 +541,24 @@ public final class FirebaseUtil {
 
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
          *
          * @param tokens   设备注册令牌的集合
          * @param title    通知的标题
          * @param body     通知正文
-         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
@@ -393,16 +568,16 @@ public final class FirebaseUtil {
 
         /**
          * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
          *
-         * @param tokens      设备注册令牌的集合
-         * @param title       通知的标题
-         * @param body        通知正文
-         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
-        public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
-            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, null));
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, map, iosBadge));
         }
 
         /**
@@ -412,12 +587,55 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Map<String, String> map) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
+            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, clickAction, map, iosBadge));
         }
 
         /**
@@ -428,25 +646,36 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return 消息
          */
         private static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
-            Message.Builder builder = Message.builder()
-                    .setToken(token)
-                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
-                    .setAndroidConfig(AndroidConfig.builder()
-                            .setPriority(AndroidConfig.Priority.HIGH)
-                            .setNotification(AndroidNotification.builder()
-                                    .setSound("default")
-                                    .setClickAction(clickAction)
-                                    .build())
-                            .build())
-                    .setApnsConfig(ApnsConfig.builder()
-                            .putHeader("apns-priority", "10")
-                            .setAps(Aps.builder().setSound("default").setCategory(clickAction).setBadge(iosBadge).build())
-                            .build());
+            AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
+            Aps.Builder apsBuilder = Aps.builder().setSound("default");
+            if (StrUtil.isNotBlank(clickAction)) {
+                androidBuilder.setClickAction(clickAction);
+                apsBuilder.setCategory(clickAction);
+            }
+            if (ObjUtil.isNotNull(iosBadge)) {
+                apsBuilder.setBadge(iosBadge);
+            }
+            Message.Builder builder =
+                    Message.builder()
+                           .setToken(token)
+                           .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                           .setAndroidConfig(
+                                   AndroidConfig.builder()
+                                                .setPriority(AndroidConfig.Priority.HIGH)
+                                                .setNotification(androidBuilder.build())
+                                                .build())
+                           .setApnsConfig(
+                                   ApnsConfig.builder()
+                                             .putHeader("apns-priority", "10")
+                                             .setAps(apsBuilder.build())
+                                             .build());
             if (CollUtil.isNotEmpty(map)) {
+                // 将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空，移除key或value为null的数据
+                map.entrySet().removeIf(entry -> ObjUtil.hasNull(entry.getKey(), entry.getValue()));
                 builder.putAllData(map);
             }
             return builder.build();
@@ -459,26 +688,37 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return 多播消息
          */
         private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
-            MulticastMessage.Builder builder = MulticastMessage.builder()
-                    .addAllTokens(tokens)
-                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
-                    .setAndroidConfig(AndroidConfig.builder()
-                            .setPriority(AndroidConfig.Priority.HIGH)
-                            .setNotification(AndroidNotification.builder()
-                                    .setSound("default")
-                                    .setClickAction(clickAction)
-                                    .build())
-                            .build())
-                    .setApnsConfig(ApnsConfig.builder()
-                            .putHeader("apns-priority", "10")
-                            .setAps(Aps.builder().setSound("default").setCategory(clickAction).setBadge(iosBadge).build())
-                            .build());
+            AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
+            Aps.Builder apsBuilder = Aps.builder().setSound("default");
+            if (StrUtil.isNotBlank(clickAction)) {
+                androidBuilder.setClickAction(clickAction);
+                apsBuilder.setCategory(clickAction);
+            }
+            if (ObjUtil.isNotNull(iosBadge)) {
+                apsBuilder.setBadge(iosBadge);
+            }
+            MulticastMessage.Builder builder =
+                    MulticastMessage.builder()
+                                    .addAllTokens(tokens)
+                                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                                    .setAndroidConfig(
+                                            AndroidConfig.builder()
+                                                         .setPriority(AndroidConfig.Priority.HIGH)
+                                                         .setNotification(androidBuilder.build())
+                                                         .build())
+                                    .setApnsConfig(
+                                            ApnsConfig.builder()
+                                                      .putHeader("apns-priority", "10")
+                                                      .setAps(apsBuilder.build())
+                                                      .build());
             if (CollUtil.isNotEmpty(map)) {
+                // 将给定映射中的所有键值对作为数据字段添加到消息中。任何键或值都不能为空，移除key或value为null的数据
+                map.entrySet().removeIf(entry -> ObjUtil.hasNull(entry.getKey(), entry.getValue()));
                 builder.putAllData(map);
             }
             return builder.build();

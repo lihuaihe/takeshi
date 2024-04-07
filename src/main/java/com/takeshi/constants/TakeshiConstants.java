@@ -1,11 +1,21 @@
 package com.takeshi.constants;
 
+import cn.hutool.http.useragent.Platform;
+
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+
 /**
  * 常量池
  *
  * @author 七濑武【Nanase Takeshi】
  */
 public interface TakeshiConstants {
+
+    /**
+     * 安卓平板
+     */
+    Platform ANDROID_TABLET = new Platform("AndroidTablet", "android.*tablet");
 
     /**
      * 接口请求的参数，放在request的attribute传递下去，以免频繁获取
@@ -16,6 +26,11 @@ public interface TakeshiConstants {
      * 调用接口header里面传的时间戳字段（毫秒级）
      */
     String TIMESTAMP_NAME = "x-timestamp";
+
+    /**
+     * 调用接口header里面传的时区字段(Asia/Shanghai)
+     */
+    String TIMEZONE_NAME = "x-timezone";
 
     /**
      * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
@@ -65,20 +80,8 @@ public interface TakeshiConstants {
     String DATE_US_REGEXP = "^([0-2]\\d|30|31) (Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May?|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?) \\d{4}$";
 
     /**
-     * BYTES
+     * 日期时间格式化，毫秒保留3位，例如：2022-01-01T04:34:56.000Z
      */
-    byte[] BYTES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    /**
-     * INTS
-     */
-    int[] INTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    /**
-     * LONGS
-     */
-    long[] LONGS = {0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L};
-    /**
-     * STRINGS
-     */
-    String[] STRINGS = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+    DateTimeFormatter INSTANT_FORMATTER = new DateTimeFormatterBuilder().parseCaseInsensitive().appendInstant(3).toFormatter();
 
 }

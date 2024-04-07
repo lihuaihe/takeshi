@@ -22,6 +22,8 @@ spring:
 
 springdoc:
   default-flat-param-object: true
+  cache:
+    disabled: true
 
 server:
   shutdown: graceful
@@ -34,7 +36,7 @@ knife4j:
   documents:
     - group: default
       name: 接口说明
-      locations: classpath:markdown/*
+      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
   setting:
     language: zh_cn
     enable-version: true
@@ -47,6 +49,12 @@ logging:
   file:
     # 日志路径
     path: logs/${spring.application.name}
+  logback:
+    rollingpolicy:
+      # 到了指定大小就会再创建一个文件
+      max-file-size: 30MB
+      # 日志文档保留天数
+      max-history: 30
 
 mybatis-plus:
   global-config:
@@ -64,7 +72,7 @@ sa-token:
   # token有效期，单位s 默认30天, -1代表永不过期
   timeout: -1
   # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
-  activity-timeout: 2592000
+  active-timeout: 2592000
   # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
   is-concurrent: true
   # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)

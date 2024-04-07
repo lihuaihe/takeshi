@@ -3,8 +3,7 @@ package com.takeshi.config.satoken;
 import cn.hutool.core.util.ArrayUtil;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
-import com.takeshi.jackson.BigDecimalFormatAnnotationFormatterFactory;
-import com.takeshi.jackson.NumZeroFormatAnnotationFormatterFactory;
+import com.takeshi.jackson.*;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -18,13 +17,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
 
     /**
-     * 基于路由的拦截式鉴权
+     * 基于路由的拦截式鉴权，实现此方法时需要手动进行鉴权，例如调用：StpUtil.checkLogin()
      *
      * @return TakeshiInterceptor
      */
-    default TakeshiInterceptor saRouteBuild() {
-        return TakeshiInterceptor.newInstance();
-    }
+    TakeshiInterceptor saRouteBuild();
 
     /**
      * 注册Sa-Token的注解拦截器，打开注解式鉴权功能
@@ -51,6 +48,9 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
     default void addFormatters(FormatterRegistry registry) {
         registry.addFormatterForFieldAnnotation(new NumZeroFormatAnnotationFormatterFactory());
         registry.addFormatterForFieldAnnotation(new BigDecimalFormatAnnotationFormatterFactory());
+        registry.addFormatterForFieldAnnotation(new CurrencyConversionAnnotationFormatterFactory());
+        registry.addFormatterForFieldAnnotation(new SortColumnAnnotationFormatterFactory());
+        registry.addConverterFactory(new StringToEnumConverterFactory());
     }
 
 }

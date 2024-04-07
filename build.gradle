@@ -3,7 +3,7 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'org.springframework.boot' version '3.1.3'
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.3'
 }
 configurations {
@@ -13,31 +13,32 @@ configurations {
 }
 
 ext {
-    redissonVersion = '3.23.2'
-    tikaVersion = '2.8.0'
+    redissonVersion = '3.25.0'
+    tikaVersion = '2.9.1'
     jtsVersion = '1.19.0'
     ffmpegVersion = '6.0-1.5.9'
     javacvVersion = '1.5.9'
-    mybatisPlusVersion = '3.5.3.1'
-    knife4jVersion = '4.2.0'
-    awsJavaSdkVersion = '1.12.520'
+    mybatisPlusVersion = '3.5.5'
+    knife4jVersion = '4.5.0'
+    awsJavaSdkVersion = '1.12.674'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.2.0'
     findbugsVersion = '3.0.1u2'
-    libphonenumberVersion = '8.13.17'
-    html2pdfVersion = '5.0.0'
-    hutoolVersion = '5.8.21'
-    saTokenVersion = '1.34.0'
-    ognlVersion = '3.4.1'
+    gsonVersion = '2.10.1'
+    libphonenumberVersion = '8.13.32'
+    html2pdfVersion = '5.0.3'
+    hutoolVersion = '5.8.26'
+    saTokenVersion = '1.37.0'
+    ognlVersion = '3.3.4' // 使用高于这个版本会提示java.lang.NoSuchMethodError
     jaxbApiVersion = '2.3.1'
-    twilioVersion = '9.9.1'
-    micaAutoVersion = '3.1.1'
+    twilioVersion = '10.1.0'
+    micaAutoVersion = '3.1.3'
 }
 
 group = 'life.725'
-archivesBaseName='takeshi-spring-boot-starter'
-//version = '1.0.0'
-version = '1.0.6-SNAPSHOT'
+archivesBaseName = 'takeshi-spring-boot-starter'
+//version = '1.0.1'
+version = '24.04.01.6-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -120,7 +121,7 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-validation'
-    api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    compileOnly 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
     api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"
     api "org.apache.tika:tika-core:${tikaVersion}"
@@ -128,24 +129,25 @@ dependencies {
     api "org.locationtech.jts:jts-core:${jtsVersion}"
 
     // javacv 和 ffmpeg-platform
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
-    api "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
-    api "org.bytedeco:javacv:${javacvVersion}"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
+    compileOnly "org.bytedeco:javacv:${javacvVersion}"
 
-    api "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
+    api "com.baomidou:mybatis-plus-spring-boot3-starter:${mybatisPlusVersion}"
     api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
-    api "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
-    api "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
-    api "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
-    api "com.google.firebase:firebase-admin:${firebaseVersion}"
+    compileOnly "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
+    compileOnly "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
+    compileOnly "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
+    compileOnly "com.google.firebase:firebase-admin:${firebaseVersion}"
     api "com.google.code.findbugs:annotations:${findbugsVersion}"
+    api "com.google.code.gson:gson:${gsonVersion}"
     api "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
-    api "com.itextpdf:html2pdf:${html2pdfVersion}"
+    compileOnly "com.itextpdf:html2pdf:${html2pdfVersion}"
 
     api "cn.hutool:hutool-all:${hutoolVersion}"
     api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"
-    api "cn.dev33:sa-token-dao-redis-jackson:${saTokenVersion}"
+    api "cn.dev33:sa-token-redisson-jackson:${saTokenVersion}"
 
     api "ognl:ognl:${ognlVersion}"
     // 使用S3时提示：JAXB is unavailable. Will fallback to SDK implementation which may be less performant.If you are using Java 9+, you will need to include javax.xml.bind:jaxb-api as a dependency.

@@ -4,10 +4,9 @@ import cn.hutool.core.img.Img;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.net.URLEncodeUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -16,10 +15,6 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.secretsmanager.AWSSecretsManager;
-import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
-import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
-import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.component.RedisComponent;
 import com.takeshi.config.StaticConfig;
@@ -43,32 +38,33 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
  * AmazonS3Util
  * <pre>{@code
  * implementation 'com.amazonaws:aws-java-sdk-s3:+'
- * implementation 'com.amazonaws:aws-java-sdk-secretsmanager:+'
+ *
+ * // 由于使用了获取视频时长的API，所以需要引入ffmpeg，为了减少依赖包大小，自行按开发和生产环境导入对应平台的ffmpeg包
+ * implementation "org.bytedeco:ffmpeg:+:macosx-x86_64"
+ * implementation "org.bytedeco:ffmpeg:+:windows-x86_64"
+ * implementation "org.bytedeco:ffmpeg:+:linux-x86_64"
+ * implementation "org.bytedeco:javacv:+"
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
  */
 @Slf4j
+@Deprecated
 public final class AmazonS3Util {
 
-    // 文件原始名称
-    private static final String ORIGINAL_NAME = "Original-Name";
-    // 文件扩展名，例如：（.png）
-    private static final String EXTENSION_NAME = "Extension-Name";
     // 保存到S3的时间
     private static final String CREATE_TIME = "Create-Time";
     // 视频时长，单位（微秒）
@@ -80,8 +76,6 @@ public final class AmazonS3Util {
      * X-NT都是临时签名URL中的参数名
      */
 
-    // 原始文件名
-    private static final String S3_ORIGINAL_FULL_NAME = "X-NT-OriginalFullName";
     // 文件大小，单位（字节）
     private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
     // 内容类型
@@ -97,11 +91,6 @@ public final class AmazonS3Util {
     private static Duration EXPIRATION_TIME;
 
     /**
-     * 获取到的密钥信息
-     */
-    private static volatile JsonNode JSON_NODE;
-
-    /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
      */
     public static volatile TransferManager transferManager;
@@ -113,45 +102,40 @@ public final class AmazonS3Util {
                     try {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
-                        if (StrUtil.isAllNotBlank(awsSecrets.getAWSAccessKeyId(), awsSecrets.getAWSSecretKey())) {
+                        if (awsSecrets.isEnabled()) {
                             BUCKET_NAME = awsSecrets.getBucketName();
                             EXPIRATION_TIME = awsSecrets.getExpirationTime();
-                            AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
-                                    .withRegion(awsSecrets.getRegion())
-                                    .withCredentials(new AWSStaticCredentialsProvider(awsSecrets))
-                                    .build();
-                            GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
-                            GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
-                            String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                            JSON_NODE = StaticConfig.objectMapper.readValue(secret, JsonNode.class);
-                            String accessKey = JSON_NODE.get(awsSecrets.getAccessKeySecrets()).asText();
-                            String secretKey = JSON_NODE.get(awsSecrets.getSecretKeySecrets()).asText();
-                            // S3
-                            AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
-                                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                                    .withRegion(awsSecrets.getRegion())
-                                    .build();
-                            if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
-                                // 创建桶
-                                amazonS3.createBucket(BUCKET_NAME);
-                                // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
-                                BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
-                                        .withId("Automatically delete incomplete multipart upload after seven days")
-                                        .withAbortIncompleteMultipartUpload(new AbortIncompleteMultipartUpload().withDaysAfterInitiation(7))
-                                        .withStatus(BucketLifecycleConfiguration.ENABLED);
-                                // 将生命周期规则设置到桶中
-                                amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
-                                // 设置跨域规则
-                                CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
-                                // 将跨域规则设置到桶中
-                                amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
-                                // 为指定的存储桶启用传输加速
-                                amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                            JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
+                            String accessKey = jsonNode.get(awsSecrets.getAccessKeySecrets()).asText();
+                            String secretKey = jsonNode.get(awsSecrets.getSecretKeySecrets()).asText();
+                            if (StrUtil.isAllNotBlank(accessKey, secretKey)) {
+                                // S3
+                                AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
+                                        .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+                                        .withRegion(awsSecrets.getRegion())
+                                        .build();
+                                if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
+                                    // 创建桶
+                                    amazonS3.createBucket(BUCKET_NAME);
+                                    // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
+                                    BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
+                                            .withId("Automatically delete incomplete multipart upload after seven days")
+                                            .withAbortIncompleteMultipartUpload(new AbortIncompleteMultipartUpload().withDaysAfterInitiation(7))
+                                            .withStatus(BucketLifecycleConfiguration.ENABLED);
+                                    // 将生命周期规则设置到桶中
+                                    amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
+                                    // 设置跨域规则
+                                    CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
+                                    // 将跨域规则设置到桶中
+                                    amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
+                                    // 为指定的存储桶启用传输加速
+                                    // amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                                }
+                                transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
+                                log.info("AmazonS3Util.static --> TransferManager Initialization successful");
+                            } else {
+                                log.warn("AmazonS3Util.static --> When TransferManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
                             }
-                            transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
-                            log.info("AmazonS3Util.static --> TransferManager Initialization successful");
-                        } else {
-                            log.warn("AmazonS3Util.static --> When TransferManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
                         }
                     } catch (Exception e) {
                         log.error("AmazonS3Util.static --> TransferManager initialization failed, e: ", e);
@@ -162,26 +146,6 @@ public final class AmazonS3Util {
     }
 
     private AmazonS3Util() {
-    }
-
-    /**
-     * 获取密钥信息的JsonNode
-     *
-     * @return JsonNode
-     */
-    public static JsonNode getSecret() {
-        return JSON_NODE;
-    }
-
-    /**
-     * 根据指定转化的类，获取密钥信息
-     *
-     * @param beanClass beanClass
-     * @param <T>       T
-     * @return T
-     */
-    public static <T> T getSecret(Class<T> beanClass) {
-        return StaticConfig.objectMapper.convertValue(JSON_NODE, beanClass);
     }
 
     /**
@@ -295,10 +259,8 @@ public final class AmazonS3Util {
             metadata.setContentLength(tikaInputStream.getLength());
             metadata.setContentType(mediaType);
             // 添加用户自定义元数据
-            String mainName = URLEncodeUtil.encode(FileNameUtil.mainName(fileName));
-            metadata.addUserMetadata(ORIGINAL_NAME, mainName);
-            metadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
-            metadata.addUserMetadata(EXTENSION_NAME, extension);
+            String mainName = FileNameUtil.mainName(fileName);
+            metadata.addUserMetadata(CREATE_TIME, Instant.now().toString());
 
             Upload thumbnailUpload = null;
             if (mediaType.startsWith("video/") || "image/gif".equals(mediaType)) {
@@ -319,10 +281,8 @@ public final class AmazonS3Util {
                         thumbnailMetadata.setContentLength(thumbnailTikaInputStream.getLength());
                         thumbnailMetadata.setContentType(MediaType.image(ImgUtil.IMAGE_TYPE_JPG).toString());
                         // 添加用户自定义元数据
-                        thumbnailMetadata.addUserMetadata(ORIGINAL_NAME, mainName);
-                        thumbnailMetadata.addUserMetadata(CREATE_TIME, String.valueOf(Instant.now().toEpochMilli()));
-                        thumbnailMetadata.addUserMetadata(EXTENSION_NAME, StrUtil.DOT + ImgUtil.IMAGE_TYPE_JPG);
-                        String thumbnailObjKey = getThumbnailObjKey();
+                        thumbnailMetadata.addUserMetadata(CREATE_TIME, Instant.now().toString());
+                        String thumbnailObjKey = getThumbnailObjKey(thumbnailTikaInputStream, mainName);
                         // 添加视频/GIF封面图缩略图的S3 key
                         metadata.addUserMetadata(COVER_THUMBNAIL, thumbnailObjKey);
                         PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, thumbnailObjKey, thumbnailTikaInputStream, thumbnailMetadata);
@@ -331,13 +291,13 @@ public final class AmazonS3Util {
                 }
             }
 
-            String fileObjKey = getFileObjKey(extension);
+            String fileObjKey = getFileObjKey(tikaInputStream, mainName, extension);
             PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, fileObjKey, tikaInputStream, metadata);
             // TransferManager 异步处理所有传输,所以这个调用立即返回
             Upload upload = transferManager.upload(putObjectRequest);
             // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
             if (ObjUtil.isNotNull(thumbnailUpload)) {
-                thumbnailUpload.waitForUploadResult();
+                thumbnailUpload.waitForCompletion();
             }
             upload.waitForCompletion();
             return getPresignedUrl(fileObjKey);
@@ -386,13 +346,12 @@ public final class AmazonS3Util {
                     presignedUrl = toUrl(redisComponent.get(redisKey));
                     if (ObjUtil.isNull(presignedUrl)) {
                         ObjectMetadata objectMetadata = getObjectMetadata(fileKey);
-                        if (ObjUtil.isNull(objectMetadata)) {
+                        if (Objects.isNull(objectMetadata)) {
                             return null;
                         }
                         Date date = Date.from(Instant.now().plus(duration));
                         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, fileKey)
                                 .withExpiration(date);
-                        generatePresignedUrlRequest.addRequestParameter(S3_ORIGINAL_FULL_NAME, objectMetadata.getUserMetaDataOf(ORIGINAL_NAME) + objectMetadata.getUserMetaDataOf(EXTENSION_NAME));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
                         generatePresignedUrlRequest.addRequestParameter(S3_CONTENT_TYPE, objectMetadata.getContentType());
                         String lengthInTime = objectMetadata.getUserMetaDataOf(LENGTH_IN_TIME);
@@ -472,22 +431,32 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径（Key）
      *
-     * @param extension 扩展名
+     * @param inputStream 文件流
+     * @param mainName    主文件名
+     * @param extension   文件扩展名
      * @return 完整路径
+     * @throws IOException IOException
      */
-    public static String getFileObjKey(String extension) {
+    public static String getFileObjKey(InputStream inputStream, String mainName, String extension) throws IOException {
+        String md5 = SecureUtil.md5(inputStream);
+        inputStream.reset();
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), extension).toString();
+        return StrUtil.builder(StrUtil.removePrefix(extension, StrUtil.DOT), StrUtil.SLASH, dateFormat, StrUtil.SLASH, md5, StrUtil.SLASH, mainName, extension).toString();
     }
 
     /**
      * 获取视频/GIF封面缩略图文件存储的完整路径（Key）
      *
+     * @param inputStream 文件流
+     * @param mainName    主文件名
      * @return 完整路径
+     * @throws IOException IOException
      */
-    public static String getThumbnailObjKey() {
+    public static String getThumbnailObjKey(InputStream inputStream, String mainName) throws IOException {
+        String md5 = SecureUtil.md5(inputStream);
+        inputStream.reset();
         String dateFormat = LocalDate.now().format(TakeshiDatePattern.SLASH_SEPARATOR_DATE_PATTERN_FORMATTER);
-        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, IdUtil.fastSimpleUUID(), StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
+        return StrUtil.builder("thumbnail", StrUtil.SLASH, dateFormat, StrUtil.SLASH, md5, StrUtil.SLASH, mainName, StrUtil.DOT, ImgUtil.IMAGE_TYPE_JPG).toString();
     }
 
 }

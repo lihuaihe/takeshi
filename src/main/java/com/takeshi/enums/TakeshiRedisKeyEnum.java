@@ -20,7 +20,7 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
     /**
      * IP黑名单{clientIp}
      */
-    IP_BLACKLIST("ipBlacklist:{}"),
+    IP_BLACKLIST("rate:ip:blacklist:{}"),
     /**
      * nonce限制{nonce}
      */

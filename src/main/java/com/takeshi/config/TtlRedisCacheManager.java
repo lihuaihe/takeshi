@@ -1,11 +1,7 @@
 package com.takeshi.config;
 
 import cn.hutool.core.util.ObjUtil;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import com.takeshi.jackson.SimpleJavaTimeModule;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -51,22 +47,18 @@ public class TtlRedisCacheManager extends RedisCacheManager {
     /**
      * TtlRedisCacheManager
      *
-     * @param factory factory
+     * @param objectMapper objectMapper
+     * @param factory      factory
      * @return TtlRedisCacheManager
      */
-    public static TtlRedisCacheManager defaultInstance(RedisConnectionFactory factory) {
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
-        // 配置DateTime相关的序列化
-        om.registerModule(new SimpleJavaTimeModule());
+    public static TtlRedisCacheManager defaultInstance(ObjectMapper objectMapper, RedisConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 // Set cache expiration time
                 .entryTtl(Duration.ofDays(1))
                 // Set the serialization method of the key
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 // Set the serialization method of value
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(om, Object.class)))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)))
                 // Do not cache null values
                 .disableCachingNullValues();
         return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);

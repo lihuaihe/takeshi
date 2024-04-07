@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.impl.CollectionConverter;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.io.IoUtil;
@@ -16,6 +17,7 @@ import cn.hutool.core.util.URLUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.crypto.KeyUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
@@ -38,8 +40,8 @@ import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
-import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.pojo.bo.GeoPointBO;
+import com.takeshi.pojo.bo.RetBO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +55,14 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 
 /**
@@ -76,12 +82,12 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获取单例的模版引擎，默认模版路径在template目录下
+     * 获取单例的模版引擎，默认模版路径在resources/templates目录下
      *
      * @return TemplateEngine
      */
     public static TemplateEngine getTemplateEngine() {
-        return Singleton.get(TemplateEngine.class.getName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
+        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("templates", TemplateConfig.ResourceMode.CLASSPATH)));
     }
 
     /**
@@ -90,7 +96,7 @@ public final class TakeshiUtil {
      * @return Tika
      */
     public static Tika getTika() {
-        return Singleton.get(Tika.class.getName(), Tika::new);
+        return Singleton.get(Tika.class.getSimpleName(), Tika::new);
     }
 
     /**
@@ -383,6 +389,46 @@ public final class TakeshiUtil {
     }
 
     /**
+     * 获取某个月的开始时间戳
+     *
+     * @param yearMonth yearMonth
+     * @return 时间戳
+     */
+    public static Long firstDayOfMonth(YearMonth yearMonth) {
+        return LocalDateTimeUtil.toEpochMilli(yearMonth.atDay(1).atTime(LocalTime.MIN));
+    }
+
+    /**
+     * 获取某个月的结束时间戳
+     *
+     * @param yearMonth yearMonth
+     * @return 时间戳
+     */
+    public static Long lastDayOfMonth(YearMonth yearMonth) {
+        return LocalDateTimeUtil.toEpochMilli(yearMonth.atEndOfMonth().atTime(LocalTime.MAX));
+    }
+
+    /**
+     * 货币元转分
+     *
+     * @param decimal 元
+     * @return 分
+     */
+    public static BigDecimal currencyToCent(BigDecimal decimal) {
+        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointRight(2);
+    }
+
+    /**
+     * 货币分转元
+     *
+     * @param decimal 分
+     * @return 元
+     */
+    public static BigDecimal currencyToYuan(BigDecimal decimal) {
+        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
+    }
+
+    /**
      * 判断给定的经纬度坐标是否在指定半径范围内。
      *
      * @param sourcePoint 原始经纬度坐标
@@ -461,6 +507,38 @@ public final class TakeshiUtil {
             }
         }
         return verify;
+    }
+
+    /**
+     * 截取纳秒部份，只保留前3位
+     *
+     * @param nano 纳秒
+     * @return 截取后的值
+     */
+    public static int interceptNano(int nano) {
+        int div = 100_000_000;
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            int digit = nano / div;
+            buf.append((char) (digit + '0'));
+            nano = nano - (digit * div);
+            div = div / 10;
+        }
+        return Integer.parseInt(buf.toString()) * 1_000_000;
+    }
+
+    /**
+     * 私钥解密
+     *
+     * @param data 数据
+     * @return 解密后的数据
+     */
+    public static String decryptByPrivateKey(String data) {
+        try {
+            return StaticConfig.rsa.decryptStr(data, KeyType.PrivateKey);
+        } catch (Exception e) {
+            throw new TakeshiException(TakeshiCode.PARAMETER_ERROR);
+        }
     }
 
 }

@@ -366,7 +366,7 @@ public final class ZonedDateTimeUtil {
      * @param text text
      * @return ZonedDateTime
      */
-    public ZonedDateTime parse(CharSequence text) {
+    public static ZonedDateTime parse(CharSequence text) {
         return parse(text, null);
     }
 
@@ -377,7 +377,7 @@ public final class ZonedDateTimeUtil {
      * @param formatter formatter
      * @return ZonedDateTime
      */
-    public ZonedDateTime parse(CharSequence text, DateTimeFormatter formatter) {
+    public static ZonedDateTime parse(CharSequence text, DateTimeFormatter formatter) {
         if (null == text) {
             return null;
         }
@@ -487,33 +487,33 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * beginOfDay
+     * 获取某天的开始时间
      *
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime beginOfDay(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime beginOfDay(ZonedDateTime zonedDateTime) {
         return zonedDateTime.with(LocalTime.MIN);
     }
 
     /**
-     * endOfDay
+     * 获取某天的结束时间
      *
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfDay(ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime endOfDay(ZonedDateTime zonedDateTime) {
         return endOfDay(zonedDateTime, false);
     }
 
     /**
-     * endOfDay
+     * 获取某天的结束时间
      *
      * @param zonedDateTime       zonedDateTime
-     * @param truncateMillisecond truncateMillisecond
+     * @param truncateMillisecond 是否截断毫秒
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfDay(ZonedDateTime zonedDateTime, boolean truncateMillisecond) {
+    public static ZonedDateTime endOfDay(ZonedDateTime zonedDateTime, boolean truncateMillisecond) {
         if (truncateMillisecond) {
             return zonedDateTime.with(LocalTime.of(23, 59, 59));
         }
@@ -521,27 +521,148 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * beginOfWeek
+     * 获取某周的开始时间，周一定为一周的开始
      *
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime beginOfWeek(ZonedDateTime zonedDateTime) {
-        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    public static ZonedDateTime beginOfWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).with(LocalTime.MIN);
     }
 
     /**
-     * endOfWeek
+     * 获取某周的结束时间，周日定为一周的结束
      *
      * @param zonedDateTime zonedDateTime
      * @return ZonedDateTime
      */
-    public ZonedDateTime endOfWeek(ZonedDateTime zonedDateTime) {
-        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+    public static ZonedDateTime endOfWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
     }
 
     /**
-     * isWeekend
+     * 获取某个时间的上周的开始时间，周一定为一周的开始
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfLastWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1L).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某个时间上周的结束时间，周日定为一周的结束
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfLastWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
+    }
+
+    /**
+     * 获取某个时间的下周的开始时间，周一定为一周的开始
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfNextWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某个时间下周的结束时间，周日定为一周的结束
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfNextWeek(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusWeeks(1L).with(LocalTime.MAX);
+    }
+
+    /**
+     * 获取某月的开始时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某月的结束时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+    }
+
+    /**
+     * 获取某个时间上月的开始时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfLastMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.firstDayOfMonth()).minusMonths(1L).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某个时间上月的结束时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfLastMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.minusMonths(1L).with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+    }
+
+    /**
+     * 获取某个时间下月的开始时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfNextMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.firstDayOfMonth()).plusMonths(1L).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某个时间下月的结束时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfNextMonth(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.plusMonths(1L).with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+    }
+
+    /**
+     * 获取某年的开始时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime beginOfYear(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MIN);
+    }
+
+    /**
+     * 获取某年的结束时间
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return ZonedDateTime
+     */
+    public static ZonedDateTime endOfYear(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MAX);
+    }
+
+
+    /**
+     * 判断是否是周末
      *
      * @param zonedDateTime zonedDateTime
      * @return boolean
@@ -552,7 +673,7 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * isSameDay
+     * 判断两个日期时间是否是同一天
      *
      * @param date1 date1
      * @param date2 date2
@@ -563,7 +684,7 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * isSameDay
+     * 判断两个日期是否是同一天
      *
      * @param date1 date1
      * @param date2 date2
@@ -574,7 +695,7 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * isIn
+     * 是否在两个日期时间之间，不包含开始和结束日期时间
      *
      * @param zonedDateTime zonedDateTime
      * @param beginDate     beginDate
@@ -586,7 +707,7 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
-     * toLocalDateTime
+     * 转LocalDateTime
      *
      * @param zonedDateTime zonedDateTime
      * @return LocalDateTime
@@ -596,6 +717,82 @@ public final class ZonedDateTimeUtil {
             return null;
         }
         return zonedDateTime.toLocalDateTime();
+    }
+
+    /**
+     * 某个时间到当天结束时间的间隔
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return Duration
+     */
+    public static Duration untilEndOfDay(ZonedDateTime zonedDateTime) {
+        return Duration.between(zonedDateTime, ZonedDateTime.now().with(LocalTime.MAX));
+    }
+
+    /**
+     * 到当天结束时间的间隔
+     *
+     * @return Duration
+     */
+    public static Duration untilEndOfDay() {
+        return untilEndOfDay(ZonedDateTime.now());
+    }
+
+    /**
+     * 某个时间到本周日结束时间的间隔
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return Duration
+     */
+    public static Duration untilEndOfWeek(ZonedDateTime zonedDateTime) {
+        return Duration.between(zonedDateTime, endOfWeek(ZonedDateTime.now()));
+    }
+
+    /**
+     * 到本周日结束时间的间隔
+     *
+     * @return Duration
+     */
+    public static Duration untilEndOfWeek() {
+        return untilEndOfWeek(ZonedDateTime.now());
+    }
+
+    /**
+     * 某个时间到本月结束时间的间隔
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return Duration
+     */
+    public static Duration untilEndOfMonth(ZonedDateTime zonedDateTime) {
+        return Duration.between(zonedDateTime, endOfMonth(ZonedDateTime.now()));
+    }
+
+    /**
+     * 到本月结束时间的间隔
+     *
+     * @return Duration
+     */
+    public static Duration untilEndOfMonth() {
+        return untilEndOfMonth(ZonedDateTime.now());
+    }
+
+    /**
+     * 某个时间到本年结束时间的间隔
+     *
+     * @param zonedDateTime zonedDateTime
+     * @return Duration
+     */
+    public static Duration untilEndOfYear(ZonedDateTime zonedDateTime) {
+        return Duration.between(zonedDateTime, endOfYear(ZonedDateTime.now()));
+    }
+
+    /**
+     * 到本年结束时间的间隔
+     *
+     * @return Duration
+     */
+    public static Duration untilEndOfYear() {
+        return untilEndOfYear(ZonedDateTime.now());
     }
 
     /**

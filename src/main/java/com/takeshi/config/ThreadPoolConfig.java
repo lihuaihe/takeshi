@@ -8,7 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,11 +24,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Lion Li
  **/
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(value = "ThreadPoolConfig")
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ThreadPoolConfig {
 
-    @Value("${server.port}")
-    private String serverPort;
+    @Value("${server.port:8080}")
+    private Integer serverPort;
 
     /**
      * 核心线程数 = cpu 核心数 + 1
@@ -37,7 +41,8 @@ public class ThreadPoolConfig {
      *
      * @return ThreadPoolTaskExecutor
      */
-    @Bean("threadPoolTaskExecutor")
+    @Bean
+    @ConditionalOnMissingBean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(CORE);
@@ -60,7 +65,8 @@ public class ThreadPoolConfig {
      *
      * @return ScheduledExecutorService
      */
-    @Bean("scheduledExecutorService")
+    @Bean
+    @ConditionalOnMissingBean
     protected ScheduledExecutorService scheduledExecutorService() {
         return new ScheduledThreadPoolExecutor(CORE,
                 ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),

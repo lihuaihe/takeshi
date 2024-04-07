@@ -30,6 +30,31 @@ public interface TakeshiCode {
     String NUMBER_DIGITS_STR = "{numberDigits.message}";
 
     /**
+     * 不允许重复提交，请稍候再试
+     */
+    String REPEAT_SUBMIT_STR = "{repeatSubmit.message}";
+
+    /**
+     * 短信验证码已过期
+     */
+    String SMS_VERIFICATION_CODE_EXPIRE_STR = "{smsVerificationCodeExpire.message}";
+
+    /**
+     * 短信验证码不正确
+     */
+    String SMS_VERIFICATION_CODE_ERROR_STR = "{smsVerificationCodeError.message}";
+
+    /**
+     * 邮箱验证码已过期
+     */
+    String EMAIL_VERIFICATION_CODE_EXPIRE_STR = "{emailVerificationCodeExpire.message}";
+
+    /**
+     * 邮箱验证码不正确
+     */
+    String EMAIL_VERIFICATION_CODE_ERROR_STR = "{emailVerificationCodeError.message}";
+
+    /**
      * 成功
      */
     RetBO SUCCESS = new RetBO(200, "success.message");
@@ -82,7 +107,7 @@ public interface TakeshiCode {
     /**
      * 验证码不正确
      */
-    RetBO VERIFICATION_CODE_ERROR = new RetBO(2001, "verificationError.message");
+    RetBO VERIFICATION_CODE_ERROR = new RetBO(2001, "verificationCodeError.message");
 
     /**
      * 这个字段值已存在

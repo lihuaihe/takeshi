@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * MailUtil
  * <pre>{@code
- * implementation 'com.mandrillapp.wrapper.lutung:lutung:0.0.8'
+ * implementation 'com.mandrillapp.wrapper.lutung:lutung:+'
  * }</pre>
  *
  * @author 七濑武【Nanase Takeshi】
@@ -54,15 +54,15 @@ public final class MandrillUtil {
     /**
      * 收件人列表
      */
-    private List<MandrillMessage.Recipient> to = new ArrayList<>();
+    private final List<MandrillMessage.Recipient> to = new ArrayList<>();
     /**
      * 附件列表
      */
-    private List<MandrillMessage.MessageContent> attachments = new ArrayList<>();
+    private final List<MandrillMessage.MessageContent> attachments = new ArrayList<>();
     /**
      * 嵌入的图像列表
      */
-    private List<MandrillMessage.MessageContent> images = new ArrayList<>();
+    private final List<MandrillMessage.MessageContent> images = new ArrayList<>();
 
     static {
         if (ObjUtil.isNull(MANDRILL_API)) {
@@ -70,7 +70,7 @@ public final class MandrillUtil {
                 if (ObjUtil.isNull(MANDRILL_API)) {
                     try {
                         MandrillCredentials mandrill = StaticConfig.takeshiProperties.getMandrill();
-                        JsonNode jsonNode = AmazonS3Util.getSecret();
+                        JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
                         FROM_EMAIL = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : jsonNode.get(mandrill.getFromEmailSecrets()).asText();
                         FROM_NAME = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : jsonNode.get(mandrill.getFromNameSecrets()).asText();
                         String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : jsonNode.get(mandrill.getApiKeySecrets()).asText();
@@ -90,12 +90,32 @@ public final class MandrillUtil {
     /**
      * 创建一个MandrillMessage对象
      *
-     * @return this
+     * @return MandrillUtil
      */
     private MandrillUtil message() {
         this.message = new MandrillMessage();
         this.fromEmail = FROM_EMAIL;
         this.fromName = FROM_NAME;
+        return this;
+    }
+
+    /**
+     * 创建一个MandrillMessage对象
+     *
+     * @param subject 主题
+     * @param email   收件人邮箱
+     * @param name    收件人名称
+     * @return MandrillUtil
+     */
+    private MandrillUtil message(String subject, String email, String name) {
+        this.message = new MandrillMessage();
+        this.fromEmail = FROM_EMAIL;
+        this.fromName = FROM_NAME;
+        this.subject = subject;
+        MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
+        recipient.setEmail(email);
+        recipient.setName(name);
+        this.to.add(recipient);
         return this;
     }
 
@@ -106,6 +126,29 @@ public final class MandrillUtil {
      */
     public static MandrillUtil create() {
         return new MandrillUtil().message();
+    }
+
+    /**
+     * 创建一个可以发送邮件的对象
+     *
+     * @param subject 主题
+     * @param toEmail 收件人邮箱
+     * @return MandrillUtil
+     */
+    public static MandrillUtil create(String subject, String toEmail) {
+        return new MandrillUtil().message(subject, toEmail, null);
+    }
+
+    /**
+     * 创建一个可以发送邮件的对象
+     *
+     * @param subject 主题
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
+     * @return MandrillUtil
+     */
+    public static MandrillUtil create(String subject, String toEmail, String toName) {
+        return new MandrillUtil().message(subject, toEmail, toName);
     }
 
     /**
@@ -186,14 +229,14 @@ public final class MandrillUtil {
     /**
      * 设置收件人信息
      *
-     * @param email 收件人邮箱
-     * @param name  收件人名称
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
      * @return this
      */
-    public MandrillUtil addRecipient(String email, String name) {
+    public MandrillUtil addRecipient(String toEmail, String toName) {
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
-        recipient.setEmail(email);
-        recipient.setName(name);
+        recipient.setEmail(toEmail);
+        recipient.setName(toName);
         this.to.add(recipient);
         return this;
     }
@@ -201,15 +244,15 @@ public final class MandrillUtil {
     /**
      * 设置收件人信息
      *
-     * @param email 收件人邮箱
-     * @param name  收件人名称
-     * @param type  收件人类型，可以通过调用{@link MandrillMessage.Recipient.Type}设置是否类型
+     * @param toEmail 收件人邮箱
+     * @param toName  收件人名称
+     * @param type    收件人类型，可以通过调用{@link MandrillMessage.Recipient.Type}设置是否类型
      * @return this
      */
-    public MandrillUtil addRecipient(String email, String name, MandrillMessage.Recipient.Type type) {
+    public MandrillUtil addRecipient(String toEmail, String toName, MandrillMessage.Recipient.Type type) {
         MandrillMessage.Recipient recipient = new MandrillMessage.Recipient();
-        recipient.setEmail(email);
-        recipient.setName(name);
+        recipient.setEmail(toEmail);
+        recipient.setName(toName);
         recipient.setType(type);
         this.to.add(recipient);
         return this;
@@ -255,9 +298,46 @@ public final class MandrillUtil {
     }
 
     /**
-     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true
+     * 设置附件
+     *
+     * @param inputStream 附件文件流
+     * @param fileName    附件的名称
+     * @return this
+     */
+    @SneakyThrows
+    public MandrillUtil addAttachment(InputStream inputStream, String fileName) {
+        try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+            MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+            messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
+            messageContent.setName(fileName);
+            messageContent.setContent(Base64.encode(tikaInputStream));
+            this.attachments.add(messageContent);
+            return this;
+        }
+    }
+
+    /**
+     * 设置附件
+     *
+     * @param bytes    附件文件字节数组
+     * @param fileName 附件的名称
+     * @return this
+     */
+    public MandrillUtil addAttachment(byte[] bytes, String fileName) {
+        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+        messageContent.setType(TakeshiUtil.getTika().detect(bytes));
+        messageContent.setName(fileName);
+        messageContent.setContent(Base64.encode(bytes));
+        this.attachments.add(messageContent);
+        return this;
+    }
+
+    /**
+     * 使用cid引用设置嵌入的图像
      * <br/>
-     * 正文中需要使用 img 标签 src="cid: 名称"
+     * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * 例如：src="cid:logo.png"，name就必须是logo.png
      * <br/>
      * 该名称要与下面代码中的 setName 中的值一值
      *
@@ -277,22 +357,24 @@ public final class MandrillUtil {
     }
 
     /**
-     * 使用cid引用设置嵌入的图像，调用此方法会默认设置 isHtml = true，读取完毕后关闭流
+     * 使用cid引用设置嵌入的图像，读取完毕后关闭流
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
      * <br/>
-     * 该名称要与下面代码中的 setName 中的值一值
+     * src中的名称要与下面代码中的 setName 中的值一值
+     * <br/>
+     * 例如：src="cid:logo.png"，imageName就必须是logo.png
      *
      * @param inputStream 嵌入的图像文件流
-     * @param name        cid的名称
+     * @param imageName   cid的名称
      * @return this
      */
     @SneakyThrows
-    public MandrillUtil addImages(InputStream inputStream, String name) {
+    public MandrillUtil addImages(InputStream inputStream, String imageName) {
         try (TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
             MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
             messageContent.setType(TakeshiUtil.getTika().detect(tikaInputStream));
-            messageContent.setName(name);
+            messageContent.setName(imageName);
             messageContent.setContent(Base64.encode(tikaInputStream));
             this.images.add(messageContent);
             return this;
@@ -300,22 +382,44 @@ public final class MandrillUtil {
     }
 
     /**
+     * 使用cid引用设置嵌入的图像，读取完毕后关闭流
+     * <br/>
+     * 正文中需要使用 img 标签 src="cid:名称"
+     * <br/>
+     * src中的名称要与下面代码中的 setName 中的值一值
+     * <br/>
+     * 例如：src="cid:logo.png"，imageName就必须是logo.png
+     *
+     * @param bytes     嵌入的图像文件字节数组
+     * @param imageName cid的名称
+     * @return this
+     */
+    public MandrillUtil addImages(byte[] bytes, String imageName) {
+        MandrillMessage.MessageContent messageContent = new MandrillMessage.MessageContent();
+        messageContent.setType(TakeshiUtil.getTika().detect(bytes));
+        messageContent.setName(imageName);
+        messageContent.setContent(Base64.encode(bytes));
+        this.images.add(messageContent);
+        return this;
+    }
+
+    /**
      * 发送邮件，会抛出异常
      */
-    public void sendErr() {
+    public void sendThrow() {
         if (StrUtil.hasBlank(this.subject, this.fromEmail, this.fromName) || CollUtil.isEmpty(this.to)) {
-            throw new TakeshiException("MandrillUtil sendErr hasBlank: [subject, fromEmail, fromName, to]");
+            throw new TakeshiException("MandrillUtil sendThrow hasBlank: [subject, fromEmail, fromName, to]");
         }
         this.format();
         try {
             MandrillMessageStatus[] result = MANDRILL_API.messages().send(this.message, false);
             if (ArrayUtil.isEmpty(result)) {
-                throw new TakeshiException("MandrillUtil sendErr result is empty");
+                throw new TakeshiException("MandrillUtil sendThrow result is empty");
             }
             if (StrUtil.equalsAny(result[0].getStatus(), REJECTED, INVALID)) {
                 throw new TakeshiException(GsonUtil.toJson(result));
             }
-            log.info("MandrillUtil.sendErr --> result: {}", GsonUtil.toJson(result));
+            log.info("MandrillUtil.sendThrow --> result: {}", GsonUtil.toJson(result));
         } catch (MandrillApiError | IOException e) {
             throw new TakeshiException(e.getMessage());
         }
@@ -326,7 +430,7 @@ public final class MandrillUtil {
      */
     public void send() {
         try {
-            this.sendErr();
+            this.sendThrow();
         } catch (Exception e) {
             log.error("MandrillUtil.send --> e: ", e);
         }

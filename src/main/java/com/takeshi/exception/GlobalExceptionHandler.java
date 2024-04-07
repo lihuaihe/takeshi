@@ -1,6 +1,7 @@
 package com.takeshi.exception;
 
 import cn.dev33.satoken.exception.*;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -8,7 +9,6 @@ import com.google.gson.reflect.TypeToken;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
-import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.client.RedisException;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletionException;
 
 /**
  * GlobalExceptionHandler
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseData<Object> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
-        if (exception.getCause().toString().startsWith(SQL_CAUSE)) {
+        if (null != exception.getCause() && exception.getCause().toString().startsWith(SQL_CAUSE)) {
             return ResponseData.retData(TakeshiCode.DB_ERROR);
         } else {
             return ResponseData.fail(exception.getMessage());
@@ -142,6 +143,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * concurrent包下任务在完成结果或任务的过程中遇到错误或其他异常时抛出异常
+     *
+     * @param completionException 异常
+     * @return {@link ResponseData}
+     */
+    @ExceptionHandler(CompletionException.class)
+    public ResponseData<Object> completionException(CompletionException completionException) {
+        Throwable rootCause = ExceptionUtil.getRootCause(completionException);
+        if (rootCause instanceof TakeshiException takeshiException) {
+            return this.takeshiException(takeshiException);
+        }
+        log.error("GlobalExceptionHandler.completionException --> completionException: ", completionException);
+        return ResponseData.fail(completionException.getMessage());
+    }
+
+    /**
      * 运行时异常处理
      *
      * @param runtimeException 异常
@@ -149,40 +166,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseData<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
-//        Throwable rootCause = ExceptionUtil.getRootCause(runtimeException);
-//        if (rootCause instanceof NullPointerException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NullPointerException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.SYS_NULL_POINT);
-//        }
-//        if (rootCause instanceof SQLException || rootCause instanceof DataAccessException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> SQLException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.DB_ERROR);
-//        }
-//        if (rootCause instanceof RedisException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RedisException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.REDIS_ERROR);
-//        }
-//        if (rootCause instanceof NoSuchElementException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> NoSuchElementException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
-//        }
-//        if (rootCause instanceof IllegalArgumentException) {
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> IllegalArgumentException: ", rootCause);
-//            return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
-//        }
-//        if (rootCause instanceof InvalidFormatException invalidFormatException && invalidFormatException.getTargetType().isEnum()) {
-//            // 传递的值和接收的枚举类型值不匹配
-//            log.error("GlobalExceptionHandler.runtimeExceptionHandler --> InvalidFormatException: ", rootCause);
-//            Object[] enumConstants = invalidFormatException.getTargetType().getEnumConstants();
-//            return ResponseData.retData(TakeshiCode.INVALID_VALUE, new Object[]{invalidFormatException.getValue(), Arrays.toString(enumConstants)});
-//        }
-//        if (rootCause instanceof TakeshiException) {
-//            log.error("GlobalExceptionHandler.takeshiExceptionHandler --> TakeshiException: ", rootCause);
-//            return JSONUtil.toBean(rootCause.getMessage(), new TypeReference<>() {
-//            }, false);
-//        }
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", runtimeException);
-        return ResponseData.fail(runtimeException.getMessage());
+        return ResponseData.fail(ExceptionUtil.getRootCause(runtimeException).getMessage());
     }
 
     /**
@@ -196,14 +181,13 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
-        RetBO parameterError = TakeshiCode.PARAMETER_ERROR;
+        String msg = TakeshiCode.PARAMETER_ERROR.getMessage();
         if (ObjUtil.isNotNull(fieldError)) {
-            String msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName()
+            msg = StaticConfig.takeshiProperties.isIncludeErrorFieldName()
                     ? StrUtil.format("[{}] {}", fieldError.getField(), fieldError.getDefaultMessage())
                     : fieldError.getDefaultMessage();
-            parameterError.setMessage(msg);
         }
-        return ResponseData.retData(parameterError);
+        return ResponseData.retData(TakeshiCode.PARAMETER_ERROR.getCode(), msg);
     }
 
     /**
@@ -279,12 +263,12 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(BackResultException.class)
-    public ResponseData<Object> backResultExceptionHandler(BackResultException backResultException) {
+    public ResponseData<?> backResultExceptionHandler(BackResultException backResultException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> BackResultException: ", backResultException);
-        if (backResultException.result instanceof RetBO retBO) {
-            return ResponseData.retData(retBO);
+        if (backResultException.result instanceof ResponseData<?> responseData) {
+            return responseData;
         } else {
-            return ResponseData.retData(backResultException.getMessage());
+            return ResponseData.retData(backResultException.result);
         }
     }
 

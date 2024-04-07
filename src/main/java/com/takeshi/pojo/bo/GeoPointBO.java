@@ -18,12 +18,14 @@ import lombok.NoArgsConstructor;
 @Schema(description = "经纬度对象")
 @NoArgsConstructor
 public class GeoPointBO extends AbstractBasicSerializable {
+
     /**
      * 经度
      */
     @NotNull
     @Schema(description = "经度")
     private Double lon;
+
     /**
      * 纬度
      */

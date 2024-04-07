@@ -6,6 +6,7 @@ import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.map.CaseInsensitiveMap;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
  * TakeshiFilter
  */
 @Slf4j
-@AutoConfiguration
+@AutoConfiguration(value = "TakeshiFilter")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class TakeshiFilter implements Filter {
@@ -65,7 +66,7 @@ public class TakeshiFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getName(), AntPathMatcher::new);
+        AntPathMatcher antPathMatcher = Singleton.get(AntPathMatcher.class.getSimpleName(), AntPathMatcher::new);
         if (request instanceof HttpServletRequest httpServletRequest
                 && response instanceof HttpServletResponse httpServletResponse
                 && excludeUrlList.stream().noneMatch(item -> antPathMatcher.match(item, httpServletRequest.getServletPath()))) {
@@ -124,7 +125,11 @@ public class TakeshiFilter implements Filter {
         String clientIp = TakeshiUtil.getClientIp(request);
         paramBO.setClientIp(clientIp);
         // paramBO.setClientIpAddress(TakeshiUtil.getRealAddressByIp(clientIp));
-        paramBO.setLoginId(StpUtil.getLoginIdDefaultNull());
+        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        if (ObjUtil.isNotNull(loginIdDefaultNull)) {
+            paramBO.setLoginId(loginIdDefaultNull);
+            paramBO.setSaSessionDataMap(StpUtil.getSession().getDataMap());
+        }
         paramBO.setRequestUrl(request.getRequestURL().toString());
         paramBO.setHttpMethod(request.getMethod());
 

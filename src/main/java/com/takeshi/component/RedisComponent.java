@@ -2,6 +2,7 @@ package com.takeshi.component;
 
 import cn.hutool.core.util.ArrayUtil;
 import com.takeshi.util.GsonUtil;
+import com.takeshi.util.ZonedDateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.*;
@@ -11,8 +12,8 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
-import java.time.*;
-import java.time.temporal.TemporalAdjusters;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -219,8 +220,8 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveToMidnight(String key, String value) {
-        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(LocalTime.MAX)));
+    public void saveToEndOfDay(String key, String value) {
+        this.boundValueOps(key).set(value, ZonedDateTimeUtil.untilEndOfDay());
     }
 
     /**
@@ -229,8 +230,8 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveToSunDayMidnight(String key, String value) {
-        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
+    public void saveToEndOfWeek(String key, String value) {
+        this.boundValueOps(key).set(value, ZonedDateTimeUtil.untilEndOfWeek());
     }
 
     /**
@@ -239,8 +240,8 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveToLastDayOfMonthMidnight(String key, String value) {
-        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX)));
+    public void saveToEndOfMonth(String key, String value) {
+        this.boundValueOps(key).set(value, ZonedDateTimeUtil.untilEndOfMonth());
     }
 
     /**
@@ -249,18 +250,8 @@ public class RedisComponent {
      * @param key   key
      * @param value value
      */
-    public void saveToLastDayOfYearMidnight(String key, String value) {
-        this.boundValueOps(key).set(value, Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MAX)));
-    }
-
-    /**
-     * 发送短信验证码后写入缓存设置失效时间5分钟
-     *
-     * @param key   key
-     * @param value value
-     */
-    public void saveSmsCaptcha(String key, String value) {
-        this.boundValueOps(key).set(value, 5L, TimeUnit.MINUTES);
+    public void saveToEndOfYear(String key, String value) {
+        this.boundValueOps(key).set(value, ZonedDateTimeUtil.untilEndOfYear());
     }
 
     /**
@@ -455,8 +446,8 @@ public class RedisComponent {
      *
      * @param key key
      */
-    public void expireAtMidnight(String key) {
-        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(LocalTime.MAX)));
+    public void expireAtEndOfDay(String key) {
+        this.boundValueOps(key).expire(ZonedDateTimeUtil.untilEndOfDay());
     }
 
     /**
@@ -464,8 +455,8 @@ public class RedisComponent {
      *
      * @param key key
      */
-    public void expireAtSunDayMidnight(String key) {
-        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX)));
+    public void expireAtEndOfWeek(String key) {
+        this.boundValueOps(key).expire(ZonedDateTimeUtil.untilEndOfWeek());
     }
 
     /**
@@ -473,8 +464,8 @@ public class RedisComponent {
      *
      * @param key key
      */
-    public void expireAtLastDayOfMonthMidnight(String key) {
-        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX)));
+    public void expireAtEndOfMonth(String key) {
+        this.boundValueOps(key).expire(ZonedDateTimeUtil.untilEndOfMonth());
     }
 
     /**
@@ -482,8 +473,8 @@ public class RedisComponent {
      *
      * @param key key
      */
-    public void expireAtLastDayOfYearMidnight(String key) {
-        this.boundValueOps(key).expire(Duration.between(ZonedDateTime.now(), ZonedDateTime.now().with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MAX)));
+    public void expireAtEndOfYear(String key) {
+        this.boundValueOps(key).expire(ZonedDateTimeUtil.untilEndOfYear());
     }
 
     /**
@@ -515,6 +506,30 @@ public class RedisComponent {
      */
     public void hashPutAll(String key, Map<String, String> map) {
         this.boundHashOps(key).putAll(map);
+    }
+
+    /**
+     * 哈希 自增
+     *
+     * @param key     key
+     * @param hashKey hashKey
+     * @param delta   delta
+     * @return Long
+     */
+    public Long hashIncrement(String key, String hashKey, long delta) {
+        return this.boundHashOps(key).increment(hashKey, delta);
+    }
+
+    /**
+     * 哈希 自增
+     *
+     * @param key     key
+     * @param hashKey hashKey
+     * @param delta   delta
+     * @return Double
+     */
+    public Double hashIncrement(String key, String hashKey, double delta) {
+        return this.boundHashOps(key).increment(hashKey, delta);
     }
 
     /**

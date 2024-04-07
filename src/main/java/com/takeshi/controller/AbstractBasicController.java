@@ -196,14 +196,14 @@ public abstract class AbstractBasicController {
     /**
      * 根据布尔值返回结果状态信息
      *
-     * @param flag  标志
-     * @param retBO 消息
-     * @param args  将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
-     * @param <T>   T
+     * @param flag         标志
+     * @param retBOOfFalse flag为false该返回的结果
+     * @param args         将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>          T
      * @return {@link ResponseData}
      */
-    protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBO, Object... args) {
-        return ResponseData.retBool(flag, retBO, args);
+    protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfFalse, Object... args) {
+        return ResponseData.retBool(flag, retBOOfFalse, args);
     }
 
     /**
@@ -231,6 +231,18 @@ public abstract class AbstractBasicController {
      */
     protected static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object... args) {
         return ResponseData.retBool(flag, retBOOfTrue, retBOOfFalse, args);
+    }
+
+    /**
+     * 根据布尔值返回结果状态信息，数据是否存在
+     *
+     * @param flag 标志
+     * @param args 将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
+     * @param <T>  T
+     * @return {@link ResponseData}
+     */
+    private static <T> ResponseData<T> retExist(boolean flag, Object... args) {
+        return ResponseData.retExist(flag, args);
     }
 
 }
