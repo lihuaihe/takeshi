@@ -199,7 +199,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
                                         " ELSE " + columnName +
                                         " END")
                         .func(ObjUtil.isNotNull(consumer), consumer);
-        updateWrapper.last((StringUtils.isBlank(updateWrapper.getCustomSqlSegment()) ? " WHERE " : " and ") + columnName + " >= LEAST(" + oldVal + "," + newVal + ") and " + columnName + " <= GREATEST(" + oldVal + "," + newVal + ")");
+        updateWrapper.last(((StringUtils.isBlank(updateWrapper.getCustomSqlSegment()) && !tableInfo.isWithLogicDelete()) ? " WHERE " : " and ") + columnName + " >= LEAST(" + oldVal + "," + newVal + ") and " + columnName + " <= GREATEST(" + oldVal + "," + newVal + ")");
         return SqlHelper.retBool(this.update(null, updateWrapper));
     }
 
