@@ -172,7 +172,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
         if (StaticConfig.redisComponent.hasKey(ipBlacklistKey)) {
             // 黑名单中的IP
-            SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
+            SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
         }
 
         // 最大时间差校验
