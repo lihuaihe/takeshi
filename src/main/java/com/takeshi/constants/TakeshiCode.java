@@ -190,9 +190,9 @@ public interface TakeshiCode {
     RetBO VERSION_IS_LATEST = new RetBO(4005, "versionIsLatest.message");
 
     /**
-     * 进入了黑名单，系统请求频繁，请稍后再试
+     * 进入了黑名单，由于频繁请求，系统请求受到限制。请稍后再试。
      */
-    RetBO BLACK_LIST_RATE_LIMIT = new RetBO(4006, "rateLimit.message");
+    RetBO BLACK_LIST_RATE_LIMIT = new RetBO(4006, "blackListRateLimit.message");
 
     /**
      * 未提供token
