@@ -213,6 +213,19 @@ public final class FirebaseUtil {
          * @param token 设备的注册令牌
          * @param title 通知的标题
          * @param body  通知正文
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, null, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token 设备的注册令牌
+         * @param title 通知的标题
+         * @param body  通知正文
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(String token, String title, String body) {
@@ -225,10 +238,37 @@ public final class FirebaseUtil {
          *
          * @param token 设备的注册令牌
          * @param body  通知正文
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, null, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token    设备的注册令牌
+         * @param title    通知的标题
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, null, iosBadge, null));
         }
 
         /**
@@ -251,10 +291,38 @@ public final class FirebaseUtil {
          * @param token    设备的注册令牌
          * @param body     通知正文
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, null, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, String clickAction) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, clickAction, null, null));
         }
 
         /**
@@ -277,10 +345,39 @@ public final class FirebaseUtil {
          * @param token       设备的注册令牌
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, String clickAction) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, clickAction, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, String clickAction, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, clickAction, iosBadge, null));
         }
 
         /**
@@ -305,10 +402,39 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, String clickAction, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, clickAction, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, null));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token 设备的注册令牌
+         * @param title 通知的标题
+         * @param body  通知正文
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, null, null, map));
         }
 
         /**
@@ -331,10 +457,39 @@ public final class FirebaseUtil {
          * @param token 设备的注册令牌
          * @param body  通知正文
          * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, null, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token 设备的注册令牌
+         * @param body  通知正文
+         * @param map   将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token    设备的注册令牌
+         * @param title    通知的标题
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, null, iosBadge, map));
         }
 
         /**
@@ -359,10 +514,40 @@ public final class FirebaseUtil {
          * @param body     通知正文
          * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, null, iosBadge, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token    设备的注册令牌
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, null, iosBadge, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, String clickAction, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, clickAction, null, map));
         }
 
         /**
@@ -387,10 +572,41 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, String clickAction, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, clickAction, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, null, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         *
+         * @param token       设备的注册令牌
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendByToken(String token, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, title, body, clickAction, iosBadge, map));
         }
 
         /**
@@ -417,10 +633,39 @@ public final class FirebaseUtil {
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return String
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static String sendBodyByToken(String token, String body, String clickAction, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.send(buildMessage(token, null, body, clickAction, iosBadge, map));
+        }
+
+        /**
+         * 通过 Firebase Cloud Messaging 发送Message给指定的token
+         * title会使用默认应用名
+         *
+         * @param token       设备的注册令牌
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendBodyByTokenAsync(String token, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendAsync(buildMessage(token, null, body, clickAction, iosBadge, map));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param title  通知的标题
+         * @param body   通知正文
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, null, null, null));
         }
 
         /**
@@ -441,10 +686,37 @@ public final class FirebaseUtil {
          *
          * @param tokens 设备注册令牌的集合
          * @param body   通知正文
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, null, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param title    通知的标题
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, null, null, iosBadge));
         }
 
         /**
@@ -467,6 +739,20 @@ public final class FirebaseUtil {
          * @param tokens   设备注册令牌的集合
          * @param body     通知正文
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, null, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Integer iosBadge) {
@@ -480,10 +766,38 @@ public final class FirebaseUtil {
          * @param title       通知的标题
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, String clickAction) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, String clickAction) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, clickAction, null, null));
         }
 
         /**
@@ -507,10 +821,39 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, String clickAction, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, clickAction, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, null, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, String clickAction, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, clickAction, null, iosBadge));
         }
 
         /**
@@ -533,6 +876,20 @@ public final class FirebaseUtil {
          * @param title  通知的标题
          * @param body   通知正文
          * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, null, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param title  通知的标题
+         * @param body   通知正文
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, Map<String, String> map) {
@@ -546,10 +903,39 @@ public final class FirebaseUtil {
          * @param tokens 设备注册令牌的集合
          * @param body   通知正文
          * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, null, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens 设备注册令牌的集合
+         * @param body   通知正文
+         * @param map    将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, null, body, null, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param title    通知的标题
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, null, map, iosBadge));
         }
 
         /**
@@ -574,6 +960,21 @@ public final class FirebaseUtil {
          * @param body     通知正文
          * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, null, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens   设备注册令牌的集合
+         * @param body     通知正文
+         * @param map      将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastBodyByTokensAsync(Collection<String> tokens, String body, Map<String, String> map, Integer iosBadge) {
@@ -588,10 +989,40 @@ public final class FirebaseUtil {
          * @param body        通知正文
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, clickAction, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, null));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, String clickAction, Map<String, String> map) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, clickAction, map, null));
         }
 
         /**
@@ -617,10 +1048,42 @@ public final class FirebaseUtil {
          * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastByTokens(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, title, body, clickAction, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param title       通知的标题
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(tokens, title, body, clickAction, map, iosBadge));
+        }
+
+        /**
+         * 将给定的多播消息发送到其中指定的所有设备的注册令牌
+         * title会使用默认应用名
+         *
+         * @param tokens      设备注册令牌的集合
+         * @param body        通知正文
+         * @param clickAction 设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+         * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
+         * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
+         * @return {@link BatchResponse}
+         * @throws FirebaseMessagingException FirebaseMessagingException
+         */
+        public static BatchResponse sendMulticastBodyByTokens(Collection<String> tokens, String body, String clickAction, Map<String, String> map, Integer iosBadge) throws FirebaseMessagingException {
+            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(tokens, null, body, clickAction, map, iosBadge));
         }
 
         /**
@@ -649,7 +1112,7 @@ public final class FirebaseUtil {
          * @param map         将给定映射中的所有键值对作为数据字段添加到消息中。
          * @return 消息
          */
-        private static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
+        public static Message buildMessage(String token, String title, String body, String clickAction, Integer iosBadge, Map<String, String> map) {
             AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
             Aps.Builder apsBuilder = Aps.builder().setSound("default");
             if (StrUtil.isNotBlank(clickAction)) {
@@ -692,7 +1155,7 @@ public final class FirebaseUtil {
          * @param iosBadge    设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
          * @return 多播消息
          */
-        private static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
+        public static MulticastMessage buildMulticastMessage(Collection<String> tokens, String title, String body, String clickAction, Map<String, String> map, Integer iosBadge) {
             AndroidNotification.Builder androidBuilder = AndroidNotification.builder().setSound("default");
             Aps.Builder apsBuilder = Aps.builder().setSound("default");
             if (StrUtil.isNotBlank(clickAction)) {

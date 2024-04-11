@@ -128,7 +128,7 @@ public final class AmazonS3Util {
                                     CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
                                     // 将跨域规则设置到桶中
                                     amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
-                                    // 为指定的存储桶启用传输加速
+                                    // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，非同个地区的访问启用了会提升访问速度
                                     // amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
                                 }
                                 transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();

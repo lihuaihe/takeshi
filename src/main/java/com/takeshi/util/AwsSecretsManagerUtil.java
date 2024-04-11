@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
@@ -29,7 +30,6 @@ public final class AwsSecretsManagerUtil {
      */
     private static volatile JsonNode jsonNode;
 
-
     /**
      * 获取密钥信息的JsonNode
      *
@@ -39,13 +39,14 @@ public final class AwsSecretsManagerUtil {
         if (ObjUtil.isNull(jsonNode)) {
             synchronized (AwsSecretsManagerUtil.class) {
                 if (ObjUtil.isNull(jsonNode)) {
-                    AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
+                    AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
                     try {
                         if (StrUtil.isAllNotBlank(awsSecrets.getSecretKey(), awsSecrets.getSecretKey())) {
-                            AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
-                                                                                                .withRegion(awsSecrets.getRegion())
-                                                                                                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
-                                                                                                .build();
+                            AWSSecretsManager awsSecretsManager =
+                                    AWSSecretsManagerClientBuilder.standard()
+                                                                  .withRegion(awsSecrets.getRegion())
+                                                                  .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
+                                                                  .build();
                             GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
                             GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                             String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
