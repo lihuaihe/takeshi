@@ -1,8 +1,6 @@
 package com.takeshi.config.properties;
 
 import com.takeshi.constants.TakeshiConstants;
-import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -58,42 +56,5 @@ public class TakeshiProperties {
      */
     @Size(min = 16, max = 16)
     private String aesKey;
-
-    /**
-     * 接口速率限制配置
-     */
-    @Resource
-    @Valid
-    private RateLimitProperties rate;
-
-    /**
-     * AWS密钥管理凭证
-     */
-    @Resource
-    private AWSSecretsManagerCredentials awsSecrets;
-
-    /**
-     * Mandrill凭证
-     */
-    @Resource
-    private MandrillCredentials mandrill;
-
-    /**
-     * Firebase凭证
-     */
-    @Resource
-    private FirebaseCredentials firebase;
-
-    /**
-     * smsBroadcast配置
-     */
-    @Resource
-    private SmsBroadcastProperties smsBroadcast;
-
-    /**
-     * Twilio配置
-     */
-    @Resource
-    private TwilioProperties twilio;
 
 }

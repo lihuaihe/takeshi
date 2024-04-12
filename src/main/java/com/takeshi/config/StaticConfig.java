@@ -6,17 +6,16 @@ import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
 import cn.hutool.crypto.asymmetric.RSA;
 import cn.hutool.crypto.symmetric.AES;
 import cn.hutool.http.useragent.Platform;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takeshi.component.RedisComponent;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.context.MessageSource;
 import org.springframework.core.Ordered;
 
 import java.nio.charset.StandardCharsets;
@@ -33,21 +32,6 @@ import java.util.concurrent.TimeUnit;
 @AutoConfiguration(value = "StaticConfig", before = TakeshiConfig.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
-
-    /**
-     * ObjectMapper
-     */
-    public static ObjectMapper objectMapper;
-
-    /**
-     * 解析国际化消息
-     */
-    public static MessageSource messageSource;
-
-    /**
-     * RedisComponent
-     */
-    public static RedisComponent redisComponent;
 
     /**
      * 自定义额外属性值
@@ -79,24 +63,17 @@ public class StaticConfig {
      *
      * @param applicationName   applicationName
      * @param active            active
-     * @param objectMapper      objectMapper
-     * @param messageSource     messageSource
-     * @param redisComponent    redisComponent
+     * @param redissonClient    redissonClient
      * @param takeshiProperties takeshiProperties
      * @throws InterruptedException 获取锁异常
      */
     public StaticConfig(@Value("${spring.application.name:}") String applicationName,
                         @Value("${spring.profiles.active:}") String active,
-                        ObjectMapper objectMapper,
-                        MessageSource messageSource,
-                        RedisComponent redisComponent,
+                        RedissonClient redissonClient,
                         TakeshiProperties takeshiProperties) throws InterruptedException {
         log.info("StaticConfig Bean initialization...");
         StaticConfig.applicationName = applicationName;
         StaticConfig.active = active;
-        StaticConfig.objectMapper = objectMapper;
-        StaticConfig.messageSource = messageSource;
-        StaticConfig.redisComponent = redisComponent;
         StaticConfig.takeshiProperties = takeshiProperties;
         String aesKey = takeshiProperties.getAesKey();
         if (StrUtil.isBlank(aesKey)) {
@@ -109,19 +86,19 @@ public class StaticConfig {
         }
         StaticConfig.aes = SecureUtil.aes(aesKey.getBytes(StandardCharsets.UTF_8));
         if (StrUtil.isNotBlank(takeshiProperties.getProjectName())) {
-            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
+            RLock lock = redissonClient.getLock(TakeshiRedisKeyEnum.LOCK_RSA_SECURE.projectKey());
             if (lock.tryLock(10, TimeUnit.SECONDS)) {
                 // 保存rsa算法的公钥和私钥到redis中
                 try {
-                    String rsaPrivateKey = TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey();
-                    String rsaPublicKey = TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey();
-                    if (redisComponent.hasKey(rsaPrivateKey) && redisComponent.hasKey(rsaPublicKey)) {
-                        StaticConfig.rsa = SecureUtil.rsa(redisComponent.get(rsaPrivateKey), redisComponent.get(rsaPublicKey));
+                    RBucket<String> rsaPrivateKeyBucket = redissonClient.getBucket(TakeshiRedisKeyEnum.PRIVATE_KEY_BASE64.projectKey());
+                    RBucket<String> rsaPublicKeyBucket = redissonClient.getBucket(TakeshiRedisKeyEnum.PUBLIC_KEY_BASE64.projectKey());
+                    if (rsaPrivateKeyBucket.isExists() && rsaPublicKeyBucket.isExists()) {
+                        StaticConfig.rsa = SecureUtil.rsa(rsaPrivateKeyBucket.get(), rsaPublicKeyBucket.get());
                     } else {
                         KeyPair keyPair = SecureUtil.generateKeyPair(AsymmetricAlgorithm.RSA.getValue(), SecureUtil.DEFAULT_KEY_SIZE, takeshiProperties.getProjectName().getBytes(StandardCharsets.UTF_8));
                         StaticConfig.rsa = SecureUtil.rsa(keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
-                        redisComponent.saveIfAbsent(rsaPrivateKey, StaticConfig.rsa.getPrivateKeyBase64());
-                        redisComponent.saveIfAbsent(rsaPublicKey, StaticConfig.rsa.getPublicKeyBase64());
+                        rsaPrivateKeyBucket.setIfAbsent(StaticConfig.rsa.getPrivateKeyBase64());
+                        rsaPublicKeyBucket.setIfAbsent(StaticConfig.rsa.getPublicKeyBase64());
                     }
                 } finally {
                     lock.unlock();

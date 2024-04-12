@@ -10,7 +10,7 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.takeshi.config.StaticConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +50,7 @@ public final class AwsSecretsManagerUtil {
                             GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
                             GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                             String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                            jsonNode = StaticConfig.objectMapper.readValue(secret, JsonNode.class);
+                            jsonNode = SpringUtil.getBean(ObjectMapper.class).readValue(secret, JsonNode.class);
                             log.info("AwsSecretsManagerUtil.static --> AWSSecretsManager Initialization successful");
                         } else {
                             log.warn("AwsSecretsManagerUtil.static --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
@@ -72,7 +72,7 @@ public final class AwsSecretsManagerUtil {
      * @return T
      */
     public static <T> T getSecret(Class<T> beanClass) {
-        return StaticConfig.objectMapper.convertValue(getSecret(), beanClass);
+        return SpringUtil.getBean(ObjectMapper.class).convertValue(getSecret(), beanClass);
     }
 
 }

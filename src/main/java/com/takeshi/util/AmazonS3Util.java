@@ -7,6 +7,7 @@ import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -16,8 +17,6 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.takeshi.component.RedisComponent;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
@@ -32,7 +31,9 @@ import org.apache.tika.mime.MimeTypes;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
+import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.image.BufferedImage;
@@ -67,8 +68,10 @@ public final class AmazonS3Util {
 
     // 保存到S3的时间
     private static final String CREATE_TIME = "Create-Time";
+
     // 视频时长，单位（微秒）
     private static final String LENGTH_IN_TIME = "Length-In-Time";
+
     // 视频封面缩略图URL
     private static final String COVER_THUMBNAIL = "Cover-Thumbnail";
 
@@ -78,15 +81,19 @@ public final class AmazonS3Util {
 
     // 文件大小，单位（字节）
     private static final String S3_CONTENT_LENGTH = "X-NT-ContentLength";
+
     // 内容类型
     private static final String S3_CONTENT_TYPE = "X-NT-ContentType";
+
     // 视频时长，单位（微秒）
     private static final String S3_LENGTH_IN_TIME = "X-NT-LengthInTime";
+
     // 视频封面缩略图URL
     private static final String S3_THUMBNAIL = "X-NT-Thumbnail";
 
     // 存储桶名称
     private static String BUCKET_NAME;
+
     // 预签名URL的过期时间
     private static Duration EXPIRATION_TIME;
 
@@ -101,7 +108,7 @@ public final class AmazonS3Util {
                 if (ObjUtil.isNull(transferManager)) {
                     try {
                         // 获取密钥
-                        AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
+                        AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
                         if (awsSecrets.isEnabled()) {
                             BUCKET_NAME = awsSecrets.getBucketName();
                             EXPIRATION_TIME = awsSecrets.getExpirationTime();
@@ -111,9 +118,9 @@ public final class AmazonS3Util {
                             if (StrUtil.isAllNotBlank(accessKey, secretKey)) {
                                 // S3
                                 AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
-                                        .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                                        .withRegion(awsSecrets.getRegion())
-                                        .build();
+                                                                         .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+                                                                         .withRegion(awsSecrets.getRegion())
+                                                                         .build();
                                 if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                     // 创建桶
                                     amazonS3.createBucket(BUCKET_NAME);
@@ -336,14 +343,14 @@ public final class AmazonS3Util {
         if (StrUtil.isBlank(fileKey)) {
             return null;
         }
-        RedisComponent redisComponent = StaticConfig.redisComponent;
-        String redisKey = TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(fileKey, duration);
-        URL presignedUrl = toUrl(redisComponent.get(redisKey));
+        RedissonClient redissonClient = SpringUtil.getBean(RedissonClient.class);
+        RBucket<URL> presignedUrlBucket = redissonClient.getBucket(TakeshiRedisKeyEnum.S3_PRESIGNED_URL.projectKey(fileKey, duration));
+        URL presignedUrl = presignedUrlBucket.get();
         if (ObjUtil.isNull(presignedUrl)) {
-            RLock lock = redisComponent.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(fileKey, duration));
+            RLock lock = redissonClient.getLock(TakeshiRedisKeyEnum.LOCK_S3_PRESIGNED_URL.projectKey(fileKey, duration));
             try {
                 if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
-                    presignedUrl = toUrl(redisComponent.get(redisKey));
+                    presignedUrl = presignedUrlBucket.get();
                     if (ObjUtil.isNull(presignedUrl)) {
                         ObjectMetadata objectMetadata = getObjectMetadata(fileKey);
                         if (Objects.isNull(objectMetadata)) {
@@ -366,7 +373,7 @@ public final class AmazonS3Util {
                         }
                         presignedUrl = transferManager.getAmazonS3Client().generatePresignedUrl(generatePresignedUrlRequest);
                         // 减掉代码执行时间
-                        redisComponent.save(redisKey, presignedUrl.toString(), duration.minusSeconds(7L));
+                        presignedUrlBucket.set(presignedUrl, duration.minusSeconds(5L));
                     }
                 }
             } catch (InterruptedException e) {
@@ -376,17 +383,6 @@ public final class AmazonS3Util {
             }
         }
         return presignedUrl;
-    }
-
-    /**
-     * 获取URL对象
-     *
-     * @param url url字符串
-     * @return URL
-     */
-    @SneakyThrows
-    private static URL toUrl(String url) {
-        return StrUtil.isBlank(url) ? null : new URL(url);
     }
 
     /**

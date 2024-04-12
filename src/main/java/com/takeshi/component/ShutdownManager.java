@@ -2,8 +2,8 @@ package com.takeshi.component;
 
 import cn.hutool.core.util.ObjUtil;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
+import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
@@ -25,16 +25,19 @@ public class ShutdownManager {
 
     private final ScheduledExecutorService scheduledExecutorService;
 
+    private final TakeshiProperties takeshiProperties;
+
+    private final AWSSecretsManagerCredentials awsSecretsManagerCredentials;
+
     /**
      * destroy
      */
     @PreDestroy
     public void destroy() {
-        TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, StaticConfig.takeshiProperties.getMaxExecutorCloseTimeout());
+        TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, takeshiProperties.getMaxExecutorCloseTimeout());
         try {
             // 关闭 TransferManager，释放资源
-            AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
-            if (awsSecrets.isEnabled()) {
+            if (awsSecretsManagerCredentials.isEnabled()) {
                 TransferManager transferManager = AmazonS3Util.transferManager;
                 if (ObjUtil.isNotNull(transferManager)) {
                     log.info("Close the TransferManager instance...");
