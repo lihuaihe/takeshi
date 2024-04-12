@@ -504,7 +504,7 @@ public final class FirebaseUtil {
          * @throws FirebaseMessagingException FirebaseMessagingException
          */
         public static String sendByToken(MessageParams messageParams) throws FirebaseMessagingException {
-            return FIREBASE_MESSAGING.send(buildMessage(messageParams));
+            return getFirebaseMessaging().send(buildMessage(messageParams));
         }
 
         /**
@@ -515,7 +515,7 @@ public final class FirebaseUtil {
          * @throws FirebaseMessagingException FirebaseMessagingException
          */
         public static String sendTransparentByToken(MessageParams messageParams) throws FirebaseMessagingException {
-            return FIREBASE_MESSAGING.send(buildTransparentMessage(messageParams));
+            return getFirebaseMessaging().send(buildTransparentMessage(messageParams));
         }
 
         /**
@@ -525,7 +525,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendByTokenAsync(MessageParams messageParams) {
-            return FIREBASE_MESSAGING.sendAsync(buildMessage(messageParams));
+            return getFirebaseMessaging().sendAsync(buildMessage(messageParams));
         }
 
         /**
@@ -535,7 +535,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<String> sendTransparentByTokenAsync(MessageParams messageParams) {
-            return FIREBASE_MESSAGING.sendAsync(buildTransparentMessage(messageParams));
+            return getFirebaseMessaging().sendAsync(buildTransparentMessage(messageParams));
         }
 
         /**
@@ -546,7 +546,7 @@ public final class FirebaseUtil {
          * @throws FirebaseMessagingException FirebaseMessagingException
          */
         public static BatchResponse sendMulticastByTokens(MulticastMessageParams multicastMessageParams) throws FirebaseMessagingException {
-            return FIREBASE_MESSAGING.sendEachForMulticast(buildMulticastMessage(multicastMessageParams));
+            return getFirebaseMessaging().sendEachForMulticast(buildMulticastMessage(multicastMessageParams));
         }
 
         /**
@@ -557,7 +557,7 @@ public final class FirebaseUtil {
          * @throws FirebaseMessagingException FirebaseMessagingException
          */
         public static BatchResponse sendTransparentMulticastByTokens(MulticastMessageParams multicastMessageParams) throws FirebaseMessagingException {
-            return FIREBASE_MESSAGING.sendEachForMulticast(buildTransparentMulticastMessage(multicastMessageParams));
+            return getFirebaseMessaging().sendEachForMulticast(buildTransparentMulticastMessage(multicastMessageParams));
         }
 
         /**
@@ -567,7 +567,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendMulticastByTokensAsync(MulticastMessageParams multicastMessageParams) {
-            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildMulticastMessage(multicastMessageParams));
+            return getFirebaseMessaging().sendEachForMulticastAsync(buildMulticastMessage(multicastMessageParams));
         }
 
         /**
@@ -577,7 +577,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<BatchResponse> sendTransparentMulticastByTokensAsync(MulticastMessageParams multicastMessageParams) {
-            return FIREBASE_MESSAGING.sendEachForMulticastAsync(buildTransparentMulticastMessage(multicastMessageParams));
+            return getFirebaseMessaging().sendEachForMulticastAsync(buildTransparentMulticastMessage(multicastMessageParams));
         }
 
         /**
