@@ -57,7 +57,7 @@ public final class FirebaseUtil {
                         // Firebase需要的JSON文件
                         InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
                         if (ObjUtil.isNull(inputStream)) {
-                            log.error("FirebaseUtil.static --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
+                            log.error("FirebaseUtil.getFirebaseApp --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
                         } else {
                             // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
                             String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
@@ -70,10 +70,10 @@ public final class FirebaseUtil {
                                                                      .setJsonFactory(GsonFactory.getDefaultInstance())
                                                                      .build();
                             FIREBASE_APP = FirebaseApp.initializeApp(options);
-                            log.info("FirebaseUtil.static --> FirebaseApp Initialization successful");
+                            log.info("FirebaseUtil.getFirebaseApp --> FirebaseApp Initialization successful");
                         }
                     } catch (IOException e) {
-                        log.error("FirebaseUtil.static --> FirebaseApp initialization failed, e: ", e);
+                        log.error("FirebaseUtil.getFirebaseApp --> FirebaseApp initialization failed, e: ", e);
                     }
                 }
             }
@@ -278,12 +278,10 @@ public final class FirebaseUtil {
             private String body;
 
             /**
-             * 设置与用户点击外部通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-             * <p style="color:yellow;">无法做到完全自定义跳转APP应用内界面，一般通过map传递需要clickAction</p>
-             * 发送透传消息时此参数不需要
+             * 将给定映射中的所有键值对作为数据字段添加到消息中
              */
-            @Schema(description = "设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动")
-            private String clickAction;
+            @Schema(description = "将给定映射中的所有键值对作为数据字段添加到消息中")
+            private Map<String, String> map;
 
             /**
              * 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
@@ -294,10 +292,12 @@ public final class FirebaseUtil {
             private Integer iosBadge;
 
             /**
-             * 将给定映射中的所有键值对作为数据字段添加到消息中
+             * 设置与用户点击外部通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+             * <p style="color:yellow;">无法做到完全自定义跳转APP应用内界面，一般通过map传递需要clickAction</p>
+             * 发送透传消息时此参数不需要
              */
-            @Schema(description = "将给定映射中的所有键值对作为数据字段添加到消息中")
-            private Map<String, String> map;
+            @Schema(description = "设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动")
+            private String clickAction;
 
             /**
              * 构造函数
@@ -335,6 +335,21 @@ public final class FirebaseUtil {
             /**
              * 构造函数
              *
+             * @param token    设备的注册令牌
+             * @param body     通知的正文
+             * @param map      附加值
+             * @param iosBadge ios徽章
+             */
+            public MessageParams(String token, String body, Map<String, String> map, Integer iosBadge) {
+                this.token = token;
+                this.body = body;
+                this.map = map;
+                this.iosBadge = iosBadge;
+            }
+
+            /**
+             * 构造函数
+             *
              * @param token 设备的注册令牌
              * @param title 通知的标题
              * @param body  通知的正文
@@ -358,6 +373,23 @@ public final class FirebaseUtil {
                 this.title = title;
                 this.body = body;
                 this.map = map;
+            }
+
+            /**
+             * 构造函数
+             *
+             * @param token    设备的注册令牌
+             * @param title    通知的标题
+             * @param body     通知的正文
+             * @param map      附加值
+             * @param iosBadge ios徽章
+             */
+            public MessageParams(String token, String title, String body, Map<String, String> map, Integer iosBadge) {
+                this.token = token;
+                this.title = title;
+                this.body = body;
+                this.map = map;
+                this.iosBadge = iosBadge;
             }
 
         }
@@ -396,12 +428,10 @@ public final class FirebaseUtil {
             private String body;
 
             /**
-             * 设置与用户点击外部通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
-             * <p style="color:yellow;">无法做到完全自定义跳转APP应用内界面，一般通过map传递需要clickAction</p>
-             * 发送透传消息时此参数不需要
+             * 将给定映射中的所有键值对作为数据字段添加到消息中
              */
-            @Schema(description = "设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动")
-            private String clickAction;
+            @Schema(description = "将给定映射中的所有键值对作为数据字段添加到消息中")
+            private Map<String, String> map;
 
             /**
              * 设置IOS中与消息一起显示的徽章。 设置为 0 可删除徽章。 设置为null徽章将保持不变
@@ -412,10 +442,12 @@ public final class FirebaseUtil {
             private Integer iosBadge;
 
             /**
-             * 将给定映射中的所有键值对作为数据字段添加到消息中
+             * 设置与用户点击外部通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动
+             * <p style="color:yellow;">无法做到完全自定义跳转APP应用内界面，一般通过map传递需要clickAction</p>
+             * 发送透传消息时此参数不需要
              */
-            @Schema(description = "将给定映射中的所有键值对作为数据字段添加到消息中")
-            private Map<String, String> map;
+            @Schema(description = "设置与用户点击通知相关联的操作。如果指定，当用户单击通知时，将启动具有匹配 Intent Filter 的活动")
+            private String clickAction;
 
             /**
              * 构造函数
@@ -453,6 +485,21 @@ public final class FirebaseUtil {
             /**
              * 构造函数
              *
+             * @param tokens   设备的注册令牌
+             * @param body     通知的正文
+             * @param map      附加值
+             * @param iosBadge ios徽章
+             */
+            public MulticastMessageParams(Collection<String> tokens, String body, Map<String, String> map, Integer iosBadge) {
+                this.tokens = tokens;
+                this.body = body;
+                this.map = map;
+                this.iosBadge = iosBadge;
+            }
+
+            /**
+             * 构造函数
+             *
              * @param tokens 设备的注册令牌
              * @param title  通知的标题
              * @param body   通知的正文
@@ -476,6 +523,23 @@ public final class FirebaseUtil {
                 this.title = title;
                 this.body = body;
                 this.map = map;
+            }
+
+            /**
+             * 构造函数
+             *
+             * @param tokens   设备的注册令牌
+             * @param title    通知的标题
+             * @param body     通知的正文
+             * @param map      附加值
+             * @param iosBadge ios徽章
+             */
+            public MulticastMessageParams(Collection<String> tokens, String title, String body, Map<String, String> map, Integer iosBadge) {
+                this.tokens = tokens;
+                this.title = title;
+                this.body = body;
+                this.map = map;
+                this.iosBadge = iosBadge;
             }
 
         }

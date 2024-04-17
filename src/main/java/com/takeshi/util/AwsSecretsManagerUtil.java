@@ -51,12 +51,12 @@ public final class AwsSecretsManagerUtil {
                             GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                             String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
                             jsonNode = SpringUtil.getBean(ObjectMapper.class).readValue(secret, JsonNode.class);
-                            log.info("AwsSecretsManagerUtil.static --> AWSSecretsManager Initialization successful");
+                            log.info("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager Initialization successful");
                         } else {
-                            log.warn("AwsSecretsManagerUtil.static --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
+                            log.warn("AwsSecretsManagerUtil.getSecret --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
                         }
                     } catch (Exception e) {
-                        log.error("AwsSecretsManagerUtil.static --> AWSSecretsManager initialization failed, e: ", e);
+                        log.error("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager initialization failed, e: ", e);
                     }
                 }
             }
