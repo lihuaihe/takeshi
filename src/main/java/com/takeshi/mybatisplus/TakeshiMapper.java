@@ -120,12 +120,12 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * <p>新增记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
      * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成新增数据且更新排序的操作</p>
      *
+     * @param entity     要新增的实体数据
      * @param sortColumn 排序的字段
      * @param maxVal     当前数据库中最大的排序值
-     * @param entity     要新增的实体数据
      * @return int
      */
-    default boolean insertWithSort(SFunction<T, ?> sortColumn, int maxVal, T entity) {
+    default boolean insertWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         String propertyName = TakeshiUtil.getPropertyName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entity.getClass());
@@ -183,15 +183,15 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      * <p>更新记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
      * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成排序字段的更新操作</p>
      *
-     * @param sortColumn 排序的字段
-     * @param newVal     新的排序值
-     * @param maxVal     当前数据库中最大的排序值
      * @param entity     要更新的实体数据
+     * @param sortColumn 排序的字段
+     * @param maxVal     当前数据库中最大的排序值
      * @return int
      */
-    default boolean updateWithSort(SFunction<T, ?> sortColumn, int newVal, int maxVal, T entity) {
+    default boolean updateWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
         Class<T> entityClass = this.getEntityClass();
         String columnName = TakeshiUtil.getColumnName(sortColumn);
+        String propertyName = TakeshiUtil.getPropertyName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
         Object keyValue = ReflectUtil.getFieldValue(entity, tableInfo.getKeyProperty());
         List<Object> ts = this.selectObjs(new QueryWrapper<T>().eq(tableInfo.getKeyColumn(), keyValue).select(columnName));
@@ -201,24 +201,26 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         if (ts.size() != 1) {
             throw ExceptionUtils.mpe("One record is expected, but the query result is multiple records");
         }
-        newVal = Math.min(newVal, maxVal);
+        int val = (int) ReflectUtil.getFieldValue(entity, propertyName);
+        int finalVal = Math.min(val, maxVal);
         int oldVal = (int) ts.get(0);
-        if (oldVal == newVal) {
+        if (oldVal == finalVal) {
             return false;
         }
-        int tempVal = 0;
         UpdateWrapper<T> updateWrapper =
                 new UpdateWrapper<T>().setSql(columnName +
                                                       " = CASE " +
-                                                      " WHEN " + tableInfo.getKeyColumn() + " = " + keyValue + " THEN " + newVal +
-                                                      " WHEN " + columnName + " = " + newVal + " THEN " + tempVal +
+                                                      " WHEN " + tableInfo.getKeyColumn() + " = " + keyValue + " THEN " + 0 +
+                                                      " WHEN " + columnName + " = " + finalVal + " THEN " + oldVal +
                                                       " END")
-                                      .in(columnName, oldVal, newVal)
-                                      .orderByAsc(columnName);
+                                      .in(columnName, oldVal, finalVal)
+                                      .orderByAsc(oldVal < finalVal, columnName)
+                                      .orderByDesc(oldVal > finalVal, columnName);
         if (SqlHelper.retBool(this.update(tableInfo.newInstance(), updateWrapper))) {
-            if (SqlHelper.retBool(this.update(tableInfo.newInstance(), new UpdateWrapper<T>().set(columnName, oldVal).eq(columnName, tempVal)))) {
-                return SqlHelper.retBool(this.updateById(entity));
+            if (val != finalVal) {
+                ReflectUtil.setFieldValue(entity, TakeshiUtil.getPropertyName(sortColumn), finalVal);
             }
+            return SqlHelper.retBool(this.updateById(entity));
         }
         return false;
     }
