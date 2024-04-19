@@ -3,7 +3,6 @@ package com.takeshi.util;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -212,9 +211,6 @@ public final class MandrillUtil {
      * @return this
      */
     public MandrillUtil html(String templateName, Map<?, ?> bindingMap) {
-        if (StrUtil.isBlank(FileNameUtil.extName(templateName))) {
-            templateName += ".html";
-        }
         return this.html(TakeshiUtil.getTemplateEngine().getTemplate(templateName).render(bindingMap));
     }
 
