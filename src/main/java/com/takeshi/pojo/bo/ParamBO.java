@@ -6,13 +6,13 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import com.takeshi.util.GsonUtil;
@@ -144,7 +144,7 @@ public class ParamBO extends AbstractBasicSerializable {
      */
     @SneakyThrows
     public void setBody(InputStream body) {
-        ObjectMapper objectMapper = StaticConfig.objectMapper;
+        ObjectMapper objectMapper = SpringUtil.getBean(ObjectMapper.class);
         JsonNode jsonNode = objectMapper.readTree(body);
         if (jsonNode.isNull()) {
             return;
@@ -196,7 +196,7 @@ public class ParamBO extends AbstractBasicSerializable {
      * @return ObjectNode
      */
     public ObjectNode getParamObjectNode(String... exclusionFieldName) {
-        ObjectNode objectNode = StaticConfig.objectMapper.createObjectNode();
+        ObjectNode objectNode = SpringUtil.getBean(ObjectMapper.class).createObjectNode();
         if (CollUtil.isNotEmpty(this.urlParam)) {
             objectNode.putPOJO("urlParam", this.urlParam);
         }

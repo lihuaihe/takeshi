@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
@@ -9,7 +10,7 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.takeshi.config.StaticConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +30,6 @@ public final class AwsSecretsManagerUtil {
      */
     private static volatile JsonNode jsonNode;
 
-
     /**
      * 获取密钥信息的JsonNode
      *
@@ -39,23 +39,24 @@ public final class AwsSecretsManagerUtil {
         if (ObjUtil.isNull(jsonNode)) {
             synchronized (AwsSecretsManagerUtil.class) {
                 if (ObjUtil.isNull(jsonNode)) {
-                    AWSSecretsManagerCredentials awsSecrets = StaticConfig.takeshiProperties.getAwsSecrets();
+                    AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
                     try {
                         if (StrUtil.isAllNotBlank(awsSecrets.getSecretKey(), awsSecrets.getSecretKey())) {
-                            AWSSecretsManager awsSecretsManager = AWSSecretsManagerClientBuilder.standard()
-                                                                                                .withRegion(awsSecrets.getRegion())
-                                                                                                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
-                                                                                                .build();
+                            AWSSecretsManager awsSecretsManager =
+                                    AWSSecretsManagerClientBuilder.standard()
+                                                                  .withRegion(awsSecrets.getRegion())
+                                                                  .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
+                                                                  .build();
                             GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
                             GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
                             String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                            jsonNode = StaticConfig.objectMapper.readValue(secret, JsonNode.class);
-                            log.info("AwsSecretsManagerUtil.static --> AWSSecretsManager Initialization successful");
+                            jsonNode = SpringUtil.getBean(ObjectMapper.class).readValue(secret, JsonNode.class);
+                            log.info("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager Initialization successful");
                         } else {
-                            log.warn("AwsSecretsManagerUtil.static --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
+                            log.warn("AwsSecretsManagerUtil.getSecret --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
                         }
                     } catch (Exception e) {
-                        log.error("AwsSecretsManagerUtil.static --> AWSSecretsManager initialization failed, e: ", e);
+                        log.error("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager initialization failed, e: ", e);
                     }
                 }
             }
@@ -71,7 +72,7 @@ public final class AwsSecretsManagerUtil {
      * @return T
      */
     public static <T> T getSecret(Class<T> beanClass) {
-        return StaticConfig.objectMapper.convertValue(getSecret(), beanClass);
+        return SpringUtil.getBean(ObjectMapper.class).convertValue(getSecret(), beanClass);
     }
 
 }

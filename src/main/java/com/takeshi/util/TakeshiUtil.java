@@ -19,6 +19,7 @@ import cn.hutool.crypto.KeyUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
 import cn.hutool.extra.template.TemplateUtil;
@@ -82,12 +83,12 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获取单例的模版引擎，默认模版路径在resources/templates目录下
+     * 获取单例的模版引擎，默认模版路径在resources/template目录下
      *
      * @return TemplateEngine
      */
     public static TemplateEngine getTemplateEngine() {
-        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("templates", TemplateConfig.ResourceMode.CLASSPATH)));
+        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
     }
 
     /**
@@ -311,13 +312,13 @@ public final class TakeshiUtil {
      * @return 消息
      */
     public static String formatMessage(String message, Object... args) {
-        MessageSource messageSource = Optional.ofNullable(StaticConfig.messageSource)
-                .orElseGet(() -> {
-                    ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
-                    resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
-                    resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-                    return resourceBundleMessageSource;
-                });
+        MessageSource messageSource = Optional.ofNullable(SpringUtil.getBean(MessageSource.class))
+                                              .orElseGet(() -> {
+                                                  ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
+                                                  resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
+                                                  resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+                                                  return resourceBundleMessageSource;
+                                              });
         message = StrUtil.strip(message, StrUtil.DELIM_START, StrUtil.DELIM_END);
         return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }

@@ -5,7 +5,6 @@ import com.takeshi.util.GsonUtil;
 import com.takeshi.util.ZonedDateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.*;
 import org.springframework.data.domain.Range;
 import org.springframework.data.geo.*;
 import org.springframework.data.redis.connection.RedisGeoCommands;
@@ -29,9 +28,6 @@ import java.util.stream.Collectors;
 public class RedisComponent {
 
     private final StringRedisTemplate stringRedisTemplate;
-    private final RedissonClient redissonClient;
-
-    /*-------------------------------------------StringRedisTemplate start--------------------------------------------*/
 
     /**
      * 获取 StringRedisTemplate
@@ -564,10 +560,10 @@ public class RedisComponent {
      */
     public <T> Map<String, T> hashEntries(String key, Class<T> beanClass) {
         return Optional.ofNullable(this.boundHashOps(key).entries())
-                .map(m -> m.entrySet()
-                        .stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, item -> GsonUtil.fromJson(item.getValue(), beanClass))))
-                .orElse(null);
+                       .map(m -> m.entrySet()
+                                  .stream()
+                                  .collect(Collectors.toMap(Map.Entry::getKey, item -> GsonUtil.fromJson(item.getValue(), beanClass))))
+                       .orElse(null);
     }
 
     /**
@@ -648,8 +644,8 @@ public class RedisComponent {
      */
     public <T> List<T> listRange(String key, long start, long end, Class<T> beanClass) {
         return Optional.ofNullable(this.boundListOps(key).range(start, end))
-                .map(l -> l.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toList()))
-                .orElse(null);
+                       .map(l -> l.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toList()))
+                       .orElse(null);
     }
 
     /**
@@ -708,8 +704,8 @@ public class RedisComponent {
      */
     public <T> Set<T> setMembers(String key, Class<T> beanClass) {
         return Optional.ofNullable(this.boundSetOps(key).members())
-                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
-                .orElse(null);
+                       .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                       .orElse(null);
     }
 
     /**
@@ -803,8 +799,8 @@ public class RedisComponent {
      */
     public <T> Set<T> zSetRange(String key, long start, long end, Class<T> beanClass) {
         return Optional.ofNullable(this.boundZSetOps(key).range(start, end))
-                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
-                .orElse(null);
+                       .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                       .orElse(null);
     }
 
     /**
@@ -856,8 +852,8 @@ public class RedisComponent {
      */
     public <T> Set<T> zSetReverseRange(String key, long start, long end, Class<T> beanClass) {
         return Optional.ofNullable(this.boundZSetOps(key).reverseRange(start, end))
-                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
-                .orElse(null);
+                       .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                       .orElse(null);
     }
 
     /**
@@ -884,8 +880,8 @@ public class RedisComponent {
      */
     public <T> Set<T> zSetRangeByScore(String key, double min, double max, Class<T> beanClass) {
         return Optional.ofNullable(this.boundZSetOps(key).rangeByScore(min, max))
-                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
-                .orElse(null);
+                       .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                       .orElse(null);
     }
 
     /**
@@ -925,8 +921,8 @@ public class RedisComponent {
      */
     public <T> Set<T> zSetReverseRangeByScore(String key, double min, double max, Class<T> beanClass) {
         return Optional.ofNullable(this.boundZSetOps(key).reverseRangeByScore(min, max))
-                .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
-                .orElse(null);
+                       .map(s -> s.stream().map(item -> GsonUtil.fromJson(item, beanClass)).collect(Collectors.toSet()))
+                       .orElse(null);
     }
 
     /**
@@ -1171,102 +1167,5 @@ public class RedisComponent {
     public List<String> geoHash(String key, String... members) {
         return this.boundGeoOps(key).hash(members);
     }
-
-    /*--------------------------------------------StringRedisTemplate end---------------------------------------------*/
-
-
-    /*----------------------------------------------RedissonClient start----------------------------------------------*/
-
-    /**
-     * 获取 RedissonClient
-     *
-     * @return RedissonClient
-     */
-    public RedissonClient redissonClient() {
-        return redissonClient;
-    }
-
-    /**
-     * 按名称返回 Lock 实例。
-     * 实现非公平锁定，因此不保证线程的获取顺序。
-     * 为了提高故障转移期间的可靠性，所有操作都等待传播到所有 Redis 从站
-     *
-     * @param key 对象名称
-     * @return Lock
-     */
-    public RLock getLock(String key) {
-        return redissonClient.getLock(key);
-    }
-
-    /**
-     * 按名称返回自旋锁实例。
-     * 实现非公平锁定，因此不保证线程的获取顺序。
-     * Lock 不使用发布/订阅机制
-     *
-     * @param key 对象名称
-     * @return Lock
-     */
-    public RLock getSpinLock(String key) {
-        return redissonClient.getSpinLock(key);
-    }
-
-    /**
-     * 使用指定的退避选项按名称返回自旋锁实例。
-     * 实现非公平锁定，因此不保证线程的获取顺序。
-     * Lock 不使用发布/订阅机制
-     *
-     * @param key     对象名称
-     * @param backOff 锁定对象的配置
-     * @return Lock
-     */
-    public RLock getSpinLock(String key, LockOptions.BackOff backOff) {
-        return redissonClient.getSpinLock(key, backOff);
-    }
-
-    /**
-     * 返回与指定 <code>locks</code> 关联的 MultiLock 实例
-     *
-     * @param locks - 锁的集合
-     * @return 多锁对象
-     */
-    public RLock getMultiLock(RLock... locks) {
-        return redissonClient.getMultiLock(locks);
-    }
-
-    /**
-     * 按名称返回 Lock 实例
-     * <p> 实现一个 <b>fair</b> 锁定，以保证线程的获取顺序</p>
-     * 为了提高故障转移期间的可靠性，所有操作都等待传播到所有 Redis 从站
-     *
-     * @param key - 对象名称
-     * @return Lock
-     */
-    public RLock getFairLock(String key) {
-        return redissonClient.getFairLock(key);
-    }
-
-    /**
-     * 按名称返回 ReadWriteLock 实例
-     * <p>
-     * 为了提高故障转移期间的可靠性，所有操作都等待传播到所有 Redis 从站
-     *
-     * @param key - 对象名称
-     * @return Lock
-     */
-    public RReadWriteLock getReadWriteLock(String key) {
-        return redissonClient.getReadWriteLock(key);
-    }
-
-    /**
-     * 声明一个限流器
-     *
-     * @param name redis的key
-     * @return {@link RRateLimiter}
-     */
-    public RRateLimiter getRateLimiter(String name) {
-        return redissonClient.getRateLimiter(name);
-    }
-
-    /*-----------------------------------------------RedissonClient end-----------------------------------------------*/
 
 }

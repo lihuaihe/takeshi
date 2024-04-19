@@ -6,13 +6,14 @@ import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.RateLimitProperties;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.TakeshiCode;
@@ -23,12 +24,14 @@ import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
+import com.takeshi.util.ZonedDateTimeUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -122,7 +125,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             paramBO.setMethodName(methodName);
             paramBO.setTakeshiLog(method.getAnnotation(TakeshiLog.class));
             log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, paramBO.getHttpMethod(), StrUtil.BRACKET_END, methodName));
-            log.info("Request Parameters: {}", StaticConfig.objectMapper.writeValueAsString(paramBO.getParamObjectNode()));
+            log.info("Request Parameters: {}", SpringUtil.getBean(ObjectMapper.class).writeValueAsString(paramBO.getParamObjectNode()));
             // 速率限制
             SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, paramBO);
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
@@ -147,7 +150,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = paramBO.getClientIp();
-        TakeshiProperties takeshiProperties = StaticConfig.takeshiProperties;
+        TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
         boolean passPlatform = false;
         boolean passSignature = false;
         if (ObjUtil.isNotNull(systemSecurity)) {
@@ -162,7 +165,6 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         // 获取方法上的RepeatSubmit注解
         RepeatSubmit repeatSubmit = handlerMethod.getMethodAnnotation(RepeatSubmit.class);
 
-        RateLimitProperties rate = takeshiProperties.getRate();
         String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
         String nonce = request.getHeader(TakeshiConstants.NONCE_NAME);
         String httpMethod = request.getMethod();
@@ -170,11 +172,13 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String rateLimitPathKey = StrUtil.COLON + StrUtil.BRACKET_START + httpMethod + StrUtil.BRACKET_END + servletPath;
 
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
-        if (StaticConfig.redisComponent.hasKey(ipBlacklistKey)) {
+        RedissonClient redissonClient = SpringUtil.getBean(RedissonClient.class);
+        if (redissonClient.getBucket(ipBlacklistKey).isExists()) {
             // 黑名单中的IP
-            SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
+            SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
         }
 
+        RateLimitProperties rate = SpringUtil.getBean(RateLimitProperties.class);
         // 最大时间差校验
         this.verifyMaxTimeDiff(repeatSubmit, rate.getMaxTimeDiff(), timestamp);
 
@@ -183,16 +187,16 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         boolean signVerify = StrUtil.isNotBlank(signatureKey) && !passSignature;
 
         // nonce速率校验
-        this.verifyNonce(repeatSubmit, rate.getNonce(), clientIp, nonce, rateLimitPathKey, signVerify);
+        this.verifyNonce(redissonClient, repeatSubmit, rate.getNonce(), clientIp, nonce, rateLimitPathKey, signVerify);
 
         // ip速率校验
-        this.verifyIp(repeatSubmit, rate.getIp(), clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
+        this.verifyIp(redissonClient, repeatSubmit, rate.getIp(), clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
 
         // sign校验
         this.verifySign(signVerify, request.getHeader(TakeshiConstants.SIGN_NAME), paramBO, signatureKey, nonce, timestamp);
 
         // 重复提交校验
-        this.verifyRepeatSubmit(repeatSubmit, paramBO, clientIp, httpMethod, servletPath);
+        this.verifyRepeatSubmit(redissonClient, repeatSubmit, paramBO, clientIp, httpMethod, servletPath);
 
         return systemSecurity;
     }
@@ -229,7 +233,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param rateLimitPathKey 针对接口的限制key
      * @param signVerify       是否开启了sign校验
      */
-    private void verifyNonce(RepeatSubmit repeatSubmit, RateLimitProperties.NonceRate nonceRate, String clientIp,
+    private void verifyNonce(RedissonClient redissonClient, RepeatSubmit repeatSubmit, RateLimitProperties.NonceRate nonceRate, String clientIp,
                              String nonce, String rateLimitPathKey, boolean signVerify) {
         int nRate = nonceRate.getRate();
         int nRateInterval = nonceRate.getRateInterval();
@@ -243,7 +247,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         }
         if (signVerify && nRateInterval > 0) {
             String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonceRateLimitKeyParam);
-            RRateLimiter nonceRateLimiter = StaticConfig.redisComponent.getRateLimiter(nonceRateLimitKey);
+            RRateLimiter nonceRateLimiter = redissonClient.getRateLimiter(nonceRateLimitKey);
             if (nonceRateLimiter.getConfig().getRate() != nRate
                     || nonceRateLimiter.getConfig().getRateInterval() != nRateIntervalUnit.toMillis(nRateInterval)) {
                 nonceRateLimiter.delete();
@@ -270,7 +274,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param servletPath      接口路径
      * @param ipBlacklistKey   是否开启了黑名单
      */
-    private void verifyIp(RepeatSubmit repeatSubmit, RateLimitProperties.IpRate ipRate, String clientIp,
+    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, RateLimitProperties.IpRate ipRate, String clientIp,
                           String rateLimitPathKey, String httpMethod, String servletPath, String ipBlacklistKey) {
         boolean ipOverwritten = false;
         int iRate = ipRate.getRate();
@@ -289,7 +293,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         }
         if (iRateInterval > 0) {
             String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(ipRateLimitKeyParam);
-            RRateLimiter ipRateLimiter = StaticConfig.redisComponent.getRateLimiter(ipRateLimitKey);
+            RRateLimiter ipRateLimiter = redissonClient.getRateLimiter(ipRateLimitKey);
             if (ipRateLimiter.getConfig().getRate() != iRate
                     || ipRateLimiter.getConfig().getRateInterval() != iRateIntervalUnit.toMillis(iRateInterval)) {
                 ipRateLimiter.delete();
@@ -303,7 +307,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                     IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval, iRateIntervalUnit, iOpenBlacklist, ipOverwritten);
                     // 超过请求次数则将IP加入黑名单到当天结束时间释放（例如：2023-04-23 23:59:59）
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, httpMethod, servletPath, ipBlackInfoIpRate, Instant.now());
-                    StaticConfig.redisComponent.saveToEndOfDay(ipBlacklistKey, GsonUtil.toJson(ipBlackInfoBO));
+                    redissonClient.getBucket(ipBlacklistKey).set(ipBlackInfoBO, ZonedDateTimeUtil.untilEndOfDay());
                 }
                 SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
             }
@@ -342,7 +346,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param servletPath  接口路径
      * @throws JsonProcessingException JsonProcessingException
      */
-    private void verifyRepeatSubmit(RepeatSubmit repeatSubmit, ParamBO paramBO, String clientIp, String httpMethod,
+    private void verifyRepeatSubmit(RedissonClient redissonClient, RepeatSubmit repeatSubmit, ParamBO paramBO, String clientIp, String httpMethod,
                                     String servletPath) throws JsonProcessingException {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
             RetBO retBO = TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
@@ -352,9 +356,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             map.put("repeatMethod", httpMethod);
             map.put("repeatUrl", servletPath);
             map.put("repeatLoginId", paramBO.getLoginId());
-            map.put("repeatParams", StaticConfig.objectMapper.writeValueAsString(paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName())));
+            map.put("repeatParams", SpringUtil.getBean(ObjectMapper.class).writeValueAsString(paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName())));
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
-            RRateLimiter rateLimiter = StaticConfig.redisComponent.getRateLimiter(repeatSubmitKey);
+            RRateLimiter rateLimiter = redissonClient.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次
             rateLimiter.trySetRate(RateType.OVERALL, 1, rateInterval, repeatSubmit.rateIntervalUnit());
             // 设置限流器过期时间

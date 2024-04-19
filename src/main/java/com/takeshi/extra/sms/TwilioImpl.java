@@ -2,7 +2,6 @@ package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.takeshi.config.StaticConfig;
 import com.takeshi.config.properties.TwilioProperties;
 import com.takeshi.util.AwsSecretsManagerUtil;
 import com.takeshi.util.GsonUtil;
@@ -27,9 +26,10 @@ public class TwilioImpl implements SmsInterface {
 
     /**
      * 构造函数
+     *
+     * @param twilio twilio
      */
-    public TwilioImpl() {
-        TwilioProperties twilio = StaticConfig.takeshiProperties.getTwilio();
+    public TwilioImpl(final TwilioProperties twilio) {
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
         String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : jsonNode.get(twilio.getAccountSidSecrets()).asText();
         String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : jsonNode.get(twilio.getAuthTokenSecrets()).asText();
@@ -50,10 +50,10 @@ public class TwilioImpl implements SmsInterface {
     public void sendMessage(boolean send, String countryCode, String number, String message) {
         if (send) {
             Message msg = Message.creator(
-                            new PhoneNumber(countryCode + number),
-                            messagingServiceSid,
-                            message)
-                    .create();
+                                         new PhoneNumber(countryCode + number),
+                                         messagingServiceSid,
+                                         message)
+                                 .create();
             log.info("TwilioImpl.sendMessage --> msg: {}", GsonUtil.toJson(msg));
         }
     }

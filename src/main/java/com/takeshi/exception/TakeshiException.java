@@ -37,16 +37,6 @@ public class TakeshiException extends RuntimeException {
     /**
      * 异常
      *
-     * @param metaData 附加数据
-     * @param message  消息
-     */
-    public TakeshiException(Object metaData, String message) {
-        super(GsonUtil.toJson(ResponseData.fail(message).setMetaData(metaData)));
-    }
-
-    /**
-     * 异常
-     *
      * @param code    状态码
      * @param message 消息
      */
@@ -122,17 +112,6 @@ public class TakeshiException extends RuntimeException {
      */
     public static Supplier<TakeshiException> supplier(String message) {
         return () -> new TakeshiException(message);
-    }
-
-    /**
-     * 包装成Supplier
-     *
-     * @param metaData 附加数据
-     * @param message  消息
-     * @return Supplier
-     */
-    public static Supplier<TakeshiException> supplier(String message, Object metaData) {
-        return () -> new TakeshiException(metaData, message);
     }
 
     /**

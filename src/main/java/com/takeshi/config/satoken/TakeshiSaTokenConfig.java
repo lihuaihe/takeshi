@@ -1,7 +1,7 @@
 package com.takeshi.config.satoken;
 
 import cn.hutool.core.util.ArrayUtil;
-import com.takeshi.config.StaticConfig;
+import cn.hutool.extra.spring.SpringUtil;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.jackson.*;
 import org.springframework.format.FormatterRegistry;
@@ -33,7 +33,7 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
         // 注册注解拦截器
         InterceptorRegistration interceptorRegistration = registry.addInterceptor(this.saRouteBuild());
         interceptorRegistration.addPathPatterns("/**").excludePathPatterns(TakeshiConstants.EXCLUDE_URL);
-        String[] excludeUrl = StaticConfig.takeshiProperties.getExcludeUrl();
+        String[] excludeUrl = SpringUtil.getProperty("takeshi.exclude-url", String[].class, null);
         if (ArrayUtil.isNotEmpty(excludeUrl)) {
             interceptorRegistration.excludePathPatterns(excludeUrl);
         }

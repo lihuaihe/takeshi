@@ -3,6 +3,7 @@ package com.takeshi.mybatisplus;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -25,7 +26,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -117,90 +117,112 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * <p>新增记录时更新排序</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，并且需要先调用该方法更新已有记录再新增数据</p>
+     * <p>新增记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
+     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成新增数据且更新排序的操作</p>
      *
+     * @param entity     要新增的实体数据
      * @param sortColumn 排序的字段
-     * @param val        排序值
-     * @param consumer   示例：item -> item.eq(User::getUserId,1)
+     * @param maxVal     当前数据库中最大的排序值
      * @return int
      */
-    default boolean insertWithSort(SFunction<T, ?> sortColumn, Integer val, Consumer<LambdaUpdateWrapper<T>> consumer) {
+    default boolean insertWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
         String columnName = TakeshiUtil.getColumnName(sortColumn);
+        String propertyName = TakeshiUtil.getPropertyName(sortColumn);
+        TableInfo tableInfo = TableInfoHelper.getTableInfo(entity.getClass());
+        int val = (int) ReflectUtil.getFieldValue(entity, propertyName);
+        // 新增的排序值不能超过数据库的最大排序值+1
+        int finalVal = Math.min(val, maxVal + 1);
         LambdaUpdateWrapper<T> updateWrapper =
-                new UpdateWrapper<T>().lambda()
-                                      .setSql(columnName + " = " + columnName + " + 1")
-                                      .ge(sortColumn, val)
-                                      .func(ObjUtil.isNotNull(consumer), consumer);
-        return SqlHelper.retBool(this.update(null, updateWrapper));
+                new UpdateWrapper<T>().setSql(columnName + " = " + columnName + " + 1")
+                                      .orderByDesc(columnName)
+                                      .lambda()
+                                      .ge(sortColumn, finalVal);
+        int update = this.update(tableInfo.newInstance(), updateWrapper);
+        if (finalVal > maxVal || SqlHelper.retBool(update)) {
+            if (val != finalVal) {
+                ReflectUtil.setFieldValue(entity, TakeshiUtil.getPropertyName(sortColumn), finalVal);
+            }
+            return SqlHelper.retBool(this.insert(entity));
+        }
+        return false;
     }
 
     /**
-     * <p>删除记录时更新排序</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，先调用删除方法或先调用该方法都可以</p>
+     * <p>删除记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
+     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成删除数据且更新排序的操作</p>
      *
      * @param id         主键ID值
      * @param sortColumn 排序的字段
-     * @param consumer   示例：item -> item.eq(User::getUserId,1)
      * @return int
      */
-    default boolean deleteWithSort(Serializable id, SFunction<T, ?> sortColumn, Consumer<LambdaUpdateWrapper<T>> consumer) {
+    default boolean deleteWithSort(Serializable id, SFunction<T, ?> sortColumn) {
         Class<T> entityClass = this.getEntityClass();
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
-        List<Object> ts = this.selectObjs(new QueryWrapper<T>().eq(tableInfo.getKeyColumn(), id).lambda().select(sortColumn));
+        List<Object> ts = this.selectObjs(new QueryWrapper<T>().eq(tableInfo.getKeyColumn(), id).select(columnName));
         if (CollUtil.isEmpty(ts)) {
             return false;
         }
         if (ts.size() != 1) {
             throw ExceptionUtils.mpe("One record is expected, but the query result is multiple records");
         }
-        Integer oldVal = (Integer) ts.get(0);
-        LambdaUpdateWrapper<T> updateWrapper =
-                new UpdateWrapper<T>().lambda()
-                                      .setSql(columnName + " = " + columnName + " - 1")
-                                      .gt(sortColumn, oldVal)
-                                      .func(ObjUtil.isNotNull(consumer), consumer);
-        return SqlHelper.retBool(this.update(null, updateWrapper));
+        int oldVal = (int) ts.get(0);
+        if (SqlHelper.retBool(this.deleteById(id))) {
+            LambdaUpdateWrapper<T> updateWrapper =
+                    new UpdateWrapper<T>().setSql(columnName + " = " + columnName + " - 1")
+                                          .orderByAsc(columnName)
+                                          .lambda()
+                                          .gt(sortColumn, oldVal);
+            this.update(tableInfo.newInstance(), updateWrapper);
+            return true;
+        }
+        return false;
     }
 
     /**
-     * <p>更新记录时更新排序</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，并且需要先调用该方法更新排序字段再更新其他字段值</p>
+     * <p>更新记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
+     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成排序字段的更新操作</p>
      *
-     * @param id         主键ID值
+     * @param entity     要更新的实体数据
      * @param sortColumn 排序的字段
-     * @param newVal     新的排序值
-     * @param consumer   示例：item -> item.eq(User::getUserId,1)
+     * @param maxVal     当前数据库中最大的排序值
      * @return int
      */
-    default boolean updateWithSort(Serializable id, SFunction<T, ?> sortColumn, Integer newVal, Consumer<LambdaUpdateWrapper<T>> consumer) {
+    default boolean updateWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
         Class<T> entityClass = this.getEntityClass();
         String columnName = TakeshiUtil.getColumnName(sortColumn);
+        String propertyName = TakeshiUtil.getPropertyName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
-        List<Object> ts = this.selectObjs(new QueryWrapper<T>().eq(tableInfo.getKeyColumn(), id).lambda().select(sortColumn));
+        Object keyValue = ReflectUtil.getFieldValue(entity, tableInfo.getKeyProperty());
+        List<Object> ts = this.selectObjs(new QueryWrapper<T>().eq(tableInfo.getKeyColumn(), keyValue).select(columnName));
         if (CollUtil.isEmpty(ts)) {
             return false;
         }
         if (ts.size() != 1) {
             throw ExceptionUtils.mpe("One record is expected, but the query result is multiple records");
         }
-        Integer oldVal = (Integer) ts.get(0);
-        if (oldVal.compareTo(newVal) == 0) {
+        int val = (int) ReflectUtil.getFieldValue(entity, propertyName);
+        int finalVal = Math.min(val, maxVal);
+        int oldVal = (int) ts.get(0);
+        if (oldVal == finalVal) {
             return false;
         }
-        LambdaUpdateWrapper<T> updateWrapper =
-                Wrappers.lambdaUpdate(entityClass)
-                        .setSql(columnName +
-                                        " = CASE " +
-                                        " WHEN " + tableInfo.getKeyColumn() + " = " + id + " THEN " + newVal +
-                                        " WHEN " + columnName + " < " + oldVal + " THEN " + columnName + " + 1" +
-                                        " WHEN " + columnName + " > " + oldVal + " THEN " + columnName + " - 1 " +
-                                        " ELSE " + columnName +
-                                        " END")
-                        .func(ObjUtil.isNotNull(consumer), consumer);
-        updateWrapper.last((StringUtils.isBlank(updateWrapper.getCustomSqlSegment()) ? " WHERE " : " and ") + columnName + " >= LEAST(" + oldVal + "," + newVal + ") and " + columnName + " <= GREATEST(" + oldVal + "," + newVal + ")");
-        return SqlHelper.retBool(this.update(null, updateWrapper));
+        UpdateWrapper<T> updateWrapper =
+                new UpdateWrapper<T>().setSql(columnName +
+                                                      " = CASE " +
+                                                      " WHEN " + tableInfo.getKeyColumn() + " = " + keyValue + " THEN " + 0 +
+                                                      " WHEN " + columnName + " = " + finalVal + " THEN " + oldVal +
+                                                      " END")
+                                      .in(columnName, oldVal, finalVal)
+                                      .orderByAsc(oldVal < finalVal, columnName)
+                                      .orderByDesc(oldVal > finalVal, columnName);
+        if (SqlHelper.retBool(this.update(tableInfo.newInstance(), updateWrapper))) {
+            if (val != finalVal) {
+                ReflectUtil.setFieldValue(entity, TakeshiUtil.getPropertyName(sortColumn), finalVal);
+            }
+            return SqlHelper.retBool(this.updateById(entity));
+        }
+        return false;
     }
 
     /**
