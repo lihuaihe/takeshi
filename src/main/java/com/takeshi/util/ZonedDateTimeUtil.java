@@ -647,7 +647,7 @@ public final class ZonedDateTimeUtil {
      * @return ZonedDateTime
      */
     public static ZonedDateTime beginOfYear(ZonedDateTime zonedDateTime) {
-        return zonedDateTime.with(TemporalAdjusters.lastDayOfYear()).with(LocalTime.MIN);
+        return zonedDateTime.with(TemporalAdjusters.firstDayOfYear()).with(LocalTime.MIN);
     }
 
     /**
