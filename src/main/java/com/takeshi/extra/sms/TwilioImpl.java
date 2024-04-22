@@ -8,19 +8,17 @@ import com.takeshi.util.GsonUtil;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * TwilioImpl
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 @AutoService(SmsInterface.class)
 public class TwilioImpl implements SmsInterface {
-
-    private static final Logger log = LoggerFactory.getLogger(TwilioImpl.class);
 
     static String messagingServiceSid;
 

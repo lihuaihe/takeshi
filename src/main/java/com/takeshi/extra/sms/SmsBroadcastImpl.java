@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.properties.SmsBroadcastProperties;
 import com.takeshi.util.AwsSecretsManagerUtil;
 import com.takeshi.util.GsonUtil;
+import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +17,9 @@ import java.util.Map;
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 @AutoService(SmsInterface.class)
 public class SmsBroadcastImpl implements SmsInterface {
-
-    private static final Logger log = LoggerFactory.getLogger(SmsBroadcastImpl.class);
 
     final String URL = "https://api.smsbroadcast.com.au/api-adv.php";
 
