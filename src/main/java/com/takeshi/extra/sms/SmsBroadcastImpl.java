@@ -1,13 +1,15 @@
 package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.HttpUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.properties.SmsBroadcastProperties;
 import com.takeshi.util.AwsSecretsManagerUtil;
 import com.takeshi.util.GsonUtil;
-import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +19,13 @@ import java.util.Map;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Slf4j
 @AutoService(SmsInterface.class)
 public class SmsBroadcastImpl implements SmsInterface {
+
+    /**
+     * 此处不可以使用@Slf4j注解，否则会无法通过ServiceLoaderUtil.loadFirstAvailable获取到
+     */
+    private static final Logger log = LoggerFactory.getLogger(SmsBroadcastImpl.class);
 
     final String URL = "https://api.smsbroadcast.com.au/api-adv.php";
 
@@ -31,10 +37,9 @@ public class SmsBroadcastImpl implements SmsInterface {
 
     /**
      * 构造函数
-     *
-     * @param smsBroadcast smsBroadcast
      */
-    public SmsBroadcastImpl(final SmsBroadcastProperties smsBroadcast) {
+    public SmsBroadcastImpl() {
+        SmsBroadcastProperties smsBroadcast = SpringUtil.getBean("SmsBroadcastProperties");
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
         userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
         password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();

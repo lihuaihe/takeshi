@@ -1,6 +1,7 @@
 package com.takeshi.extra.sms;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.properties.TwilioProperties;
 import com.takeshi.util.AwsSecretsManagerUtil;
@@ -8,26 +9,30 @@ import com.takeshi.util.GsonUtil;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
-import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.auto.annotation.AutoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TwilioImpl
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Slf4j
 @AutoService(SmsInterface.class)
 public class TwilioImpl implements SmsInterface {
+
+    /**
+     * 此处不可以使用@Slf4j注解，否则会无法通过ServiceLoaderUtil.loadFirstAvailable获取到
+     */
+    private static final Logger log = LoggerFactory.getLogger(TwilioImpl.class);
 
     static String messagingServiceSid;
 
     /**
      * 构造函数
-     *
-     * @param twilio twilio
      */
-    public TwilioImpl(final TwilioProperties twilio) {
+    public TwilioImpl() {
+        TwilioProperties twilio = SpringUtil.getBean("TwilioProperties");
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
         String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : jsonNode.get(twilio.getAccountSidSecrets()).asText();
         String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : jsonNode.get(twilio.getAuthTokenSecrets()).asText();
