@@ -39,7 +39,7 @@ public class SmsBroadcastImpl implements SmsInterface {
      * 构造函数
      */
     public SmsBroadcastImpl() {
-        SmsBroadcastProperties smsBroadcast = SpringUtil.getBean("SmsBroadcastProperties");
+        SmsBroadcastProperties smsBroadcast = SpringUtil.getBean(SmsBroadcastProperties.class);
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
         userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
         password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();

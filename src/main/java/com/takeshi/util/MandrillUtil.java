@@ -125,7 +125,7 @@ public final class MandrillUtil {
      *
      * @return MandrillUtil
      */
-    public static MandrillUtil create() {
+    public static MandrillUtil of() {
         return new MandrillUtil().message();
     }
 
@@ -136,7 +136,7 @@ public final class MandrillUtil {
      * @param toEmail 收件人邮箱
      * @return MandrillUtil
      */
-    public static MandrillUtil create(String subject, String toEmail) {
+    public static MandrillUtil of(String subject, String toEmail) {
         return new MandrillUtil().message(subject, toEmail, null);
     }
 
@@ -148,7 +148,7 @@ public final class MandrillUtil {
      * @param toName  收件人名称
      * @return MandrillUtil
      */
-    public static MandrillUtil create(String subject, String toEmail, String toName) {
+    public static MandrillUtil of(String subject, String toEmail, String toName) {
         return new MandrillUtil().message(subject, toEmail, toName);
     }
 
