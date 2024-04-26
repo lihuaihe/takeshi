@@ -96,7 +96,10 @@ public final class AmazonS3Util {
     }
 
     // 存储桶名称
-    private static String BUCKET_NAME;
+    private static volatile String BUCKET_NAME;
+
+    // 文件ACL
+    private static volatile CannedAccessControlList FILE_ACL;
 
     /**
      * 用于管理到 Amazon S3 的传输的高级实用程序
@@ -152,6 +155,7 @@ public final class AmazonS3Util {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
                         BUCKET_NAME = awsSecrets.getBucketName();
+                        FILE_ACL = awsSecrets.getFileAcl();
                         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
                         String accessKey = jsonNode.get(awsSecrets.getAccessKeySecrets()).asText();
                         String secretKey = jsonNode.get(awsSecrets.getSecretKeySecrets()).asText();
@@ -383,6 +387,9 @@ public final class AmazonS3Util {
                 throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
             }
             Instant instant = Instant.now();
+            if (ObjUtil.isNull(this.fileAcl)) {
+                this.fileAcl = FILE_ACL;
+            }
             ObjectMetadata metadata = new ObjectMetadata();
             if (CollUtil.isNotEmpty(this.userMetadata)) {
                 metadata.setUserMetadata(this.userMetadata);

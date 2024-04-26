@@ -2,6 +2,7 @@ package com.takeshi.config.properties;
 
 import cn.hutool.core.text.NamingCase;
 import cn.hutool.core.util.StrUtil;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,7 +42,12 @@ public class AWSSecretsManagerCredentials {
     /**
      * 设置客户端使用的区域（例如：us-west-2）
      */
-    private String region = "us-west-2";
+    private String region;
+
+    /**
+     * 文件对象的访问控制列表 (ACL)
+     */
+    private CannedAccessControlList fileAcl;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS 访问 s3 的密钥ID名称
