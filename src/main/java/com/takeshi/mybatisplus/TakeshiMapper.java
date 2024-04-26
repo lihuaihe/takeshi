@@ -205,7 +205,7 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         int finalVal = Math.min(val, maxVal);
         int oldVal = (int) ts.get(0);
         if (oldVal == finalVal) {
-            return false;
+            return SqlHelper.retBool(this.updateById(entity));
         }
         UpdateWrapper<T> updateWrapper =
                 new UpdateWrapper<T>().setSql(columnName +
