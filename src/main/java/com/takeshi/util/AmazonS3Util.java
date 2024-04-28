@@ -326,6 +326,36 @@ public final class AmazonS3Util {
     /**
      * 上传文件
      *
+     * @param files 文件列表
+     * @return URL列表
+     */
+    @SneakyThrows
+    public List<URL> upload(File... files) {
+        List<URL> list = new ArrayList<>();
+        for (File file : files) {
+            list.add(this.upload(TikaInputStream.get(file.toPath()), file.getName()));
+        }
+        return list;
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param multipartFiles 文件列表
+     * @return URL列表
+     */
+    @SneakyThrows
+    public List<URL> upload(MultipartFile... multipartFiles) {
+        List<URL> list = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles) {
+            list.add(this.upload(TikaInputStream.get(multipartFile.getBytes()), multipartFile.getOriginalFilename()));
+        }
+        return list;
+    }
+
+    /**
+     * 上传文件
+     *
      * @param file 文件
      * @return URL
      */
