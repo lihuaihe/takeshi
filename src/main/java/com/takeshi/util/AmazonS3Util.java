@@ -155,7 +155,7 @@ public final class AmazonS3Util {
                         // 获取密钥
                         AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
                         BUCKET_NAME = awsSecrets.getBucketName();
-                        FILE_ACL = awsSecrets.getFileAcl();
+                        FILE_ACL = Optional.ofNullable(awsSecrets.getFileAcl()).map(fileAcl -> Enum.valueOf(CannedAccessControlList.class, fileAcl.name())).orElse(null);
                         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
                         String accessKey = jsonNode.get(awsSecrets.getAccessKeySecrets()).asText();
                         String secretKey = jsonNode.get(awsSecrets.getSecretKeySecrets()).asText();
