@@ -65,6 +65,7 @@ import java.security.cert.Certificate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * 工具类
@@ -312,15 +313,18 @@ public final class TakeshiUtil {
      * @return 消息
      */
     public static String formatMessage(String message, Object... args) {
-        MessageSource messageSource = Optional.ofNullable(SpringUtil.getBean(MessageSource.class))
-                                              .orElseGet(() -> {
-                                                  ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
-                                                  resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
-                                                  resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-                                                  return resourceBundleMessageSource;
-                                              });
+        Supplier<MessageSource> messageSourceSupplier = () -> {
+            try {
+                return SpringUtil.getBean(MessageSource.class);
+            } catch (Exception ignored) {
+                ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
+                resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
+                resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+                return resourceBundleMessageSource;
+            }
+        };
         message = StrUtil.strip(message, StrUtil.DELIM_START, StrUtil.DELIM_END);
-        return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
+        return messageSourceSupplier.get().getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
     /**
