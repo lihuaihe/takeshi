@@ -1,6 +1,5 @@
 package com.takeshi.component;
 
-import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
@@ -24,8 +23,6 @@ public class ShutdownManager {
     private final ScheduledExecutorService scheduledExecutorService;
 
     private final TakeshiProperties takeshiProperties;
-
-    private final AWSSecretsManagerCredentials awsSecretsManagerCredentials;
 
     /**
      * destroy
