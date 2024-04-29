@@ -37,7 +37,8 @@ ext {
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
-version = '1.0.7'
+//version = '1.0.1'
+version = '24.04.29.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 

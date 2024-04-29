@@ -45,6 +45,16 @@ public class AWSSecretsManagerCredentials {
     private String region;
 
     /**
+     * 是否启用桶的ACL，启用桶的ACL会关闭阻止所有公开访问并启用桶的ACL
+     */
+    private boolean bucketAcl;
+
+    /**
+     * 是否为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
+     */
+    private boolean bucketAccelerate;
+
+    /**
      * 文件对象的访问控制列表 (ACL)
      */
     private CannedAccessControlList fileAcl;

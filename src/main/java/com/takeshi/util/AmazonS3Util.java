@@ -168,15 +168,17 @@ public final class AmazonS3Util {
                             if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                 // 创建桶
                                 amazonS3.createBucket(BUCKET_NAME);
-                                // 设置阻止所有公开访问
-                                PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
-                                        .withBlockPublicAcls(false)
-                                        .withIgnorePublicAcls(false)
-                                        .withBlockPublicPolicy(false)
-                                        .withRestrictPublicBuckets(false);
-                                amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
-                                // 启用存储桶的ACL
-                                amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(Collections.singletonList(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                if (awsSecrets.isBucketAcl()) {
+                                    // 设置是否阻止所有公开访问
+                                    PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
+                                            .withBlockPublicAcls(false)
+                                            .withIgnorePublicAcls(false)
+                                            .withBlockPublicPolicy(false)
+                                            .withRestrictPublicBuckets(false);
+                                    amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
+                                    // 启用存储桶的ACL
+                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(Collections.singletonList(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                }
                                 // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
                                 BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
                                         .withId("Automatically delete incomplete multipart upload after seven days")
@@ -188,8 +190,10 @@ public final class AmazonS3Util {
                                 CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
                                 // 将跨域规则设置到桶中
                                 amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
-                                // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
-                                // amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                                if (awsSecrets.isBucketAccelerate()) {
+                                    // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
+                                    amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                                }
                             }
                             transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
                             log.info("AmazonS3Util.static --> TransferManager Initialization successful");
@@ -321,6 +325,36 @@ public final class AmazonS3Util {
         this.userMetadata = Optional.ofNullable(this.userMetadata).orElse(new HashMap<>());
         this.userMetadata.put(key, value);
         return this;
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param files 文件列表
+     * @return URL列表
+     */
+    @SneakyThrows
+    public List<URL> upload(File... files) {
+        List<URL> list = new ArrayList<>();
+        for (File file : files) {
+            list.add(this.upload(TikaInputStream.get(file.toPath()), file.getName()));
+        }
+        return list;
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param multipartFiles 文件列表
+     * @return URL列表
+     */
+    @SneakyThrows
+    public List<URL> upload(MultipartFile... multipartFiles) {
+        List<URL> list = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles) {
+            list.add(this.upload(TikaInputStream.get(multipartFile.getBytes()), multipartFile.getOriginalFilename()));
+        }
+        return list;
     }
 
     /**
