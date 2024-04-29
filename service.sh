@@ -47,7 +47,7 @@ function stop() {
   if [ -f "$PID_FILE_PATH" ] && ps -p "$(< "$PID_FILE_PATH")" >/dev/null; then
     PID=$(< "$PID_FILE_PATH")
     echo "Waiting ${JAR_FILE} (pid $PID) to die..."
-    xargs kill <"$PID_FILE_PATH"
+    xargs sudo kill <"$PID_FILE_PATH"
     while ps -p "$PID" >/dev/null; do
       sleep 1
     done
