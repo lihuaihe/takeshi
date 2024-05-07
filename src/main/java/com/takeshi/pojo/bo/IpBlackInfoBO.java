@@ -1,6 +1,6 @@
 package com.takeshi.pojo.bo;
 
-import com.takeshi.config.properties.RateLimitProperties;
+import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -54,12 +54,12 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     private Instant instant;
 
     /**
-     * 详情参考{@link RateLimitProperties.IpRate}
+     * 详情参考{@link IpRateLimitProperties}
      */
     @EqualsAndHashCode(callSuper = true)
     @Data
     @Schema
-    public static class IpRate extends RateLimitProperties.IpRate {
+    public static class IpRate extends IpRateLimitProperties {
 
         /**
          * IpRate的配置是被RepeatSubmit中的配置覆盖了的

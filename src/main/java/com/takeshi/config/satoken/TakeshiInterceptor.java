@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.config.properties.RateLimitProperties;
+import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
@@ -248,9 +248,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             // 黑名单中的IP
             SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
         }
-        RateLimitProperties rate = SpringUtil.getBean(RateLimitProperties.class);
+        IpRateLimitProperties ipRateLimitProperties = SpringUtil.getBean(IpRateLimitProperties.class);
         // ip速率校验
-        this.verifyIp(redissonClient, repeatSubmit, rate.getIp(), clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
+        this.verifyIp(redissonClient, repeatSubmit, ipRateLimitProperties, clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
         // sign校验
         this.verifySign(passSignature, new SaRequestForServlet(request));
         // 重复提交校验
@@ -261,21 +261,21 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * ip速率校验
      *
-     * @param repeatSubmit     注解
-     * @param ipRate           ip限制
-     * @param clientIp         客户端IP
-     * @param rateLimitPathKey 针对接口的限制key
-     * @param httpMethod       接口方法类型
-     * @param servletPath      接口路径
-     * @param ipBlacklistKey   是否开启了黑名单
+     * @param repeatSubmit          注解
+     * @param ipRateLimitProperties ip限制
+     * @param clientIp              客户端IP
+     * @param rateLimitPathKey      针对接口的限制key
+     * @param httpMethod            接口方法类型
+     * @param servletPath           接口路径
+     * @param ipBlacklistKey        是否开启了黑名单
      */
-    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, RateLimitProperties.IpRate ipRate, String clientIp,
+    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, IpRateLimitProperties ipRateLimitProperties, String clientIp,
                           String rateLimitPathKey, String httpMethod, String servletPath, String ipBlacklistKey) {
         boolean ipOverwritten = false;
-        int iRate = ipRate.getRate();
-        int iRateInterval = ipRate.getRateInterval();
-        RateIntervalUnit iRateIntervalUnit = ipRate.getRateIntervalUnit();
-        boolean iOpenBlacklist = ipRate.isOpenBlacklist();
+        int iRate = ipRateLimitProperties.getRate();
+        int iRateInterval = ipRateLimitProperties.getRateInterval();
+        RateIntervalUnit iRateIntervalUnit = ipRateLimitProperties.getRateIntervalUnit();
+        boolean iOpenBlacklist = ipRateLimitProperties.isOpenBlacklist();
         String ipRateLimitKeyParam = clientIp;
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() >= 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率

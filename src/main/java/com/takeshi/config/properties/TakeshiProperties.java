@@ -25,11 +25,6 @@ public class TakeshiProperties {
     private String projectName;
 
     /**
-     * 参数签名使用的key，随便设定一个与前端约定的值即可，有值则开启参数签名限制
-     */
-    private String signatureKey;
-
-    /**
      * 是否开启移动端请求工具限制
      */
     private boolean appPlatform = false;
