@@ -1,8 +1,8 @@
 package com.takeshi.pojo.basic;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
@@ -60,7 +60,7 @@ public class ResponseData<T> implements Serializable {
     /**
      * 返回时间
      */
-    @Schema(description = "返回时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "返回时间")
     private Instant time;
 
     /**
@@ -363,7 +363,7 @@ public class ResponseData<T> implements Serializable {
         this.message = TakeshiUtil.formatMessage(message, args);
         this.data = data;
         this.time = Instant.now();
-        this.traceId = MDC.get(TakeshiConstants.TRACE_ID_KEY);
+        this.traceId = MDC.get(RequestConstants.TRACE_ID);
     }
 
     @Override

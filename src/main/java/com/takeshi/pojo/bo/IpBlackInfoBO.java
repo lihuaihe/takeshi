@@ -36,10 +36,10 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     private String httpMethod;
 
     /**
-     * 请求超额的路径
+     * 请求超额时最后一次请求的路径
      */
-    @Schema(description = "请求超额的路径")
-    private String path;
+    @Schema(description = "请求超额时最后一次请求的路径")
+    private String lastPath;
 
     /**
      * IP速率限制
@@ -50,7 +50,7 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     /**
      * 加入黑名单的时间
      */
-    @Schema(description = "加入黑名单的时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "加入黑名单的时间")
     private Instant instant;
 
     /**

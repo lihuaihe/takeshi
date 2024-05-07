@@ -1,7 +1,5 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -17,59 +15,51 @@ public enum LoginTypeEnum {
     /**
      * 验证码登陆
      */
-    CAPTCHA("captcha"),
+    CAPTCHA,
     /**
      * 密码登录
      */
-    PASSWORD("password"),
+    PASSWORD,
     /**
      * 微信登录
      */
-    WE_CHAT("we_chat"),
+    WE_CHAT,
     /**
      * 支付宝登录
      */
-    ALIPAY("alipay"),
+    ALIPAY,
     /**
      * 抖音登录
      */
-    TIKTOK("tiktok"),
+    TIKTOK,
     /**
      * 油管登录
      */
-    YOU_TUBE("you_tube"),
+    YOU_TUBE,
     /**
      * 电报登录
      */
-    TELEGRAM("telegram"),
+    TELEGRAM,
     /**
      * 苹果登录
      */
-    APPLE("apple"),
+    APPLE,
     /**
      * 谷歌登录
      */
-    GOOGLE("google"),
+    GOOGLE,
     /**
      * 脸书登录
      */
-    FACEBOOK("facebook"),
+    FACEBOOK,
     /**
      * 注册后自动登录
      */
-    REGISTER_AFTER_LOGIN("register_after_login"),
+    REGISTER_AFTER_LOGIN,
     /**
      * 其它
      */
-    OTHER("other"),
+    OTHER,
     ;
-
-    @EnumValue
-    @JsonValue
-    private final String value;
-
-    LoginTypeEnum(String value) {
-        this.value = value;
-    }
 
 }

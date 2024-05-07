@@ -3,7 +3,7 @@ package com.takeshi.config;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.takeshi.constants.TakeshiConstants;
+import com.takeshi.constants.RequestConstants;
 import org.slf4j.MDC;
 import org.springframework.core.task.TaskDecorator;
 
@@ -24,12 +24,12 @@ public class MdcTaskDecorator implements TaskDecorator {
                 if (CollUtil.isNotEmpty(copyOfContextMap)) {
                     MDC.setContextMap(copyOfContextMap);
                 }
-                if (StrUtil.isBlank(MDC.get(TakeshiConstants.TRACE_ID_KEY))) {
-                    MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastSimpleUUID());
+                if (StrUtil.isBlank(MDC.get(RequestConstants.TRACE_ID))) {
+                    MDC.put(RequestConstants.TRACE_ID, IdUtil.fastSimpleUUID());
                 }
                 runnable.run();
             } finally {
-                MDC.remove(TakeshiConstants.TRACE_ID_KEY);
+                MDC.remove(RequestConstants.TRACE_ID);
             }
         };
     }

@@ -18,41 +18,6 @@ public interface TakeshiConstants {
     Platform ANDROID_TABLET = new Platform("AndroidTablet", "android.*tablet");
 
     /**
-     * 接口请求的参数，放在request的attribute传递下去，以免频繁获取
-     */
-    String PARAM_BO = "paramBO";
-
-    /**
-     * 调用接口header里面传的时间戳字段（毫秒级）
-     */
-    String TIMESTAMP_NAME = "x-timestamp";
-
-    /**
-     * 调用接口header里面传的时区字段(Asia/Shanghai)
-     */
-    String TIMEZONE_NAME = "x-timezone";
-
-    /**
-     * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
-     */
-    String NONCE_NAME = "x-nonce";
-
-    /**
-     * 调用接口header里面传的经纬度字段
-     */
-    String GEO_POINT_NAME = "x-geo-point";
-
-    /**
-     * 签名参数名
-     */
-    String SIGN_NAME = "x-sign";
-
-    /**
-     * 日志追踪ID
-     */
-    String TRACE_ID_KEY = "traceId";
-
-    /**
      * 需要排除的页面路径
      */
     String[] EXCLUDE_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error"};

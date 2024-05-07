@@ -1,5 +1,8 @@
 package com.takeshi.util;
 
+import cn.dev33.satoken.SaManager;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.spring.SpringMVCUtil;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.impl.CollectionConverter;
 import cn.hutool.core.date.LocalDateTimeUtil;
@@ -16,7 +19,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.crypto.KeyUtil;
-import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -38,6 +40,7 @@ import cn.hutool.jwt.signers.JWTSigner;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.takeshi.config.StaticConfig;
+import com.takeshi.config.satoken.TakeshiSaSignTemplate;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
@@ -64,8 +67,10 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 工具类
@@ -162,33 +167,12 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 将URL的参数和body参数合并，path参数不参与，如果有上传文件，则，key使用参数名，value使用文件流进行MD5加密
+     * 使用Sa-token的sign逻辑对参数做MD5签名
      *
-     * @param request request
-     * @return 按key排序后的map
-     */
-    public static Map<String, Object> getAllParams(HttpServletRequest request) {
-        // 获取参数
-        Map<String, String> paramMap = JakartaServletUtil.getParamMap(request);
-        Map<String, Object> map = new HashMap<>(paramMap);
-        if (JakartaServletUtil.isGetMethod(request)) {
-            return map;
-        }
-        return map;
-    }
-
-    /**
-     * 对参数做MD5签名<br>
-     * 参数签名为对Map参数按照key的顺序排序后拼接为字符串，然后根据提供的签名算法生成签名字符串<br>
-     * 拼接后的字符串键值对之间无符号，键值对之间无符号，忽略null值
-     *
-     * @param request     request
-     * @param otherParams 其它附加参数字符串（例如密钥）
      * @return 签名后的值
      */
-    public static String signParams(HttpServletRequest request, String... otherParams) {
-        Map<String, Object> allParams = getAllParams(request);
-        return SecureUtil.signParamsMd5(allParams, otherParams);
+    public static String signParams() {
+        return ((TakeshiSaSignTemplate) SaManager.getSaSignTemplate()).createSign(SaHolder.getRequest());
     }
 
     /**
@@ -313,18 +297,17 @@ public final class TakeshiUtil {
      * @return 消息
      */
     public static String formatMessage(String message, Object... args) {
-        Supplier<MessageSource> messageSourceSupplier = () -> {
-            try {
-                return SpringUtil.getBean(MessageSource.class);
-            } catch (Exception ignored) {
-                ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
-                resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
-                resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-                return resourceBundleMessageSource;
-            }
-        };
+        MessageSource messageSource;
+        if (SpringMVCUtil.isWeb()) {
+            messageSource = SpringUtil.getBean(MessageSource.class);
+        } else {
+            ReloadableResourceBundleMessageSource resourceBundleMessageSource = new ReloadableResourceBundleMessageSource();
+            resourceBundleMessageSource.setBasenames("ValidationMessages", "takeshi-i18n/messages");
+            resourceBundleMessageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+            messageSource = resourceBundleMessageSource;
+        }
         message = StrUtil.strip(message, StrUtil.DELIM_START, StrUtil.DELIM_END);
-        return messageSourceSupplier.get().getMessage(message, args, message, LocaleContextHolder.getLocale());
+        return messageSource.getMessage(message, args, message, LocaleContextHolder.getLocale());
     }
 
     /**

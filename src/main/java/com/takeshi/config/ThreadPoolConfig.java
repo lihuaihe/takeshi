@@ -2,7 +2,7 @@ package com.takeshi.config;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
-import com.takeshi.constants.TakeshiConstants;
+import com.takeshi.constants.RequestConstants;
 import com.takeshi.util.TakeshiThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -73,7 +73,7 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                MDC.put(TakeshiConstants.TRACE_ID_KEY, IdUtil.fastSimpleUUID());
+                MDC.put(RequestConstants.TRACE_ID, IdUtil.fastSimpleUUID());
                 super.beforeExecute(t, r);
             }
 
@@ -81,7 +81,7 @@ public class ThreadPoolConfig {
             protected void afterExecute(Runnable r, Throwable t) {
                 super.afterExecute(r, t);
                 TakeshiThreadUtil.printException(r, t);
-                MDC.remove(TakeshiConstants.TRACE_ID_KEY);
+                MDC.remove(RequestConstants.TRACE_ID);
             }
         };
     }

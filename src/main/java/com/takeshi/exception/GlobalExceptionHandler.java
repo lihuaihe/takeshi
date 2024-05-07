@@ -221,6 +221,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 全局异常拦截（拦截项目中的SaSignException异常）
+     *
+     * @param saSignException 签名异常
+     * @return {@link ResponseData}
+     */
+    @ExceptionHandler(SaSignException.class)
+    public ResponseData<Object> saSignExceptionHandler(SaSignException saSignException) {
+        log.error("GlobalExceptionHandler.saSignExceptionHandler --> SaSignException: ", saSignException);
+        return ResponseData.retData(TakeshiCode.SIGN_ERROR);
+    }
+
+    /**
      * 全局异常拦截（拦截项目中的NotRoleException异常）
      *
      * @param notRoleException 角色异常
