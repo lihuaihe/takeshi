@@ -81,17 +81,20 @@ public final class AmazonS3Util {
      */
     interface UrlParamsConstants {
 
+        // 保存到S3的时间
+        String CREATE_TIME = "x-nt-create-time";
+
         // 文件大小，单位（字节）
         String CONTENT_LENGTH = "x-nt-content-length";
 
         // 内容类型
         String CONTENT_TYPE = "x-nt-content-type";
 
-        // 视频时长，单位（毫秒）
-        String DURATION = "x-nt-duration";
-
         // 缩略图URL
         String THUMBNAIL = "x-nt-thumbnail";
+
+        // 视频时长，单位（毫秒）
+        String DURATION = "x-nt-duration";
 
     }
 
@@ -475,6 +478,7 @@ public final class AmazonS3Util {
             URL url = transferManager.getAmazonS3Client().getUrl(BUCKET_NAME, fileObjKey);
             if (this.fileInfoUrl) {
                 UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
+                urlBuilder.addQuery(UrlParamsConstants.CREATE_TIME, metadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
                 urlBuilder.addQuery(UrlParamsConstants.CONTENT_LENGTH, metadata.getContentLength());
                 urlBuilder.addQuery(UrlParamsConstants.CONTENT_TYPE, metadata.getContentType());
                 String videoDuration = metadata.getUserMetaDataOf(MetadataConstants.DURATION);
@@ -534,6 +538,7 @@ public final class AmazonS3Util {
                 return null;
             }
             GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, key).withExpiration(date);
+            generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CREATE_TIME, objectMetadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
             generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
             generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CONTENT_TYPE, objectMetadata.getContentType());
             String videoDuration = objectMetadata.getUserMetaDataOf(MetadataConstants.DURATION);
