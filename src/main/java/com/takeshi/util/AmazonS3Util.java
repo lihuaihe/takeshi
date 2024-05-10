@@ -180,7 +180,7 @@ public final class AmazonS3Util {
                                             .withRestrictPublicBuckets(false);
                                     amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
                                     // 启用存储桶的ACL
-                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(Collections.singletonList(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
                                 }
                                 // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
                                 BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
@@ -190,7 +190,7 @@ public final class AmazonS3Util {
                                 // 将生命周期规则设置到桶中
                                 amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
                                 // 设置跨域规则
-                                CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
+                                CORSRule corsRule = new CORSRule().withAllowedHeaders(List.of("*")).withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD)).withAllowedOrigins(List.of("*"));
                                 // 将跨域规则设置到桶中
                                 amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
                                 if (awsSecrets.isBucketAccelerate()) {
