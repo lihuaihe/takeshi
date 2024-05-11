@@ -20,7 +20,7 @@ ext {
     javacvVersion = '1.5.9'
     mybatisPlusVersion = '3.5.5'
     knife4jVersion = '4.5.0'
-    awsJavaSdkVersion = '1.12.674'
+    awsJavaSdkVersion = '1.12.720'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.2.0'
     findbugsVersion = '3.0.1u2'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.10'
-version = '24.05.10.0-SNAPSHOT'
+version = '24.05.11.4-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 

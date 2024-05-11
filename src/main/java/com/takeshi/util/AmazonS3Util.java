@@ -167,6 +167,8 @@ public final class AmazonS3Util {
                             AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                                                                      .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
                                                                      .withRegion(awsSecrets.getRegion())
+                                                                     // 存储桶启用传输加速
+                                                                     .withAccelerateModeEnabled(awsSecrets.isBucketAccelerate())
                                                                      .build();
                             if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                 // 创建桶
@@ -190,7 +192,11 @@ public final class AmazonS3Util {
                                 // 将生命周期规则设置到桶中
                                 amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
                                 // 设置跨域规则
-                                CORSRule corsRule = new CORSRule().withAllowedHeaders(List.of("*")).withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD)).withAllowedOrigins(List.of("*"));
+                                CORSRule corsRule =
+                                        new CORSRule().withAllowedHeaders(List.of("*"))
+                                                      .withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD))
+                                                      .withAllowedOrigins(List.of("*"))
+                                                      .withMaxAgeSeconds(3000);
                                 // 将跨域规则设置到桶中
                                 amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
                                 if (awsSecrets.isBucketAccelerate()) {
@@ -476,6 +482,10 @@ public final class AmazonS3Util {
             // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
             upload.waitForCompletion();
             URL url = transferManager.getAmazonS3Client().getUrl(BUCKET_NAME, fileObjKey);
+            if (transferManager.getAmazonS3Client().getBucketAccelerateConfiguration(BUCKET_NAME).isAccelerateEnabled()) {
+                // 如果启用了传输加速，需要将URL中的域名替换为对应的加速域名
+                url = new URL(url.getProtocol(), BUCKET_NAME + ".s3-accelerate.amazonaws.com", url.getPort(), url.getFile());
+            }
             if (this.fileInfoUrl) {
                 UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
                 urlBuilder.addQuery(UrlParamsConstants.CREATE_TIME, metadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
