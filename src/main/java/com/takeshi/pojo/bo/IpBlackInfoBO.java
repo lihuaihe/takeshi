@@ -1,6 +1,6 @@
 package com.takeshi.pojo.bo;
 
-import com.takeshi.config.properties.RateLimitProperties;
+import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -36,10 +36,10 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     private String httpMethod;
 
     /**
-     * 请求超额的路径
+     * 请求超额时最后一次请求的路径
      */
-    @Schema(description = "请求超额的路径")
-    private String path;
+    @Schema(description = "请求超额时最后一次请求的路径")
+    private String lastPath;
 
     /**
      * IP速率限制
@@ -50,16 +50,16 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     /**
      * 加入黑名单的时间
      */
-    @Schema(description = "加入黑名单的时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "加入黑名单的时间")
     private Instant instant;
 
     /**
-     * 详情参考{@link RateLimitProperties.IpRate}
+     * 详情参考{@link IpRateLimitProperties}
      */
     @EqualsAndHashCode(callSuper = true)
     @Data
     @Schema
-    public static class IpRate extends RateLimitProperties.IpRate {
+    public static class IpRate extends IpRateLimitProperties {
 
         /**
          * IpRate的配置是被RepeatSubmit中的配置覆盖了的

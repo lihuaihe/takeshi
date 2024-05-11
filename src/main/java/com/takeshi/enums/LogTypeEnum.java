@@ -1,7 +1,5 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -17,71 +15,63 @@ public enum LogTypeEnum {
     /**
      * 新增
      */
-    INSERT("insert"),
+    INSERT,
     /**
      * 删除
      */
-    DELETE("delete"),
+    DELETE,
     /**
      * 更新
      */
-    UPDATE("update"),
+    UPDATE,
     /**
      * 查询
      */
-    SELECT("select"),
+    SELECT,
     /**
      * 导入
      */
-    IMPORT("import"),
+    IMPORT,
     /**
      * 导出
      */
-    EXPORT("export"),
+    EXPORT,
     /**
      * 上传文件
      */
-    UPLOAD("upload"),
+    UPLOAD,
     /**
      * 下载文件
      */
-    DOWNLOAD("download"),
+    DOWNLOAD,
     /**
      * 登录
      */
-    LOGIN("login"),
+    LOGIN,
     /**
      * 注册
      */
-    REGISTER("register"),
+    REGISTER,
     /**
      * 注销
      */
-    LOGOUT("logout"),
+    LOGOUT,
     /**
      * 验证
      */
-    VERIFY("verify"),
+    VERIFY,
     /**
      * 授权认证
      */
-    OAUTH("oauth"),
+    OAUTH,
     /**
      * 回调
      */
-    CALLBACK("callback"),
+    CALLBACK,
     /**
      * 其它
      */
-    OTHER("other"),
+    OTHER,
     ;
-
-    @EnumValue
-    @JsonValue
-    private final String value;
-
-    LogTypeEnum(String value) {
-        this.value = value;
-    }
 
 }

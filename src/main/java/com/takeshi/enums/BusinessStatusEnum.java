@@ -1,7 +1,5 @@
 package com.takeshi.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -17,19 +15,11 @@ public enum BusinessStatusEnum {
     /**
      * 失败
      */
-    FAIL("fail"),
+    FAIL,
     /**
      * 成功
      */
-    SUCCESS("success"),
+    SUCCESS,
     ;
-
-    @EnumValue
-    @JsonValue
-    private final String value;
-
-    BusinessStatusEnum(String value) {
-        this.value = value;
-    }
 
 }

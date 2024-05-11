@@ -104,25 +104,25 @@ public class TbSysLog implements Serializable {
     /**
      * 请求时间
      */
-    @Schema(description = "请求时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "请求时间")
     private Instant requestTime;
 
     /**
-     * 消耗时间
+     * 消耗时间（单位：毫秒）
      */
-    @Schema(description = "消耗时间")
-    private Long costTime;
+    @Schema(description = "消耗时间（单位：毫秒）")
+    private Long costTimeMillis;
 
     /**
      * 创建时间
      */
-    @Schema(description = "创建时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "创建时间")
     private Instant createTime;
 
     /**
      * 更新时间
      */
-    @Schema(description = "更新时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "更新时间")
     private Instant updateTime;
 
 }

@@ -81,17 +81,20 @@ public final class AmazonS3Util {
      */
     interface UrlParamsConstants {
 
+        // 保存到S3的时间
+        String CREATE_TIME = "x-nt-create-time";
+
         // 文件大小，单位（字节）
         String CONTENT_LENGTH = "x-nt-content-length";
 
         // 内容类型
         String CONTENT_TYPE = "x-nt-content-type";
 
-        // 视频时长，单位（毫秒）
-        String DURATION = "x-nt-duration";
-
         // 缩略图URL
         String THUMBNAIL = "x-nt-thumbnail";
+
+        // 视频时长，单位（毫秒）
+        String DURATION = "x-nt-duration";
 
     }
 
@@ -164,6 +167,8 @@ public final class AmazonS3Util {
                             AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                                                                      .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
                                                                      .withRegion(awsSecrets.getRegion())
+                                                                     // 存储桶启用传输加速
+                                                                     .withAccelerateModeEnabled(awsSecrets.isBucketAccelerate())
                                                                      .build();
                             if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                 // 创建桶
@@ -177,7 +182,7 @@ public final class AmazonS3Util {
                                             .withRestrictPublicBuckets(false);
                                     amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
                                     // 启用存储桶的ACL
-                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(Collections.singletonList(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
                                 }
                                 // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
                                 BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
@@ -187,7 +192,11 @@ public final class AmazonS3Util {
                                 // 将生命周期规则设置到桶中
                                 amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
                                 // 设置跨域规则
-                                CORSRule corsRule = new CORSRule().withAllowedMethods(Collections.singletonList(CORSRule.AllowedMethods.GET)).withAllowedOrigins(Collections.singletonList("*"));
+                                CORSRule corsRule =
+                                        new CORSRule().withAllowedHeaders(List.of("*"))
+                                                      .withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD))
+                                                      .withAllowedOrigins(List.of("*"))
+                                                      .withMaxAgeSeconds(3000);
                                 // 将跨域规则设置到桶中
                                 amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
                                 if (awsSecrets.isBucketAccelerate()) {
@@ -473,8 +482,13 @@ public final class AmazonS3Util {
             // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
             upload.waitForCompletion();
             URL url = transferManager.getAmazonS3Client().getUrl(BUCKET_NAME, fileObjKey);
+            // if (transferManager.getAmazonS3Client().getBucketAccelerateConfiguration(BUCKET_NAME).isAccelerateEnabled()) {
+            //     // 如果启用了传输加速，需要将URL中的域名替换为对应的加速域名
+            //     url = new URL(url.getProtocol(), BUCKET_NAME + ".s3-accelerate.amazonaws.com", url.getPort(), url.getFile());
+            // }
             if (this.fileInfoUrl) {
                 UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
+                urlBuilder.addQuery(UrlParamsConstants.CREATE_TIME, metadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
                 urlBuilder.addQuery(UrlParamsConstants.CONTENT_LENGTH, metadata.getContentLength());
                 urlBuilder.addQuery(UrlParamsConstants.CONTENT_TYPE, metadata.getContentType());
                 String videoDuration = metadata.getUserMetaDataOf(MetadataConstants.DURATION);
@@ -534,6 +548,7 @@ public final class AmazonS3Util {
                 return null;
             }
             GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, key).withExpiration(date);
+            generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CREATE_TIME, objectMetadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
             generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CONTENT_LENGTH, String.valueOf(objectMetadata.getContentLength()));
             generatePresignedUrlRequest.addRequestParameter(UrlParamsConstants.CONTENT_TYPE, objectMetadata.getContentType());
             String videoDuration = objectMetadata.getUserMetaDataOf(MetadataConstants.DURATION);

@@ -1,27 +1,37 @@
 package com.takeshi.config.satoken;
 
+import cn.dev33.satoken.SaManager;
+import cn.dev33.satoken.context.model.SaRequest;
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
+import cn.dev33.satoken.servlet.model.SaRequestForServlet;
+import cn.dev33.satoken.sign.SaSignUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.unit.DataSizeUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.config.properties.RateLimitProperties;
+import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
 import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.IpBlackInfoBO;
-import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.ZonedDateTimeUtil;
@@ -32,16 +42,20 @@ import org.redisson.api.RRateLimiter;
 import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
+import org.springframework.http.HttpMethod;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TakeshiInterceptor
@@ -96,6 +110,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     }
 
     /**
+     * 排除敏感属性字段
+     */
+    private final String[] EXCLUSION_FIELD_NAME = {"password", "oldPassword", "newPassword", "confirmPassword"};
+
+    /**
      * Interception point before the execution of a handler. Called after
      * HandlerMapping determined an appropriate handler object, but before
      * HandlerAdapter invokes the handler.
@@ -120,14 +139,69 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (handler instanceof HandlerMethod handlerMethod) {
             Method method = handlerMethod.getMethod();
-            ParamBO paramBO = (ParamBO) request.getAttribute(TakeshiConstants.PARAM_BO);
             String methodName = StrUtil.builder(method.getDeclaringClass().getName(), StrUtil.DOT, method.getName()).toString();
-            paramBO.setMethodName(methodName);
-            paramBO.setTakeshiLog(method.getAnnotation(TakeshiLog.class));
-            log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, paramBO.getHttpMethod(), StrUtil.BRACKET_END, methodName));
-            log.info("Request Parameters: {}", SpringUtil.getBean(ObjectMapper.class).writeValueAsString(paramBO.getParamObjectNode()));
+            request.setAttribute(RequestConstants.METHOD_NAME, methodName);
+            TakeshiLog takeshiLog = method.getAnnotation(TakeshiLog.class);
+            log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, request.getMethod(), StrUtil.BRACKET_END, methodName));
+            ObjectMapper objectMapper = SpringUtil.getBean(ObjectMapper.class);
+            Map<String, String> urlParam = JakartaServletUtil.getParamMap(request);
+            Map<String, String> multipart = null;
+            Object bodyObject = null;
+            if (HttpMethod.POST.matches(request.getMethod())
+                    && request instanceof StandardMultipartHttpServletRequest multipartRequest) {
+                MultiValueMap<String, MultipartFile> multiFileMap = multipartRequest.getMultiFileMap();
+                multipart = multiFileMap.entrySet()
+                                        .stream()
+                                        .collect(Collectors.toMap(
+                                                         Map.Entry::getKey,
+                                                         entry -> entry.getValue()
+                                                                       .stream()
+                                                                       .map(multipartFile -> StrUtil.builder(multipartFile.getOriginalFilename(), StrUtil.BRACKET_START, DataSizeUtil.format(multipartFile.getSize()), StrUtil.BRACKET_END))
+                                                                       .collect(Collectors.joining(StrUtil.COMMA))
+                                                 )
+                                        );
+            } else if (!HttpMethod.GET.matches(request.getMethod())) {
+                JsonNode jsonNode = objectMapper.readTree(request.getInputStream());
+                if (!jsonNode.isNull()) {
+                    if (jsonNode.isObject()) {
+                        bodyObject = objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {
+                        });
+                    } else if (jsonNode.isArray()) {
+                        bodyObject = objectMapper.<Collection<Object>>convertValue(jsonNode, new TypeReference<>() {
+                        });
+                    } else if (jsonNode.isTextual()) {
+                        bodyObject = jsonNode.textValue();
+                    } else if (jsonNode.isNumber()) {
+                        bodyObject = jsonNode.numberValue();
+                    } else if (jsonNode.isBoolean()) {
+                        bodyObject = jsonNode.booleanValue();
+                    } else {
+                        bodyObject = jsonNode.toString();
+                    }
+                }
+            }
+            ObjectNode paramObjectNode = objectMapper.createObjectNode();
+            if (CollUtil.isNotEmpty(urlParam)) {
+                paramObjectNode.putPOJO("urlParam", urlParam);
+            }
+            if (CollUtil.isNotEmpty(multipart)) {
+                paramObjectNode.putPOJO("multipart", multipart);
+            }
+            if (ObjUtil.isNotEmpty(bodyObject)) {
+                paramObjectNode.putPOJO("bodyObject", bodyObject);
+            }
+            String paramObjectValue = objectMapper.writeValueAsString(paramObjectNode);
+            log.info("Request Parameters: {}", paramObjectValue);
+            if (ObjUtil.isNotNull(takeshiLog)) {
+                String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
+                for (String fieldName : exclusionFieldName) {
+                    paramObjectNode.findParents(fieldName).forEach(item -> ((ObjectNode) item).remove(fieldName));
+                }
+                request.setAttribute(RequestConstants.TAKESHI_LOG, takeshiLog);
+                request.setAttribute(RequestConstants.PARAM_OBJECT_VALUE, objectMapper.writeValueAsString(paramObjectNode));
+            }
             // 速率限制
-            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, paramBO);
+            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, objectMapper, objectMapper.readValue(paramObjectValue, ObjectNode.class));
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
                 // 执行token认证函数
                 auth.run(handlerMethod);
@@ -142,14 +216,15 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * 速率限制
      *
-     * @param request       request
-     * @param handlerMethod handlerMethod
-     * @param paramBO       paramBO
+     * @param request         request
+     * @param handlerMethod   handlerMethod
+     * @param objectMapper    objectMapper
+     * @param paramObjectNode paramObjectNode
      */
-    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ParamBO paramBO) throws Exception {
+    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ObjectMapper objectMapper, ObjectNode paramObjectNode) throws Exception {
         SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
-        String clientIp = paramBO.getClientIp();
+        String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
         TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
         boolean passPlatform = false;
         boolean passSignature = false;
@@ -161,126 +236,46 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             // 移动端请求工具校验
             SaRouter.back(ResponseData.retData(TakeshiCode.USERAGENT_ERROR));
         }
-
         // 获取方法上的RepeatSubmit注解
         RepeatSubmit repeatSubmit = handlerMethod.getMethodAnnotation(RepeatSubmit.class);
-
-        String timestamp = request.getHeader(TakeshiConstants.TIMESTAMP_NAME);
-        String nonce = request.getHeader(TakeshiConstants.NONCE_NAME);
         String httpMethod = request.getMethod();
         String servletPath = request.getServletPath();
+        Object loginId = request.getAttribute(RequestConstants.LOGIN_ID);
         String rateLimitPathKey = StrUtil.COLON + StrUtil.BRACKET_START + httpMethod + StrUtil.BRACKET_END + servletPath;
-
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
         RedissonClient redissonClient = SpringUtil.getBean(RedissonClient.class);
         if (redissonClient.getBucket(ipBlacklistKey).isExists()) {
             // 黑名单中的IP
             SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
         }
-
-        RateLimitProperties rate = SpringUtil.getBean(RateLimitProperties.class);
-        // 最大时间差校验
-        this.verifyMaxTimeDiff(repeatSubmit, rate.getMaxTimeDiff(), timestamp);
-
-        String signatureKey = takeshiProperties.getSignatureKey();
-        // 是否开启了sign校验
-        boolean signVerify = StrUtil.isNotBlank(signatureKey) && !passSignature;
-
-        // nonce速率校验
-        this.verifyNonce(redissonClient, repeatSubmit, rate.getNonce(), clientIp, nonce, rateLimitPathKey, signVerify);
-
+        IpRateLimitProperties ipRateLimitProperties = SpringUtil.getBean(IpRateLimitProperties.class);
         // ip速率校验
-        this.verifyIp(redissonClient, repeatSubmit, rate.getIp(), clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
-
+        this.verifyIp(redissonClient, repeatSubmit, ipRateLimitProperties, clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
         // sign校验
-        this.verifySign(signVerify, request.getHeader(TakeshiConstants.SIGN_NAME), paramBO, signatureKey, nonce, timestamp);
-
+        this.verifySign(passSignature, new SaRequestForServlet(request));
         // 重复提交校验
-        this.verifyRepeatSubmit(redissonClient, repeatSubmit, paramBO, clientIp, httpMethod, servletPath);
-
+        this.verifyRepeatSubmit(redissonClient, repeatSubmit, objectMapper, clientIp, httpMethod, servletPath, loginId, paramObjectNode);
         return systemSecurity;
-    }
-
-    /**
-     * 最大时间差校验
-     *
-     * @param repeatSubmit    注解
-     * @param rateMaxTimeDiff 配置中的最大时间差
-     * @param timestamp       时间戳
-     */
-    private void verifyMaxTimeDiff(RepeatSubmit repeatSubmit, int rateMaxTimeDiff, String timestamp) {
-        int maxTimeDiff = ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.maxTimeDiff() >= 0 ? repeatSubmit.maxTimeDiff() : rateMaxTimeDiff;
-        // 请求时间校验
-        if (maxTimeDiff > 0) {
-            if (StrUtil.isBlank(timestamp)) {
-                SaRouter.back(ResponseData.retData(TakeshiCode.PARAMETER_ERROR));
-            }
-            long seconds = Instant.now().getEpochSecond() - (Long.parseLong(timestamp) / 1000);
-            if (Math.abs(seconds) > maxTimeDiff) {
-                // 请求时间与当前时间相差过早
-                SaRouter.back(ResponseData.retData(TakeshiCode.CLIENT_DATE_TIME_ERROR));
-            }
-        }
-    }
-
-    /**
-     * nonce速率校验
-     *
-     * @param repeatSubmit     注解
-     * @param nonceRate        nonce限制
-     * @param clientIp         客户端IP
-     * @param nonce            nonce值
-     * @param rateLimitPathKey 针对接口的限制key
-     * @param signVerify       是否开启了sign校验
-     */
-    private void verifyNonce(RedissonClient redissonClient, RepeatSubmit repeatSubmit, RateLimitProperties.NonceRate nonceRate, String clientIp,
-                             String nonce, String rateLimitPathKey, boolean signVerify) {
-        int nRate = nonceRate.getRate();
-        int nRateInterval = nonceRate.getRateInterval();
-        RateIntervalUnit nRateIntervalUnit = nonceRate.getRateIntervalUnit();
-        String nonceRateLimitKeyParam = clientIp + StrUtil.COLON + nonce;
-        if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.nonceRateInterval() >= 0) {
-            nRate = repeatSubmit.nonceRate();
-            nRateInterval = repeatSubmit.nonceRateInterval();
-            nRateIntervalUnit = repeatSubmit.nonceRateIntervalUnit();
-            nonceRateLimitKeyParam += rateLimitPathKey;
-        }
-        if (signVerify && nRateInterval > 0) {
-            String nonceRateLimitKey = TakeshiRedisKeyEnum.NONCE_RATE_LIMIT.projectKey(nonceRateLimitKeyParam);
-            RRateLimiter nonceRateLimiter = redissonClient.getRateLimiter(nonceRateLimitKey);
-            if (nonceRateLimiter.getConfig().getRate() != nRate
-                    || nonceRateLimiter.getConfig().getRateInterval() != nRateIntervalUnit.toMillis(nRateInterval)) {
-                nonceRateLimiter.delete();
-            }
-            // nonce限流
-            nonceRateLimiter.trySetRate(RateType.OVERALL, nRate, nRateInterval, nRateIntervalUnit);
-            // 设置限流器过期时间
-            nonceRateLimiter.expire(DURATION);
-            if (!nonceRateLimiter.tryAcquire()) {
-                // nonce重复使用
-                SaRouter.back(ResponseData.retData(TakeshiCode.RATE_LIMIT));
-            }
-        }
     }
 
     /**
      * ip速率校验
      *
-     * @param repeatSubmit     注解
-     * @param ipRate           ip限制
-     * @param clientIp         客户端IP
-     * @param rateLimitPathKey 针对接口的限制key
-     * @param httpMethod       接口方法类型
-     * @param servletPath      接口路径
-     * @param ipBlacklistKey   是否开启了黑名单
+     * @param repeatSubmit          注解
+     * @param ipRateLimitProperties ip限制
+     * @param clientIp              客户端IP
+     * @param rateLimitPathKey      针对接口的限制key
+     * @param httpMethod            接口方法类型
+     * @param servletPath           接口路径
+     * @param ipBlacklistKey        是否开启了黑名单
      */
-    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, RateLimitProperties.IpRate ipRate, String clientIp,
+    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, IpRateLimitProperties ipRateLimitProperties, String clientIp,
                           String rateLimitPathKey, String httpMethod, String servletPath, String ipBlacklistKey) {
         boolean ipOverwritten = false;
-        int iRate = ipRate.getRate();
-        int iRateInterval = ipRate.getRateInterval();
-        RateIntervalUnit iRateIntervalUnit = ipRate.getRateIntervalUnit();
-        boolean iOpenBlacklist = ipRate.isOpenBlacklist();
+        int iRate = ipRateLimitProperties.getRate();
+        int iRateInterval = ipRateLimitProperties.getRateInterval();
+        RateIntervalUnit iRateIntervalUnit = ipRateLimitProperties.getRateIntervalUnit();
+        boolean iOpenBlacklist = ipRateLimitProperties.isOpenBlacklist();
         String ipRateLimitKeyParam = clientIp;
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() >= 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
@@ -317,37 +312,30 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * sign校验
      *
-     * @param signVerify   是否开启了sign校验
-     * @param sign         sign
-     * @param paramBO      paramBO
-     * @param signatureKey 参数签名使用的key
-     * @param nonce        nonce
-     * @param timestamp    时间戳
+     * @param passSignature 是否放弃校验参数签名
+     * @param saRequest     saRequest
      */
-    private void verifySign(boolean signVerify, String sign, ParamBO paramBO, String signatureKey, String nonce,
-                            String timestamp) {
-        if (signVerify) {
-            // 校验参数签名，如果body参数是非JsonObject值，则直接将值与其他值直接拼接
-            String signParamsMd5 = SecureUtil.signParamsMd5(paramBO.getParamMap(), StrUtil.toStringOrNull(paramBO.getBodyOther()), signatureKey, nonce, timestamp);
-            if (!StrUtil.equals(sign, signParamsMd5)) {
-                // 签名验证错误
-                SaRouter.back(ResponseData.retData(TakeshiCode.SIGN_ERROR));
-            }
+    private void verifySign(boolean passSignature, SaRequest saRequest) {
+        if (!passSignature && StrUtil.isNotBlank(SaManager.getSaSignTemplate().getSecretKey())) {
+            SaSignUtil.checkRequest(saRequest);
         }
     }
 
     /**
      * 重复提交校验
      *
-     * @param repeatSubmit 注解
-     * @param paramBO      paramBO
-     * @param clientIp     客户端IP
-     * @param httpMethod   接口方法类型
-     * @param servletPath  接口路径
+     * @param repeatSubmit    注解
+     * @param objectMapper    objectMapper
+     * @param clientIp        客户端IP
+     * @param httpMethod      接口方法类型
+     * @param servletPath     接口路径
+     * @param loginId         登陆用户ID
+     * @param paramObjectNode 请求的参数
      * @throws JsonProcessingException JsonProcessingException
      */
-    private void verifyRepeatSubmit(RedissonClient redissonClient, RepeatSubmit repeatSubmit, ParamBO paramBO, String clientIp, String httpMethod,
-                                    String servletPath) throws JsonProcessingException {
+    private void verifyRepeatSubmit(RedissonClient redissonClient, RepeatSubmit repeatSubmit, ObjectMapper objectMapper,
+                                    String clientIp, String httpMethod, String servletPath, Object loginId,
+                                    ObjectNode paramObjectNode) throws JsonProcessingException {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {
             RetBO retBO = TakeshiCode.REPEAT_SUBMIT.cloneWithMessage(repeatSubmit.msg());
             long rateInterval = repeatSubmit.rateInterval();
@@ -355,8 +343,13 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             map.put("repeatIp", clientIp);
             map.put("repeatMethod", httpMethod);
             map.put("repeatUrl", servletPath);
-            map.put("repeatLoginId", paramBO.getLoginId());
-            map.put("repeatParams", SpringUtil.getBean(ObjectMapper.class).writeValueAsString(paramBO.getParamObjectNode(repeatSubmit.exclusionFieldName())));
+            map.put("repeatLoginId", loginId);
+            if (ArrayUtil.isNotEmpty(repeatSubmit.exclusionFieldName())) {
+                for (String fieldName : repeatSubmit.exclusionFieldName()) {
+                    paramObjectNode.findParents(fieldName).forEach(item -> ((ObjectNode) item).remove(fieldName));
+                }
+            }
+            map.put("repeatParams", objectMapper.writeValueAsString(paramObjectNode));
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = redissonClient.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次

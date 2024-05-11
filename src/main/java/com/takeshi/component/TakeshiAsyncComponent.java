@@ -1,20 +1,16 @@
 package com.takeshi.component;
 
 import cn.hutool.core.net.Ipv4Util;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
-import cn.hutool.http.Header;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.takeshi.annotation.TakeshiLog;
+import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.basic.TbSysLog;
-import com.takeshi.pojo.bo.ParamBO;
 import com.takeshi.util.GsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * TakeshiAsyncComponent
@@ -40,51 +34,49 @@ import java.util.stream.Stream;
 public class TakeshiAsyncComponent {
 
     private final DataSource dataSource;
-    private final ObjectMapper objectMapper;
 
-    /**
-     * 排除敏感属性字段
-     */
-    public static final String[] EXCLUSION_FIELD_NAME = {"password", "oldPassword", "newPassword", "confirmPassword"};
+    private final ObjectMapper objectMapper;
 
     /**
      * 新增一条接口请求相关信息到数据库
      *
-     * @param paramBO         paramBO
-     * @param startTime       请求时间
-     * @param totalTimeMillis 接口总耗时
-     * @param responseData    接口响应数据
+     * @param takeshiLog       TakeshiLog注解
+     * @param loginId          登录的用户ID
+     * @param clientIp         请求的IP
+     * @param userAgent        用户代理
+     * @param headerMap        请求头部
+     * @param paramObjectValue 请求的参数
+     * @param httpMethod       请求方式
+     * @param methodName       请求方法名称
+     * @param requestUrl       请求路径
+     * @param startTime        请求时间
+     * @param totalTimeMillis  接口总耗时
+     * @param responseData     接口响应数据
      */
-    public void insertSysLog(ParamBO paramBO, Instant startTime, long totalTimeMillis, String responseData) {
+    public void insertSysLog(TakeshiLog takeshiLog, Object loginId, String clientIp, String userAgent,
+                             Map<String, String> headerMap, String paramObjectValue, String httpMethod,
+                             String methodName, String requestUrl, Instant startTime, long totalTimeMillis,
+                             String responseData) {
         try {
-            if (ObjUtil.isNotNull(paramBO)) {
-                TakeshiLog takeshiLog = paramBO.getTakeshiLog();
-                if (ObjUtil.isNotNull(takeshiLog)) {
-                    String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
-                    ObjectNode paramObjectNode = paramBO.getParamObjectNode(exclusionFieldName);
-                    TbSysLog tbSysLog = new TbSysLog();
-                    tbSysLog.setLogType(takeshiLog.logType().name());
-                    tbSysLog.setLoginId(paramBO.getLoginId());
-                    tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(paramBO.getClientIp()));
-                    Map<String, String> headerParam = paramBO.getHeaderParam();
-                    tbSysLog.setUserAgent(headerParam.get(Header.USER_AGENT.getValue()));
-                    tbSysLog.setHttpMethod(paramBO.getHttpMethod());
-                    tbSysLog.setMethodName(paramBO.getMethodName());
-                    tbSysLog.setRequestUrl(paramBO.getRequestUrl());
-                    tbSysLog.setRequestHeader(GsonUtil.toJson(headerParam));
-                    tbSysLog.setRequestParams(objectMapper.writeValueAsString(paramObjectNode));
-                    tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
-                    tbSysLog.setTraceId(MDC.get(TakeshiConstants.TRACE_ID_KEY));
-                    tbSysLog.setSuccessful(this.successful(responseData));
-                    tbSysLog.setRequestTime(startTime);
-                    tbSysLog.setCostTime(totalTimeMillis);
-                    Instant instant = Instant.now();
-                    tbSysLog.setCreateTime(instant);
-                    tbSysLog.setUpdateTime(instant);
-                    log.info("TakeshiAsyncComponent.insertSysLog --> tbSysLog: {}", GsonUtil.toJson(tbSysLog));
-                    DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
-                }
-            }
+            TbSysLog tbSysLog = new TbSysLog();
+            tbSysLog.setLogType(takeshiLog.logType().name());
+            tbSysLog.setLoginId(loginId);
+            tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(clientIp));
+            tbSysLog.setUserAgent(userAgent);
+            tbSysLog.setHttpMethod(httpMethod);
+            tbSysLog.setMethodName(methodName);
+            tbSysLog.setRequestUrl(requestUrl);
+            tbSysLog.setRequestHeader(GsonUtil.toJson(headerMap));
+            tbSysLog.setRequestParams(paramObjectValue);
+            tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
+            tbSysLog.setTraceId(MDC.get(RequestConstants.TRACE_ID));
+            tbSysLog.setSuccessful(this.successful(responseData));
+            tbSysLog.setRequestTime(startTime);
+            tbSysLog.setCostTimeMillis(totalTimeMillis);
+            Instant instant = Instant.now();
+            tbSysLog.setCreateTime(instant);
+            tbSysLog.setUpdateTime(instant);
+            DbUtil.use(dataSource).insert(Entity.parseWithUnderlineCase(tbSysLog));
         } catch (Exception e) {
             log.error("TakeshiAsyncComponent.insertSysLog --> e: ", e);
         }

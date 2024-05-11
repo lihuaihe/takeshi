@@ -24,16 +24,16 @@ public abstract class AbstractBasicEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 创建时间，数据库中建议使用TIMESTAMP(3)类型
+     * 创建时间
      */
-    @Schema(description = "创建时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Instant createTime;
 
     /**
-     * 更新时间，数据库中建议使用TIMESTAMP(3)类型
+     * 更新时间
      */
-    @Schema(description = "更新时间", example = "2023-12-07T03:08:09.000Z")
+    @Schema(description = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Instant updateTime;
 
