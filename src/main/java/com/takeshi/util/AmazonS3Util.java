@@ -482,10 +482,10 @@ public final class AmazonS3Util {
             // 等待此传输完成，这是一个阻塞调用；当前线程被挂起，直到这个传输完成
             upload.waitForCompletion();
             URL url = transferManager.getAmazonS3Client().getUrl(BUCKET_NAME, fileObjKey);
-            if (transferManager.getAmazonS3Client().getBucketAccelerateConfiguration(BUCKET_NAME).isAccelerateEnabled()) {
-                // 如果启用了传输加速，需要将URL中的域名替换为对应的加速域名
-                url = new URL(url.getProtocol(), BUCKET_NAME + ".s3-accelerate.amazonaws.com", url.getPort(), url.getFile());
-            }
+            // if (transferManager.getAmazonS3Client().getBucketAccelerateConfiguration(BUCKET_NAME).isAccelerateEnabled()) {
+            //     // 如果启用了传输加速，需要将URL中的域名替换为对应的加速域名
+            //     url = new URL(url.getProtocol(), BUCKET_NAME + ".s3-accelerate.amazonaws.com", url.getPort(), url.getFile());
+            // }
             if (this.fileInfoUrl) {
                 UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
                 urlBuilder.addQuery(UrlParamsConstants.CREATE_TIME, metadata.getUserMetaDataOf(MetadataConstants.CREATE_TIME));
