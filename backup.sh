@@ -3,7 +3,7 @@
 # 备份mysql数据库和jar包运行日志到aws的s3中的备份脚本
 # 将该脚本放在jar包同级目录下运行
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
-# 使用命令【bash -c "$(curl https://raw.githubusercontent.com/lihuaihe/takeshi/master/backup.sh)"】然后按照提示输入即可
+# 使用命令【bash -c "$(curl https://raw.githubusercontent.com/lihuaihe/takeshi/snapshot/backup.sh)"】然后按照提示输入即可
 
 # ANSI颜色和格式定义
 RED='\033[0;31m'
@@ -59,9 +59,11 @@ if [ ! -d "logs" ]; then
     exit 1
 fi
 
+CURRENT_USER=$(id -un)
+
 cd ..
 sudo mkdir -p backup
-sudo chown -R "$current_user:$current_user" backup
+sudo chown -R "$CURRENT_USER:$CURRENT_USER" backup
 cd backup
 mkdir -p mysql
 BACKUP_DIR=$(pwd)
