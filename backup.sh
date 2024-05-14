@@ -127,8 +127,8 @@ $AWS_PATH s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
 echo -e "log备份脚本执行完毕：\$(date)\n\n"
 EOL
 
-chmod +X $MYSQL_SCRIPT_FILE
-chmod +X $LOG_SCRIPT_FILE
+chmod +x $MYSQL_SCRIPT_FILE
+chmod +x $LOG_SCRIPT_FILE
 
 # 将任务添加到当前用户的 crontab
 (crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE >> $BACKUP_DIR/backup-mysql-info.log 2>&1") | crontab -
