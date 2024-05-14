@@ -61,7 +61,7 @@ fi
 
 cd ..
 sudo mkdir -p backup
-sudo chmod 777 backup
+sudo chown -R "$current_user:$current_user" backup
 cd backup
 mkdir -p mysql
 BACKUP_DIR=$(pwd)
@@ -124,9 +124,6 @@ echo "log备份脚本执行开始：\$(date)"
 $AWS_PATH s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
 echo -e "log备份脚本执行完毕：\$(date)\n\n"
 EOL
-
-sudo chmod 777 $MYSQL_SCRIPT_FILE
-sudo chmod 777 $LOG_SCRIPT_FILE
 
 # 将任务添加到当前用户的 crontab
 (crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE >> $BACKUP_DIR/backup-mysql-info.log 2>&1") | crontab -
