@@ -79,7 +79,7 @@ public class TakeshiFilter implements Filter {
             map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, takeshiHttpRequestWrapper.getMethod(), StrUtil.BRACKET_END, takeshiHttpRequestWrapper.getRequestURL()));
             Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
             if (ObjUtil.isNotNull(loginIdDefaultNull)) {
-                request.setAttribute(RequestConstants.LOGIN_ID, loginIdDefaultNull);
+                takeshiHttpRequestWrapper.setAttribute(RequestConstants.LOGIN_ID, loginIdDefaultNull);
                 map.put("Requesting UserId", loginIdDefaultNull);
                 Map<String, Object> saSessionDataMap = StpUtil.getSession().getDataMap();
                 if (CollUtil.isNotEmpty(saSessionDataMap)) {
@@ -87,7 +87,7 @@ public class TakeshiFilter implements Filter {
                 }
             }
             String clientIp = TakeshiUtil.getClientIp(takeshiHttpRequestWrapper);
-            request.setAttribute(RequestConstants.CLIENT_IP, clientIp);
+            takeshiHttpRequestWrapper.setAttribute(RequestConstants.CLIENT_IP, clientIp);
             map.put("Request IP", clientIp);
             map.put("Request UserAgent", takeshiHttpRequestWrapper.getHeader(Header.USER_AGENT.getValue()));
             map.put("Header GeoPoint", takeshiHttpRequestWrapper.getHeader(RequestConstants.Header.GEO_POINT));
