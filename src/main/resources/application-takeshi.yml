@@ -60,7 +60,7 @@ mybatis-plus:
   global-config:
     db-config:
       logic-delete-field: deleteTime
-      logic-delete-value: current_timestamp(3)
+      logic-delete-value: utc_timestamp(3)
       logic-not-delete-value: 0
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
