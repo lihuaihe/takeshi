@@ -3,7 +3,7 @@
 # 备份mysql数据库和jar包运行日志到aws的s3中的备份脚本
 # 将该脚本放在jar包同级目录下运行
 # 例如：test.jar 在/www/wwwroot/java目录下，那么就将该脚本放在/www/wwwroot/java目录下运行
-# 使用命令【bash -c "$(curl http://175.178.11.228/script/backup.sh)"】然后按照提示输入即可
+# 使用命令【bash -c "$(curl https://raw.githubusercontent.com/lihuaihe/takeshi/snapshot/backup.sh)"】然后按照提示输入即可
 
 # ANSI颜色和格式定义
 RED='\033[0;31m'
@@ -59,9 +59,11 @@ if [ ! -d "logs" ]; then
     exit 1
 fi
 
+CURRENT_USER=$(id -un)
+
 cd ..
 sudo mkdir -p backup
-sudo chmod 777 backup
+sudo chown -R "$CURRENT_USER:$CURRENT_USER" backup
 cd backup
 mkdir -p mysql
 BACKUP_DIR=$(pwd)
@@ -125,8 +127,8 @@ $AWS_PATH s3 sync $CRT_DIR/logs s3://$BUCKET_NAME/backup/logs
 echo -e "log备份脚本执行完毕：\$(date)\n\n"
 EOL
 
-sudo chmod 777 $MYSQL_SCRIPT_FILE
-sudo chmod 777 $LOG_SCRIPT_FILE
+chmod +x $MYSQL_SCRIPT_FILE
+chmod +x $LOG_SCRIPT_FILE
 
 # 将任务添加到当前用户的 crontab
 (crontab -l 2>/dev/null; echo "0 0 * * 1 $MYSQL_SCRIPT_FILE >> $BACKUP_DIR/backup-mysql-info.log 2>&1") | crontab -

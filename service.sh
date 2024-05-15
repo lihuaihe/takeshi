@@ -3,7 +3,7 @@
 #启动jar包的脚本，springboot的jar开启了优雅关闭，且设置了ApplicationPidFileWriter的监听器，使用该脚本可以优雅关闭jar
 userLanguage='en'
 userRegion='US'
-userTimezone='Australia/Sydney'
+userTimezone='UTC'
 
 APP_NAME=$2
 #完整的jar包名称
