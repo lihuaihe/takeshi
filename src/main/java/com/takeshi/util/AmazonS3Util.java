@@ -196,8 +196,8 @@ public final class AmazonS3Util {
                                         new CORSRule().withAllowedHeaders(List.of("*"))
                                                       .withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD))
                                                       .withAllowedOrigins(List.of("*"))
-                                                      // 配置ExposedHeader为ETag为了兼容浏览器跨域，尤其是Google浏览器
-                                                      .withExposedHeaders(List.of("ETag"))
+                                                      // 配置ExposedHeader为了兼容浏览器跨域，尤其是Google浏览器
+                                                      .withExposedHeaders(List.of("ETag", "x-amz-meta-custom-header"))
                                                       .withMaxAgeSeconds(3000);
                                 // 将跨域规则设置到桶中
                                 amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
