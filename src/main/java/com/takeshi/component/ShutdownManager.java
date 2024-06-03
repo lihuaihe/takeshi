@@ -1,11 +1,11 @@
 package com.takeshi.component;
 
-import com.takeshi.config.properties.TakeshiProperties;
 import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.context.LifecycleProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,14 +22,14 @@ public class ShutdownManager {
 
     private final ScheduledExecutorService scheduledExecutorService;
 
-    private final TakeshiProperties takeshiProperties;
+    private final LifecycleProperties lifecycleProperties;
 
     /**
      * destroy
      */
     @PreDestroy
     public void destroy() {
-        TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, takeshiProperties.getMaxExecutorCloseTimeout());
+        TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, lifecycleProperties.getTimeoutPerShutdownPhase());
         AmazonS3Util.shutdown();
     }
 

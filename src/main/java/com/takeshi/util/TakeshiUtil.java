@@ -89,12 +89,12 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 获取单例的模版引擎，默认模版路径在resources/template目录下
+     * 获取单例的模版引擎，默认模版路径在resources/templates目录下
      *
      * @return TemplateEngine
      */
     public static TemplateEngine getTemplateEngine() {
-        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("template", TemplateConfig.ResourceMode.CLASSPATH)));
+        return Singleton.get(TemplateEngine.class.getSimpleName(), () -> TemplateUtil.createEngine(new TemplateConfig("templates", TemplateConfig.ResourceMode.CLASSPATH)));
     }
 
     /**
