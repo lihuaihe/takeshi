@@ -19,6 +19,8 @@ spring:
   cache:
     # 缓存类型
     type: REDIS
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 springdoc:
   default-flat-param-object: true
@@ -27,7 +29,7 @@ springdoc:
 
 server:
   shutdown: graceful
-  max-http-request-header-size: 10240000
+  max-http-request-header-size: 32KB
   tomcat:
     uri-encoding: UTF-8
 

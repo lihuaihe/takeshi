@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
 import java.util.concurrent.*;
 
 /**
@@ -37,10 +38,10 @@ public final class TakeshiThreadUtil {
      * 如果仍然超時，則強制退出.
      * 另对在shutdown时线程本身被调用中断做了处理.
      *
-     * @param pool    pool
-     * @param timeout 定时任务关闭的最大超时时间（单位：秒）
+     * @param pool                    pool
+     * @param timeoutPerShutdownPhase timeoutPerShutdownPhase
      */
-    public static void shutdownAndAwaitTermination(ExecutorService pool, long timeout) {
+    public static void shutdownAndAwaitTermination(ExecutorService pool, Duration timeoutPerShutdownPhase) {
         if (pool != null && !pool.isShutdown()) {
             log.info("Close the background task in the task thread pool...");
             //            if (pool instanceof ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
@@ -55,9 +56,9 @@ public final class TakeshiThreadUtil {
             //            }
             pool.shutdown();
             try {
-                if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
+                if (!pool.awaitTermination(timeoutPerShutdownPhase.toSeconds(), TimeUnit.SECONDS)) {
                     pool.shutdownNow();
-                    if (!pool.awaitTermination(timeout, TimeUnit.SECONDS)) {
+                    if (!pool.awaitTermination(timeoutPerShutdownPhase.toSeconds(), TimeUnit.SECONDS)) {
                         log.info("Pool did not terminate");
                     }
                 }
