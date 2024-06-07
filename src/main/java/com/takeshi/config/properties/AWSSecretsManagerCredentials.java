@@ -42,7 +42,7 @@ public class AWSSecretsManagerCredentials {
     /**
      * 设置客户端使用的区域（例如：us-west-2）
      */
-    private String region;
+    private String region = "us-west-2";
 
     /**
      * 是否阻止所有公开访问
@@ -76,12 +76,12 @@ public class AWSSecretsManagerCredentials {
     /**
      * 存储在AWS Secrets Manager中的 AWS 访问 s3 的密钥ID名称
      */
-    private String s3AccessKeySecrets = "AWS-S3-Access-key-ID";
+    private String s3AccessKeySecrets;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS  访问 s3 的密钥名称
      */
-    private String s3SecretKeySecrets = "AWS-S3-Secret-access-key";
+    private String s3SecretKeySecrets;
 
     /**
      * 格式化存储桶名称

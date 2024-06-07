@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.img.Img;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.net.url.UrlBuilder;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -14,6 +15,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.model.ownership.ObjectOwnership;
 import com.amazonaws.services.s3.model.ownership.OwnershipControls;
@@ -161,8 +163,8 @@ public final class AmazonS3Util {
                         BUCKET_NAME = awsSecrets.getBucketName();
                         FILE_ACL = Optional.ofNullable(awsSecrets.getFileAcl()).map(fileAcl -> Enum.valueOf(CannedAccessControlList.class, fileAcl.name())).orElse(null);
                         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-                        String accessKey = jsonNode.get(awsSecrets.getS3AccessKeySecrets()).asText();
-                        String secretKey = jsonNode.get(awsSecrets.getS3SecretKeySecrets()).asText();
+                        String accessKey = jsonNode.get(awsSecrets.getS3AccessKeySecrets()).asText(null);
+                        String secretKey = jsonNode.get(awsSecrets.getS3SecretKeySecrets()).asText(null);
                         if (StrUtil.isAllNotBlank(accessKey, secretKey)) {
                             // S3
                             AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
@@ -174,7 +176,7 @@ public final class AmazonS3Util {
                             if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                 // 创建桶
                                 amazonS3.createBucket(BUCKET_NAME);
-                                if (awsSecrets.isBlockPublicAccess()) {
+                                if (!awsSecrets.isBlockPublicAccess()) {
                                     // 设置是否阻止所有公开访问
                                     PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
                                             .withBlockPublicAcls(false)
@@ -518,19 +520,31 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传文件，请求时必须指定content-type，默认有效期5分钟
+     * 获取文件访问URL
+     *
+     * @param key S3对象的键
+     * @return URL
+     */
+    public static URL getUrl(String key) {
+        return getTransferManager().getAmazonS3Client().getUrl(BUCKET_NAME, key);
+    }
+
+    /**
+     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
      *
      * @param fileName 文件名
      * @return URL
      */
     @SneakyThrows
     public static URL getPutPresignedUrl(String fileName) {
-        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), FileNameUtil.extName(fileName));
+        String extName = FileNameUtil.extName(fileName);
+        Assert.notBlank(extName, "The file name is not standardized and has no suffix.");
+        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), StrUtil.DOT + extName);
         return getTransferManager().getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(Duration.ofMinutes(5))), HttpMethod.PUT);
     }
 
     /**
-     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传文件，请求时必须指定content-type
+     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件
      *
      * @param fileName 文件名
      * @param duration 预签名 URL 将过期的时间
@@ -538,7 +552,9 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static URL getPutPresignedUrl(String fileName, Duration duration) {
-        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), FileNameUtil.extName(fileName));
+        String extName = FileNameUtil.extName(fileName);
+        Assert.notBlank(extName, "The file name is not standardized and has no suffix.");
+        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), StrUtil.DOT + extName);
         return getTransferManager().getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)), HttpMethod.PUT);
     }
 
@@ -548,8 +564,9 @@ public final class AmazonS3Util {
      * @param url S3文件的URL
      * @return URL
      */
+    @SneakyThrows
     public static URL getPresignedUrl(URL url) {
-        return getPresignedUrl(url.getPath());
+        return getPresignedUrl(new AmazonS3URI(url.toURI()).getKey());
     }
 
     /**
@@ -682,7 +699,7 @@ public final class AmazonS3Util {
      *
      * @param instant   当前时间
      * @param mainName  主文件名
-     * @param extension 文件扩展名
+     * @param extension 带.的文件扩展名（例如：.png）
      * @return 完整路径
      * @throws IOException IOException
      */
