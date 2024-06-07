@@ -157,71 +157,69 @@ public final class AmazonS3Util {
         if (ObjUtil.isNull(transferManager)) {
             synchronized (AmazonS3Util.class) {
                 if (ObjUtil.isNull(transferManager)) {
-                    try {
-                        // 获取密钥
-                        AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
-                        BUCKET_NAME = awsSecrets.getBucketName();
-                        FILE_ACL = Optional.ofNullable(awsSecrets.getFileAcl()).map(fileAcl -> Enum.valueOf(CannedAccessControlList.class, fileAcl.name())).orElse(null);
-                        JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-                        String accessKey = jsonNode.get(awsSecrets.getS3AccessKeySecrets()).asText(null);
-                        String secretKey = jsonNode.get(awsSecrets.getS3SecretKeySecrets()).asText(null);
-                        if (StrUtil.isAllNotBlank(accessKey, secretKey)) {
-                            // S3
-                            AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
-                                                                     .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                                                                     .withRegion(awsSecrets.getRegion())
-                                                                     // 存储桶启用传输加速
-                                                                     .withAccelerateModeEnabled(awsSecrets.isBucketAccelerate())
-                                                                     .build();
-                            if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
-                                // 创建桶
-                                amazonS3.createBucket(BUCKET_NAME);
-                                if (!awsSecrets.isBlockPublicAccess()) {
-                                    // 设置是否阻止所有公开访问
-                                    PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
-                                            .withBlockPublicAcls(false)
-                                            .withIgnorePublicAcls(false)
-                                            .withBlockPublicPolicy(false)
-                                            .withRestrictPublicBuckets(false);
-                                    amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
-                                    if (awsSecrets.isBucketAcl()) {
-                                        // 启用存储桶的ACL
-                                        amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
-                                    }
-                                    if (awsSecrets.isBucketPolicyPublicRead()) {
-                                        amazonS3.setBucketPolicy(BUCKET_NAME, "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" + BUCKET_NAME + "/*\"}]}");
-                                    }
-                                }
-                                // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
-                                BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
-                                        .withId("Automatically delete incomplete multipart upload after seven days")
-                                        .withAbortIncompleteMultipartUpload(new AbortIncompleteMultipartUpload().withDaysAfterInitiation(7))
-                                        .withStatus(BucketLifecycleConfiguration.ENABLED);
-                                // 将生命周期规则设置到桶中
-                                amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
-                                // 设置跨域规则
-                                CORSRule corsRule =
-                                        new CORSRule().withAllowedHeaders(List.of("*"))
-                                                      .withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD))
-                                                      .withAllowedOrigins(List.of("*"))
-                                                      // 配置ExposedHeader为了兼容浏览器跨域，尤其是Google浏览器
-                                                      .withExposedHeaders(List.of("ETag", "x-amz-meta-custom-header"))
-                                                      .withMaxAgeSeconds(3000);
-                                // 将跨域规则设置到桶中
-                                amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
-                                if (awsSecrets.isBucketAccelerate()) {
-                                    // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
-                                    amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
-                                }
-                            }
-                            transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
-                            log.info("AmazonS3Util.static --> TransferManager Initialization successful");
-                        } else {
-                            log.warn("AmazonS3Util.static --> When TransferManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
-                        }
-                    } catch (Exception e) {
-                        log.error("AmazonS3Util.static --> TransferManager initialization failed, e: ", e);
+                    // 获取密钥
+                    AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
+                    JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
+                    if (StrUtil.isBlank(awsSecrets.getS3AccessKeySecrets()) || !jsonNode.hasNonNull(awsSecrets.getS3AccessKeySecrets())) {
+                        throw new IllegalArgumentException("S3 Access key cannot be null.");
                     }
+                    if (StrUtil.isBlank(awsSecrets.getS3SecretKeySecrets()) || !jsonNode.hasNonNull(awsSecrets.getS3SecretKeySecrets())) {
+                        throw new IllegalArgumentException("S3 Secret key cannot be null.");
+                    }
+                    String accessKey = jsonNode.get(awsSecrets.getS3AccessKeySecrets()).asText();
+                    String secretKey = jsonNode.get(awsSecrets.getS3SecretKeySecrets()).asText();
+                    BUCKET_NAME = awsSecrets.getBucketName();
+                    FILE_ACL = Optional.ofNullable(awsSecrets.getFileAcl()).map(fileAcl -> Enum.valueOf(CannedAccessControlList.class, fileAcl.name())).orElse(null);
+                    // S3
+                    AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
+                                                             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+                                                             .withRegion(awsSecrets.getRegion())
+                                                             // 存储桶启用传输加速
+                                                             .withAccelerateModeEnabled(awsSecrets.isBucketAccelerate())
+                                                             .build();
+                    if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
+                        // 创建桶
+                        amazonS3.createBucket(BUCKET_NAME);
+                        if (!awsSecrets.isBlockPublicAccess()) {
+                            // 设置是否阻止所有公开访问
+                            PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
+                                    .withBlockPublicAcls(false)
+                                    .withIgnorePublicAcls(false)
+                                    .withBlockPublicPolicy(false)
+                                    .withRestrictPublicBuckets(false);
+                            amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
+                            if (awsSecrets.isBucketAcl()) {
+                                // 启用存储桶的ACL
+                                amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                            }
+                            if (awsSecrets.isBucketPolicyPublicRead()) {
+                                amazonS3.setBucketPolicy(BUCKET_NAME, "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" + BUCKET_NAME + "/*\"}]}");
+                            }
+                        }
+                        // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
+                        BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
+                                .withId("Automatically delete incomplete multipart upload after seven days")
+                                .withAbortIncompleteMultipartUpload(new AbortIncompleteMultipartUpload().withDaysAfterInitiation(7))
+                                .withStatus(BucketLifecycleConfiguration.ENABLED);
+                        // 将生命周期规则设置到桶中
+                        amazonS3.setBucketLifecycleConfiguration(BUCKET_NAME, new BucketLifecycleConfiguration().withRules(lifecycleRule));
+                        // 设置跨域规则
+                        CORSRule corsRule =
+                                new CORSRule().withAllowedHeaders(List.of("*"))
+                                              .withAllowedMethods(List.of(CORSRule.AllowedMethods.GET, CORSRule.AllowedMethods.HEAD))
+                                              .withAllowedOrigins(List.of("*"))
+                                              // 配置ExposedHeader为了兼容浏览器跨域，尤其是Google浏览器
+                                              .withExposedHeaders(List.of("ETag", "x-amz-meta-custom-header"))
+                                              .withMaxAgeSeconds(3000);
+                        // 将跨域规则设置到桶中
+                        amazonS3.setBucketCrossOriginConfiguration(BUCKET_NAME, new BucketCrossOriginConfiguration().withRules(corsRule));
+                        if (awsSecrets.isBucketAccelerate()) {
+                            // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
+                            amazonS3.setBucketAccelerateConfiguration(new SetBucketAccelerateConfigurationRequest(BUCKET_NAME, new BucketAccelerateConfiguration(BucketAccelerateStatus.Enabled)));
+                        }
+                    }
+                    transferManager = TransferManagerBuilder.standard().withS3Client(amazonS3).build();
+                    log.info("AmazonS3Util.static --> TransferManager Initialization successful");
                 }
             }
         }

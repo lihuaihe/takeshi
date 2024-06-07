@@ -2,6 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -15,14 +16,10 @@ import com.google.firebase.messaging.*;
 import com.takeshi.config.properties.FirebaseCredentials;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -47,34 +44,28 @@ public final class FirebaseUtil {
      *
      * @return FirebaseApp
      */
+    @SneakyThrows
     public static FirebaseApp getFirebaseApp() {
         if (ObjUtil.isNull(FIREBASE_APP)) {
             synchronized (FirebaseUtil.class) {
                 if (ObjUtil.isNull(FIREBASE_APP)) {
-                    try {
-                        FirebaseCredentials firebase = SpringUtil.getBean(FirebaseCredentials.class);
-                        String firebaseJsonFileName = firebase.getJsonFileName();
-                        // Firebase需要的JSON文件
-                        InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
-                        if (ObjUtil.isNull(inputStream)) {
-                            log.error("FirebaseUtil.getFirebaseApp --> firebaseJsonFileName [{}] not found", firebaseJsonFileName);
-                        } else {
-                            // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                            String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
-                                                                              ? firebase.getDatabaseUrl()
-                                                                              : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
-                                    , StrUtil.SLASH);
-                            FirebaseOptions options = FirebaseOptions.builder()
-                                                                     .setCredentials(GoogleCredentials.fromStream(inputStream))
-                                                                     .setDatabaseUrl(databaseUrl)
-                                                                     .setJsonFactory(GsonFactory.getDefaultInstance())
-                                                                     .build();
-                            FIREBASE_APP = FirebaseApp.initializeApp(options);
-                            log.info("FirebaseUtil.getFirebaseApp --> FirebaseApp Initialization successful");
-                        }
-                    } catch (IOException e) {
-                        log.error("FirebaseUtil.getFirebaseApp --> FirebaseApp initialization failed, e: ", e);
-                    }
+                    FirebaseCredentials firebase = SpringUtil.getBean(FirebaseCredentials.class);
+                    String firebaseJsonFileName = firebase.getJsonFileName();
+                    // Firebase需要的JSON文件
+                    InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
+                    Assert.notNull(inputStream, "firebaseJsonFileName [{}] not found", firebaseJsonFileName);
+                    // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
+                    String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
+                                                                      ? firebase.getDatabaseUrl()
+                                                                      : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
+                            , StrUtil.SLASH);
+                    FirebaseOptions options = FirebaseOptions.builder()
+                                                             .setCredentials(GoogleCredentials.fromStream(inputStream))
+                                                             .setDatabaseUrl(databaseUrl)
+                                                             .setJsonFactory(GsonFactory.getDefaultInstance())
+                                                             .build();
+                    FIREBASE_APP = FirebaseApp.initializeApp(options);
+                    log.info("FirebaseUtil.getFirebaseApp --> FirebaseApp Initialization successful");
                 }
             }
         }

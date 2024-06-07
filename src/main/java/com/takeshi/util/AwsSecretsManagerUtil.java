@@ -1,5 +1,6 @@
 package com.takeshi.util;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -12,6 +13,7 @@ import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,29 +37,24 @@ public final class AwsSecretsManagerUtil {
      *
      * @return JsonNode
      */
+    @SneakyThrows
     public static JsonNode getSecret() {
         if (ObjUtil.isNull(jsonNode)) {
             synchronized (AwsSecretsManagerUtil.class) {
                 if (ObjUtil.isNull(jsonNode)) {
                     AWSSecretsManagerCredentials awsSecrets = SpringUtil.getBean(AWSSecretsManagerCredentials.class);
-                    try {
-                        if (StrUtil.isAllNotBlank(awsSecrets.getSecretKey(), awsSecrets.getSecretKey())) {
-                            AWSSecretsManager awsSecretsManager =
-                                    AWSSecretsManagerClientBuilder.standard()
-                                                                  .withRegion(awsSecrets.getRegion())
-                                                                  .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
-                                                                  .build();
-                            GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
-                            GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
-                            String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
-                            jsonNode = SpringUtil.getBean(ObjectMapper.class).readValue(secret, JsonNode.class);
-                            log.info("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager Initialization successful");
-                        } else {
-                            log.warn("AwsSecretsManagerUtil.getSecret --> When AWSSecretsManager is initialized, accessKey and secretKey are both empty and no initialization is performed.");
-                        }
-                    } catch (Exception e) {
-                        log.error("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager initialization failed, e: ", e);
-                    }
+                    Assert.notBlank(awsSecrets.getAccessKey(), "AWS Secrets Manager Access key cannot be null.");
+                    Assert.notBlank(awsSecrets.getSecretKey(), "AWS Secrets Manager Secret key cannot be null.");
+                    AWSSecretsManager awsSecretsManager =
+                            AWSSecretsManagerClientBuilder.standard()
+                                                          .withRegion(awsSecrets.getRegion())
+                                                          .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsSecrets.getAccessKey(), awsSecrets.getSecretKey())))
+                                                          .build();
+                    GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(awsSecrets.getSecretId());
+                    GetSecretValueResult getSecretValueResult = awsSecretsManager.getSecretValue(getSecretValueRequest);
+                    String secret = StrUtil.isNotBlank(getSecretValueResult.getSecretString()) ? getSecretValueResult.getSecretString() : new String(java.util.Base64.getDecoder().decode(getSecretValueResult.getSecretBinary()).array());
+                    jsonNode = SpringUtil.getBean(ObjectMapper.class).readValue(secret, JsonNode.class);
+                    log.info("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager Initialization successful");
                 }
             }
         }
