@@ -45,9 +45,23 @@ public class AWSSecretsManagerCredentials {
     private String region;
 
     /**
-     * 是否启用桶的ACL，启用桶的ACL会关闭阻止所有公开访问并启用桶的ACL
+     * 是否阻止所有公开访问
+     */
+    private boolean blockPublicAccess = true;
+
+    /**
+     * 是否启用桶的ACL，必须配置blockPublicAccess=false才会生效
+     * <br/>
+     * bucketAcl 和 bucketPolicyPublicRead 二选一开启公共读即可
      */
     private boolean bucketAcl;
+
+    /**
+     * 是否为指定的存储桶启用公共读访问策略，必须配置blockPublicAccess=false才会生效
+     * <br/>
+     * bucketAcl 和 bucketPolicyPublicRead 二选一开启公共读即可
+     */
+    private boolean bucketPolicyPublicRead;
 
     /**
      * 是否为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
@@ -55,19 +69,19 @@ public class AWSSecretsManagerCredentials {
     private boolean bucketAccelerate;
 
     /**
-     * 文件对象的访问控制列表 (ACL)
+     * 文件对象的访问控制列表 (ACL)，如果配置了bucketPolicyPublicRead，无需配置文件ACL也可公共读
      */
     private FileAclEnum fileAcl;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS 访问 s3 的密钥ID名称
      */
-    private String accessKeySecrets = "AWS-S3-Access-key-ID";
+    private String s3AccessKeySecrets = "AWS-S3-Access-key-ID";
 
     /**
      * 存储在AWS Secrets Manager中的 AWS  访问 s3 的密钥名称
      */
-    private String secretKeySecrets = "AWS-S3-Secret-access-key";
+    private String s3SecretKeySecrets = "AWS-S3-Secret-access-key";
 
     /**
      * 格式化存储桶名称

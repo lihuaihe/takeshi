@@ -9,6 +9,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -160,8 +161,8 @@ public final class AmazonS3Util {
                         BUCKET_NAME = awsSecrets.getBucketName();
                         FILE_ACL = Optional.ofNullable(awsSecrets.getFileAcl()).map(fileAcl -> Enum.valueOf(CannedAccessControlList.class, fileAcl.name())).orElse(null);
                         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-                        String accessKey = jsonNode.get(awsSecrets.getAccessKeySecrets()).asText();
-                        String secretKey = jsonNode.get(awsSecrets.getSecretKeySecrets()).asText();
+                        String accessKey = jsonNode.get(awsSecrets.getS3AccessKeySecrets()).asText();
+                        String secretKey = jsonNode.get(awsSecrets.getS3SecretKeySecrets()).asText();
                         if (StrUtil.isAllNotBlank(accessKey, secretKey)) {
                             // S3
                             AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
@@ -173,7 +174,7 @@ public final class AmazonS3Util {
                             if (!amazonS3.doesBucketExistV2(BUCKET_NAME)) {
                                 // 创建桶
                                 amazonS3.createBucket(BUCKET_NAME);
-                                if (awsSecrets.isBucketAcl()) {
+                                if (awsSecrets.isBlockPublicAccess()) {
                                     // 设置是否阻止所有公开访问
                                     PublicAccessBlockConfiguration publicAccessBlockConfiguration = new PublicAccessBlockConfiguration()
                                             .withBlockPublicAcls(false)
@@ -181,8 +182,13 @@ public final class AmazonS3Util {
                                             .withBlockPublicPolicy(false)
                                             .withRestrictPublicBuckets(false);
                                     amazonS3.setPublicAccessBlock(new SetPublicAccessBlockRequest().withBucketName(BUCKET_NAME).withPublicAccessBlockConfiguration(publicAccessBlockConfiguration));
-                                    // 启用存储桶的ACL
-                                    amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                    if (awsSecrets.isBucketAcl()) {
+                                        // 启用存储桶的ACL
+                                        amazonS3.setBucketOwnershipControls(BUCKET_NAME, new OwnershipControls().withRules(List.of(new OwnershipControlsRule().withOwnership(ObjectOwnership.BucketOwnerPreferred))));
+                                    }
+                                    if (awsSecrets.isBucketPolicyPublicRead()) {
+                                        amazonS3.setBucketPolicy(BUCKET_NAME, "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" + BUCKET_NAME + "/*\"}]}");
+                                    }
                                 }
                                 // 设置生命周期规则，指示自生命周期启动后必须经过7天才能中止并删除不完整的分段上传
                                 BucketLifecycleConfiguration.Rule lifecycleRule = new BucketLifecycleConfiguration.Rule()
@@ -509,6 +515,31 @@ public final class AmazonS3Util {
                 tikaInputStream.close();
             }
         }
+    }
+
+    /**
+     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传文件，请求时必须指定content-type，默认有效期5分钟
+     *
+     * @param fileName 文件名
+     * @return URL
+     */
+    @SneakyThrows
+    public static URL getPutPresignedUrl(String fileName) {
+        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), FileNameUtil.extName(fileName));
+        return getTransferManager().getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(Duration.ofMinutes(5))), HttpMethod.PUT);
+    }
+
+    /**
+     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传文件，请求时必须指定content-type
+     *
+     * @param fileName 文件名
+     * @param duration 预签名 URL 将过期的时间
+     * @return URL
+     */
+    @SneakyThrows
+    public static URL getPutPresignedUrl(String fileName, Duration duration) {
+        String key = getFileObjKey(Instant.now(), FileNameUtil.mainName(fileName), FileNameUtil.extName(fileName));
+        return getTransferManager().getAmazonS3Client().generatePresignedUrl(BUCKET_NAME, key, Date.from(Instant.now().plus(duration)), HttpMethod.PUT);
     }
 
     /**
