@@ -350,13 +350,18 @@ public final class AmazonS3Util {
      * @param files 文件列表
      * @return URL列表
      */
-    @SneakyThrows
     public List<URL> upload(File... files) {
-        List<URL> list = new ArrayList<>();
-        for (File file : files) {
-            list.add(this.upload(TikaInputStream.get(file.toPath()), file.getName()));
-        }
-        return list;
+        return Arrays.stream(files).map(this::upload).toList();
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param fileList 文件列表
+     * @return URL列表
+     */
+    public List<URL> uploadFileList(List<File> fileList) {
+        return fileList.stream().map(this::upload).toList();
     }
 
     /**
@@ -365,13 +370,18 @@ public final class AmazonS3Util {
      * @param multipartFiles 文件列表
      * @return URL列表
      */
-    @SneakyThrows
     public List<URL> upload(MultipartFile... multipartFiles) {
-        List<URL> list = new ArrayList<>();
-        for (MultipartFile multipartFile : multipartFiles) {
-            list.add(this.upload(TikaInputStream.get(multipartFile.getBytes()), multipartFile.getOriginalFilename()));
-        }
-        return list;
+        return Arrays.stream(multipartFiles).map(this::upload).toList();
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param multipartFileList 文件列表
+     * @return URL列表
+     */
+    public List<URL> uploadMultipartFileList(List<MultipartFile> multipartFileList) {
+        return multipartFileList.stream().map(this::upload).toList();
     }
 
     /**
@@ -528,7 +538,49 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     * 获取一个客户端用来上传文件的预签名 URL列表，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param fileNames 文件名列表
+     * @return URL列表
+     */
+    public static List<URL> getPutPresignedUrl(String... fileNames) {
+        return Arrays.stream(fileNames).map(AmazonS3Util::getPutPresignedUrl).toList();
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL列表，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param fileNameList 文件名列表
+     * @return URL列表
+     */
+    public static List<URL> getPutPresignedUrl(List<String> fileNameList) {
+        return fileNameList.stream().map(AmazonS3Util::getPutPresignedUrl).toList();
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL列表，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param duration  预签名 URL 将过期的时间
+     * @param fileNames 文件名列表
+     * @return URL列表
+     */
+    public static List<URL> getPutPresignedUrl(Duration duration, String... fileNames) {
+        return Arrays.stream(fileNames).map(fileName -> getPutPresignedUrl(fileName, duration)).toList();
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL列表，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param duration     预签名 URL 将过期的时间
+     * @param fileNameList 文件名列表
+     * @return URL列表
+     */
+    public static List<URL> getPutPresignedUrl(Duration duration, List<String> fileNameList) {
+        return fileNameList.stream().map(fileName -> getPutPresignedUrl(fileName, duration)).toList();
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
      *
      * @param fileName 文件名
      * @return URL
@@ -542,7 +594,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件
      *
      * @param fileName 文件名
      * @param duration 预签名 URL 将过期的时间
@@ -557,7 +609,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回用于访问 Amazon S3 资源的预签名 URL
+     * 获取一个用于访问 Amazon S3 资源的预签名 URL
      *
      * @param url S3文件的URL
      * @return URL
@@ -568,7 +620,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回用于访问 Amazon S3 资源的预签名 URL，默认有效期7天
+     * 获取一个用于访问 Amazon S3 资源的预签名 URL，默认有效期7天
      *
      * @param key S3对象的键
      * @return URL
@@ -578,7 +630,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 返回用于访问 Amazon S3 资源的预签名 URL
+     * 获取一个用于访问 Amazon S3 资源的预签名 URL
      *
      * @param key         S3对象的键
      * @param duration    预签名 URL 将过期的时间
