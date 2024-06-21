@@ -60,7 +60,7 @@ import java.util.*;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration(value = "OpenApiConfig")
+@AutoConfiguration(value = "openApiConfig")
 @RequiredArgsConstructor
 public class OpenApiConfig {
 

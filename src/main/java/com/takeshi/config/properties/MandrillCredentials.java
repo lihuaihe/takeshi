@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration(value = "MandrillCredentials")
+@AutoConfiguration(value = "mandrillCredentials")
 @ConfigurationProperties(prefix = "takeshi.mandrill")
 public class MandrillCredentials {
 

@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @author 七濑武【Nanase Takeshi】
  */
 @Slf4j
-@AutoConfiguration(value = "StaticConfig", before = TakeshiConfig.class)
+@AutoConfiguration(value = "staticConfig")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
 

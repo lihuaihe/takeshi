@@ -14,7 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration(value = "AWSSecretsManagerCredentials")
+@AutoConfiguration(value = "aWSSecretsManagerCredentials")
 @ConfigurationProperties(prefix = "takeshi.aws-secrets")
 public class AWSSecretsManagerCredentials {
 
@@ -71,7 +71,7 @@ public class AWSSecretsManagerCredentials {
     /**
      * 文件对象的访问控制列表 (ACL)，如果配置了bucketPolicyPublicRead，无需配置文件ACL也可公共读
      */
-    private FileAclEnum fileAcl;
+    private FileAclEnum fileAcl = FileAclEnum.PRIVATE;
 
     /**
      * 存储在AWS Secrets Manager中的 AWS 访问 s3 的密钥ID名称

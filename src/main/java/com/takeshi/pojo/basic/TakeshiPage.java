@@ -29,10 +29,10 @@ import static java.util.stream.Collectors.toList;
 public class TakeshiPage<T> extends Page<T> {
 
     /**
-     * 额外的数据
+     * 元数据
      */
-    @Schema(description = "额外的数据", nullable = true)
-    private Object metaData;
+    @Schema(description = "元数据", nullable = true)
+    private Object metadata;
 
     @JsonIgnore
     @Schema(description = "泛型类型", hidden = true)

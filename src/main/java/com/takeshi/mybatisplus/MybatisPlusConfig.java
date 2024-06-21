@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Bean;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration(value = "MybatisPlusConfig")
+@AutoConfiguration(value = "mybatisPlusConfig")
 public class MybatisPlusConfig {
 
     /**

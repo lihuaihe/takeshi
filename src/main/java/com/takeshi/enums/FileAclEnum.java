@@ -1,7 +1,5 @@
 package com.takeshi.enums;
 
-import com.amazonaws.services.s3.model.GroupGrantee;
-import com.amazonaws.services.s3.model.Permission;
 import lombok.Getter;
 
 /**
@@ -13,61 +11,58 @@ import lombok.Getter;
 public enum FileAclEnum {
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}其他人没有访问权限。
-     * <br/>
-     * 这是任何新存储桶或对象的默认访问控制策略。
+     * PRIVATE: 只有对象的所有者（即上传该对象的AWS账户）拥有对该对象的完全控制权限。
+     * 这是S3对象的默认权限。
      */
-    Private("private"),
+    PRIVATE("private"),
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}，而{@link GroupGrantee#AllUsers}组被授予者被授予{@link Permission#Read}访问权限。
-     * <br/>
-     * 如果此策略用于对象，则无需身份验证即可从浏览器读取该对象。
+     * PUBLIC_READ: 任何人都可以读取该对象的数据（即公开读权限），
+     * 但只有对象的所有者拥有对该对象的写权限和其他特权。
      */
-    PublicRead("public-read"),
+    PUBLIC_READ("public-read"),
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}，而{@link GroupGrantee#AllUsers}组被授予者被授予{@link Permission#Read}和{@link Permission#Write}访问权限。
-     * <br/>
-     * 不建议一般使用此访问策略
+     * PUBLIC_READ_WRITE: 任何人都可以读取和写入该对象的数据（即公开读写权限）。
+     * 这种权限较为危险，通常不推荐使用，因为它允许任何人覆盖或删除对象。
      */
-    PublicReadWrite("public-read-write"),
+    PUBLIC_READ_WRITE("public-read-write"),
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}，并且{@link GroupGrantee#AuthenticatedUsers}组被授予者被授予{@link Permission#Read}访问权限。
+     * AUTHENTICATED_READ: 任何经过身份验证的AWS用户都可以读取该对象的数据。
+     * 这意味着只要拥有AWS账户的人都可以访问该对象。
      */
-    AuthenticatedRead("authenticated-read"),
+    AUTHENTICATED_READ("authenticated-read"),
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}，并且{@link GroupGrantee#LogDelivery}组被授予者被授予{@link Permission#Write}访问权限，以便可以传送访问日志。
-     * <br/>
-     * 使用此访问策略可为存储桶启用 Amazon S3 存储桶日志记录。目标存储桶需要这些权限才能传送访问日志。
+     * AWS_EXEC_READ: AWS可以为特定场景执行读取操作，例如将对象下载到EC2实例。
+     * 这通常用于AWS服务之间的内部操作。
      */
-    LogDeliveryWrite("log-delivery-write"),
+    AWS_EXEC_READ("aws-exec-read"),
 
     /**
-     * 指定存储桶的所有者，但不一定与对象的所有者相同，被授予{@link Permission#Read}。
-     * <br/>
-     * 将对象上传到其他所有者的存储桶时，请使用此访问策略。此访问策略授予存储桶所有者对对象的读取权限，但不向所有用户授予读取权限。
+     * BUCKET_OWNER_READ: 桶的所有者拥有对该对象的读取权限，即使对象是由另一个AWS账户上传的。
+     * 这确保桶的所有者能够访问桶中所有对象。
      */
-    BucketOwnerRead("bucket-owner-read"),
+    BUCKET_OWNER_READ("bucket-owner-read"),
 
     /**
-     * 指定存储桶的所有者，但不一定与对象的所有者相同，被授予{@link Permission#FullControl}。
-     * <br/>
-     * 使用此访问策略将对象上传到其他所有者的存储桶。此访问策略授予存储桶所有者对对象的完全访问权限，但不向所有用户授予完全访问权限。
+     * BUCKET_OWNER_FULL_CONTROL: 桶的所有者拥有对该对象的完全控制权限，
+     * 包括读、写和删除权限，即使对象是由另一个AWS账户上传的。
+     * 这提供了桶所有者对桶中所有对象的完全管理权限。
      */
-    BucketOwnerFullControl("bucket-owner-full-control"),
+    BUCKET_OWNER_FULL_CONTROL("bucket-owner-full-control"),
 
     /**
-     * 指定所有者被授予{@link Permission#FullControl}。 Amazon EC2 被授予{@link Permission#Read}访问权限以从 Amazon S3 获取 Amazon 系统映像 (AMI) 捆绑包。
+     * UNKNOWN_TO_SDK_VERSION: 未知的S3对象权限类型。
+     * 当SDK遇到未知或不支持的权限类型时使用这个值。
      */
-    AwsExecRead("aws-exec-read");
+    UNKNOWN_TO_SDK_VERSION(null);
 
-    private final String cannedAclHeader;
+    private final String value;
 
-    FileAclEnum(String cannedAclHeader) {
-        this.cannedAclHeader = cannedAclHeader;
+    FileAclEnum(String value) {
+        this.value = value;
     }
 
 }
