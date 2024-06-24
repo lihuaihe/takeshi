@@ -1,5 +1,6 @@
 package com.takeshi.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.takeshi.config.properties.AWSSecretsManagerCredentials;
 import com.takeshi.util.AwsSecretsManagerUtil;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +44,9 @@ public class AwsConfig {
     @Bean
     @ConditionalOnMissingBean
     public S3AsyncClient s3AsyncClient() {
-        String accessKey = AwsSecretsManagerUtil.SECRET.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
-        String secretKey = AwsSecretsManagerUtil.SECRET.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
+        JsonNode secret = AwsSecretsManagerUtil.getSecret();
+        String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
+        String secretKey = secret.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
         String bucketName = awsSecretsManagerCredentials.getBucketName();
         StaticCredentialsProvider staticCredentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
         S3AsyncClient s3AsyncClient = S3AsyncClient.builder()
@@ -222,8 +224,9 @@ public class AwsConfig {
     @Bean
     @ConditionalOnMissingBean
     public S3Presigner s3Presigner() {
-        String accessKey = AwsSecretsManagerUtil.SECRET.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
-        String secretKey = AwsSecretsManagerUtil.SECRET.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
+        JsonNode secret = AwsSecretsManagerUtil.getSecret();
+        String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
+        String secretKey = secret.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
         return S3Presigner.builder()
                           .region(Region.of(awsSecretsManagerCredentials.getRegion()))
                           .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))

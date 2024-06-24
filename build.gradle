@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.13'
-version = '24.06.21.0-SNAPSHOT'
+version = '24.06.24.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -72,8 +72,8 @@ java {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
             artifactId = archivesBaseName
+            from components.java
             pom {
                 name = archivesBaseName
                 description = '一个集成了各种库的，可以快速构建SpringBoot项目框架的库，GitHub地址：https://github.com/lihuaihe/takeshi'

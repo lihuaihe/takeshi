@@ -55,7 +55,6 @@ import java.util.stream.IntStream;
 /**
  * AmazonS3Util
  * <pre>{@code
- * implementation 'software.amazon.awssdk:s3:+'
  * implementation 'software.amazon.awssdk:s3-transfer-manager:+'
  * }</pre>
  *
