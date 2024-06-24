@@ -76,8 +76,13 @@ public class AwsConfig {
                             .thenCompose(createBucketResponse -> {
                                 log.info("AwsConfig.createBucketAndConfigure --> Bucket [{}] created successfully: {}", bucketName, createBucketResponse.sdkHttpResponse().isSuccessful());
                                 return configurePublicAccessBlock(s3AsyncClient, bucketName);
+                            })
+                            .exceptionally(throwable -> {
+                                log.error("AwsConfig.createBucketAndConfigure --> Failed to create bucket [{}]: {}", bucketName, throwable.getMessage());
+                                return null;
                             });
     }
+
 
     /**
      * 设置是否阻止所有公开访问，必须先阻止公共访问才可以配置ACL和访问策略
@@ -88,21 +93,28 @@ public class AwsConfig {
      */
     private CompletableFuture<Void> configurePublicAccessBlock(S3AsyncClient s3AsyncClient, String bucketName) {
         return s3AsyncClient.putPublicAccessBlock(
-                PutPublicAccessBlockRequest.builder()
-                                           .bucket(bucketName)
-                                           .publicAccessBlockConfiguration(
-                                                   PublicAccessBlockConfiguration.builder()
-                                                                                 .blockPublicAcls(false)
-                                                                                 .ignorePublicAcls(false)
-                                                                                 .blockPublicPolicy(false)
-                                                                                 .restrictPublicBuckets(false)
-                                                                                 .build()
-                                           )
-                                           .build()
-        ).thenCompose(response -> {
-            log.info("AwsConfig.configurePublicAccessBlock --> Bucket [{}] blocks all public access successfully: {}", bucketName, response.sdkHttpResponse().isSuccessful());
-            return configureRemainingSettings(s3AsyncClient, bucketName);
-        });
+                                    PutPublicAccessBlockRequest
+                                            .builder()
+                                            .bucket(bucketName)
+                                            .publicAccessBlockConfiguration(
+                                                    PublicAccessBlockConfiguration
+                                                            .builder()
+                                                            .blockPublicAcls(false)
+                                                            .ignorePublicAcls(false)
+                                                            .blockPublicPolicy(false)
+                                                            .restrictPublicBuckets(false)
+                                                            .build()
+                                            )
+                                            .build()
+                            )
+                            .thenCompose(response -> {
+                                log.info("AwsConfig.configurePublicAccessBlock --> Bucket [{}] blocks all public access successfully: {}", bucketName, response.sdkHttpResponse().isSuccessful());
+                                return configureRemainingSettings(s3AsyncClient, bucketName);
+                            })
+                            .exceptionally(throwable -> {
+                                log.error("AwsConfig.configurePublicAccessBlock --> Bucket [{}] blocks all public access failed: {}", bucketName, throwable.getMessage());
+                                return null;
+                            });
     }
 
     /**
@@ -117,84 +129,118 @@ public class AwsConfig {
         if (awsSecretsManagerCredentials.isBucketAcl()) {
             // 启用存储桶的ACL
             log.info("AwsConfig.configureRemainingSettings --> Enable ACLs for buckets");
-            aclFuture = s3AsyncClient.putBucketOwnershipControls(
-                    PutBucketOwnershipControlsRequest.builder()
-                                                     .bucket(bucketName)
-                                                     .ownershipControls(
-                                                             OwnershipControls.builder()
-                                                                              .rules(
-                                                                                      OwnershipControlsRule.builder()
-                                                                                                           .objectOwnership(ObjectOwnership.BUCKET_OWNER_PREFERRED)
-                                                                                                           .build())
-                                                                              .build()
-                                                     )
-                                                     .build()
-            );
+            aclFuture = s3AsyncClient
+                    .putBucketOwnershipControls(
+                            PutBucketOwnershipControlsRequest
+                                    .builder()
+                                    .bucket(bucketName)
+                                    .ownershipControls(
+                                            OwnershipControls
+                                                    .builder()
+                                                    .rules(
+                                                            OwnershipControlsRule
+                                                                    .builder()
+                                                                    .objectOwnership(ObjectOwnership.BUCKET_OWNER_PREFERRED)
+                                                                    .build()
+                                                    )
+                                                    .build()
+                                    )
+                                    .build()
+                    )
+                    .exceptionally(e -> {
+                        log.error("AwsConfig.configureRemainingSettings --> Enable ACLs for buckets error", e);
+                        return null;
+                    });
         }
         CompletableFuture<PutBucketPolicyResponse> policyFuture = CompletableFuture.completedFuture(null);
         if (awsSecretsManagerCredentials.isBucketPolicyPublicRead()) {
             // 配置存储桶公共读策略
             log.info("AwsConfig.configureRemainingSettings --> Configure bucket public read policy");
             policyFuture = s3AsyncClient.putBucketPolicy(
-                    PutBucketPolicyRequest.builder()
-                                          .bucket(bucketName)
-                                          .policy("{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" + bucketName + "/*\"}]}")
-                                          .build()
-            );
+                                                PutBucketPolicyRequest
+                                                        .builder()
+                                                        .bucket(bucketName)
+                                                        .policy("{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::" + bucketName + "/*\"}]}")
+                                                        .build()
+                                        )
+                                        .exceptionally(e -> {
+                                            log.error("AwsConfig.configureRemainingSettings --> Configure bucket public read policy error", e);
+                                            return null;
+                                        });
         }
         CompletableFuture<PutBucketAccelerateConfigurationResponse> accelerateFuture = CompletableFuture.completedFuture(null);
         if (awsSecretsManagerCredentials.isBucketAccelerate()) {
             // 为指定的存储桶启用传输加速，非必要可以不启用这个，启用了会浪费带宽，但是如果是非同个地区的访问启用了则会提升访问速度
             log.info("AwsConfig.configureRemainingSettings --> Enable transfer acceleration for a bucket");
             accelerateFuture = s3AsyncClient.putBucketAccelerateConfiguration(
-                    PutBucketAccelerateConfigurationRequest.builder()
-                                                           .bucket(bucketName)
-                                                           .accelerateConfiguration(
-                                                                   AccelerateConfiguration.builder()
-                                                                                          .status(BucketAccelerateStatus.ENABLED)
-                                                                                          .build()
-                                                           ).build()
-            );
+                                                    PutBucketAccelerateConfigurationRequest
+                                                            .builder()
+                                                            .bucket(bucketName)
+                                                            .accelerateConfiguration(
+                                                                    AccelerateConfiguration
+                                                                            .builder()
+                                                                            .status(BucketAccelerateStatus.ENABLED)
+                                                                            .build()
+                                                            ).build()
+                                            )
+                                            .exceptionally(e -> {
+                                                log.error("AwsConfig.configureRemainingSettings --> Enable transfer acceleration for a bucket error", e);
+                                                return null;
+                                            });
         }
         // 配置存储桶的跨域规则
         log.info("AwsConfig.configureRemainingSettings --> Configure cross-domain rules for buckets");
-        CompletableFuture<PutBucketCorsResponse> corsFuture = s3AsyncClient.putBucketCors(
-                PutBucketCorsRequest.builder()
-                                    .bucket(bucketName)
-                                    .corsConfiguration(
-                                            CORSConfiguration.builder()
-                                                             .corsRules(
-                                                                     CORSRule.builder()
-                                                                             .allowedHeaders("*")
-                                                                             .allowedMethods("GET", "HEAD")
-                                                                             .allowedOrigins("*")
-                                                                             .exposeHeaders("ETag", "x-amz-meta-custom-header")
-                                                                             .maxAgeSeconds(3000)
-                                                                             .build()
-                                                             )
-                                                             .build()
-                                    )
-                                    .build()
-        );
+        CompletableFuture<PutBucketCorsResponse> corsFuture = s3AsyncClient
+                .putBucketCors(
+                        PutBucketCorsRequest
+                                .builder()
+                                .bucket(bucketName)
+                                .corsConfiguration(
+                                        CORSConfiguration
+                                                .builder()
+                                                .corsRules(
+                                                        CORSRule.builder()
+                                                                .allowedHeaders("*")
+                                                                .allowedMethods("GET", "HEAD")
+                                                                .allowedOrigins("*")
+                                                                .exposeHeaders("ETag", "x-amz-meta-custom-header")
+                                                                .maxAgeSeconds(3000)
+                                                                .build()
+                                                )
+                                                .build()
+                                )
+                                .build()
+                )
+                .exceptionally(e -> {
+                    log.error("AwsConfig.configureRemainingSettings --> Configure cross-domain rules for buckets error", e);
+                    return null;
+                });
         // 配置存储桶分段上传的生命周期规则
         log.info("AwsConfig.configureRemainingSettings --> Configure lifecycle rules for bucket multipart uploads");
-        CompletableFuture<PutBucketLifecycleConfigurationResponse> lifecycleFuture =
-                s3AsyncClient.putBucketLifecycleConfiguration(
-                        PutBucketLifecycleConfigurationRequest.builder()
-                                                              .bucket(bucketName)
-                                                              .lifecycleConfiguration(
-                                                                      BucketLifecycleConfiguration.builder()
-                                                                                                  .rules(
-                                                                                                          LifecycleRule.builder()
-                                                                                                                       .id("Automatically delete incomplete multipart upload after seven days")
-                                                                                                                       .abortIncompleteMultipartUpload(AbortIncompleteMultipartUpload.builder().daysAfterInitiation(7).build())
-                                                                                                                       .status(ExpirationStatus.ENABLED)
-                                                                                                                       .build()
-                                                                                                  )
-                                                                                                  .build()
-                                                              )
-                                                              .build()
-                );
+        CompletableFuture<PutBucketLifecycleConfigurationResponse> lifecycleFuture = s3AsyncClient
+                .putBucketLifecycleConfiguration(
+                        PutBucketLifecycleConfigurationRequest
+                                .builder()
+                                .bucket(bucketName)
+                                .lifecycleConfiguration(
+                                        BucketLifecycleConfiguration
+                                                .builder()
+                                                .rules(
+                                                        LifecycleRule
+                                                                .builder()
+                                                                .id("Automatically delete incomplete multipart upload after seven days")
+                                                                .abortIncompleteMultipartUpload(AbortIncompleteMultipartUpload.builder().daysAfterInitiation(7).build())
+                                                                .status(ExpirationStatus.ENABLED)
+                                                                .build()
+                                                )
+                                                .build()
+                                )
+                                .build()
+                )
+                .exceptionally(e -> {
+                    log.error("AwsConfig.configureRemainingSettings --> Configure lifecycle rules for bucket multipart uploads error", e);
+                    return null;
+                });
 
         // 并行执行所有剩余的配置操作
         return CompletableFuture.allOf(aclFuture, policyFuture, accelerateFuture, corsFuture, lifecycleFuture);

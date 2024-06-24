@@ -1,6 +1,5 @@
 package com.takeshi.util;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.img.Img;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
@@ -121,7 +120,7 @@ public final class AmazonS3Util {
     /**
      * 用户自定义元数据
      */
-    private Map<String, String> userMetadata;
+    private Map<String, String> userMetadata = new HashMap<>();
 
     /**
      * 构造函数
@@ -242,9 +241,6 @@ public final class AmazonS3Util {
      * @return AmazonS3Util
      */
     public AmazonS3Util putUserMetadata(String key, String value) {
-        if (CollUtil.isEmpty(this.userMetadata)) {
-            this.userMetadata = new HashMap<>();
-        }
         this.userMetadata.put(key, value);
         return this;
     }
@@ -256,9 +252,6 @@ public final class AmazonS3Util {
      * @return AmazonS3Util
      */
     public AmazonS3Util putUserMetadata(Map<String, String> map) {
-        if (CollUtil.isEmpty(this.userMetadata)) {
-            this.userMetadata = new HashMap<>();
-        }
         this.userMetadata.putAll(map);
         return this;
     }
