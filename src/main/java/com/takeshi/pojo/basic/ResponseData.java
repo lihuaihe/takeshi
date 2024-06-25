@@ -52,10 +52,10 @@ public class ResponseData<T> implements Serializable {
     private T data;
 
     /**
-     * 附加数据
+     * 元数据
      */
-    @Schema(description = "附加数据", nullable = true)
-    private Object metaData;
+    @Schema(description = "元数据", nullable = true)
+    private Object metadata;
 
     /**
      * 返回时间
