@@ -1,6 +1,5 @@
 package com.takeshi.util;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.TemporalUtil;
 import cn.hutool.core.lang.Range;
@@ -17,6 +16,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * ZonedDateTimeUtil
@@ -455,10 +456,10 @@ public final class ZonedDateTimeUtil {
      * @param start 起始日期时间
      * @param end   结束日期时间
      * @param unit  步进单位
-     * @return {@link ZonedDateTimeRange}
+     * @return List
      */
     public static List<ZonedDateTime> rangeToList(ZonedDateTime start, ZonedDateTime end, ChronoUnit unit) {
-        return CollUtil.newArrayList((Iterable<ZonedDateTime>) range(start, end, unit));
+        return StreamSupport.stream(new ZonedDateTimeRange(start, end, unit).spliterator(), false).collect(Collectors.toList());
     }
 
     /**
@@ -468,10 +469,10 @@ public final class ZonedDateTimeUtil {
      * @param end   结束日期时间
      * @param unit  步进单位
      * @param step  步进
-     * @return {@link ZonedDateTimeRange}
+     * @return List
      */
     public static List<ZonedDateTime> rangeToList(ZonedDateTime start, ZonedDateTime end, final ChronoUnit unit, int step) {
-        return CollUtil.newArrayList((Iterable<ZonedDateTime>) new ZonedDateTimeRange(start, end, unit, step));
+        return StreamSupport.stream(new ZonedDateTimeRange(start, end, unit, step).spliterator(), false).collect(Collectors.toList());
     }
 
     /**
@@ -800,7 +801,7 @@ public final class ZonedDateTimeUtil {
      *
      * @author looly
      */
-    static class ZonedDateTimeRange extends Range<ZonedDateTime> {
+    public static class ZonedDateTimeRange extends Range<ZonedDateTime> {
 
         @Serial
         private static final long serialVersionUID = 1L;
@@ -840,7 +841,7 @@ public final class ZonedDateTimeUtil {
          */
         public ZonedDateTimeRange(ZonedDateTime start, ZonedDateTime end, ChronoUnit unit, int step, boolean isIncludeStart, boolean isIncludeEnd) {
             super(start, end, (current, end1, index) -> {
-                final ZonedDateTime zonedDateTime = start.plus((long) (index + 1) * step, unit);
+                final ZonedDateTime zonedDateTime = start.plus((index + 1L) * step, unit);
                 if (zonedDateTime.isAfter(end1)) {
                     return null;
                 }

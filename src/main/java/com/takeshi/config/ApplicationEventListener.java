@@ -1,6 +1,6 @@
 package com.takeshi.config;
 
-import cn.hutool.core.net.NetUtil;
+import com.takeshi.util.TakeshiUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -38,19 +38,19 @@ public class ApplicationEventListener {
     public void handleApplicationReady() {
         log.info("""
 
-                         ________    _______   ________
-                        |\\_____  \\  /  ___  \\ |\\   ____\\
-                         \\|___/  /|/__/|_/  /|\\ \\  \\___|_
-                             /  / /|__|//  / / \\ \\_____  \\
-                            /  / /     /  /_/__ \\|____|\\  \\
-                           /__/ /     |\\________\\ ____\\_\\  \\
-                           |__|/       \\|_______||\\_________\\
-                                                 \\|_________|
-                        Application {} Successfully started using Java {} with PID {}. Default language: {}. Default region: {}. Default TimeZone: {}
-                        Swagger Api Url: http://{}:{}{}/doc.html""",
-                applicationName, javaVersion, ProcessHandle.current().pid(), Locale.getDefault().getLanguage(),
-                Locale.getDefault().getCountry(), ZoneId.systemDefault(), NetUtil.getLocalhostStr(),
-                serverPort, contextPath);
+                          ________    _______   ________
+                         |\\_____  \\  /  ___  \\ |\\   ____\\
+                          \\|___/  /|/__/|_/  /|\\ \\  \\___|_
+                              /  / /|__|//  / / \\ \\_____  \\
+                             /  / /     /  /_/__ \\|____|\\  \\
+                            /__/ /     |\\________\\ ____\\_\\  \\
+                            |__|/       \\|_______||\\_________\\
+                                                  \\|_________|
+                         Application {} Successfully started using Java {} with PID {}. Default language: {}. Default region: {}. Default TimeZone: {}
+                         Swagger Api Url: http://{}:{}{}/doc.html""",
+                 applicationName, javaVersion, ProcessHandle.current().pid(), Locale.getDefault().getLanguage(),
+                 Locale.getDefault().getCountry(), ZoneId.systemDefault(), TakeshiUtil.getLocalhostStr(),
+                 serverPort, contextPath);
     }
 
 }

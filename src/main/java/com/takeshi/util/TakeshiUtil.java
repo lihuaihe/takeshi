@@ -13,7 +13,6 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.lang.TypeReference;
-import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
@@ -25,10 +24,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
 import cn.hutool.extra.template.TemplateUtil;
-import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
-import cn.hutool.http.useragent.Platform;
-import cn.hutool.http.useragent.UserAgentUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -61,16 +57,13 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * 工具类
@@ -118,20 +111,22 @@ public final class TakeshiUtil {
     }
 
     /**
-     * 判断是ios还是android
+     * 获取本机IP
      *
-     * @param request request
-     * @return 1: ios, 2: android
+     * @return 本机IP
      */
-    public static int getDeviceType(HttpServletRequest request) {
-        Platform platform = UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).getPlatform();
-        if (platform.isIos()) {
-            return 1;
+    public static String getLocalhostStr() {
+        try {
+            return Collections.list(NetworkInterface.getNetworkInterfaces())
+                              .stream()
+                              .flatMap(networkInterface -> Collections.list(networkInterface.getInetAddresses()).stream())
+                              .filter(inetAddress -> !inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress())
+                              .map(InetAddress::getHostAddress)
+                              .findFirst()
+                              .orElse(InetAddress.getLocalHost().getHostAddress());
+        } catch (SocketException | UnknownHostException e) {
+            return "Unknown Host";
         }
-        if (platform.isAndroid()) {
-            return 2;
-        }
-        throw new TakeshiException(TakeshiCode.USERAGENT_ERROR);
     }
 
     /**
@@ -142,10 +137,7 @@ public final class TakeshiUtil {
      */
     public static String getClientIp(HttpServletRequest request) {
         String clientIp = JakartaServletUtil.getClientIP(request);
-        if (StrUtil.equals(LOCAL_IP, clientIp)) {
-            return NetUtil.getLocalhostStr();
-        }
-        return clientIp;
+        return StrUtil.equals(LOCAL_IP, clientIp) ? getLocalhostStr() : clientIp;
     }
 
     /**
