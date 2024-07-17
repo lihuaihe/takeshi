@@ -136,6 +136,10 @@ public class TakeshiConfig {
                 .addSerializer(BigDecimal.class, ToStringSerializer.instance)
                 .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
                 .addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(Double.class, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Double.TYPE, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Float.class, new NumberDeserializers.FloatDeserializer(Float.class, null))
+                .addDeserializer(Float.TYPE, new NumberDeserializers.FloatDeserializer(Float.class, null))
                 .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
                 .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
         return builder.createXmlMapper(false)
