@@ -61,7 +61,7 @@ public class MybatisPlusConfig {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         // 设置GsonTypeHandler中的GSON
-        GsonTypeHandler.setGson(GsonUtil.gson());
+        GsonTypeHandler.setGson(GsonUtil.gsonLongToString());
         return interceptor;
     }
 
@@ -78,4 +78,5 @@ public class MybatisPlusConfig {
             typeHandlerRegistry.register(TakeshiInstantTypeHandler.class);
         };
     }
+
 }
