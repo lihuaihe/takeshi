@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @AutoConfiguration(value = "staticConfig")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class StaticConfig {
 
     /**

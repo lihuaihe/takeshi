@@ -17,7 +17,6 @@ import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -54,7 +53,6 @@ import java.util.Locale;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration(value = "takeshiConfig")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableCaching
 @EnableRetry
 @EnableScheduling

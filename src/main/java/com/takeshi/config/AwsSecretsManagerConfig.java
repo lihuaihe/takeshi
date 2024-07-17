@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration(value = "awsSecretsManagerConfig")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnClass(SecretsManagerClient.class)
 @ConditionalOnProperty(prefix = "takeshi.aws-secrets", name = {"access-key", "secret-key", "secret-id"})
 @RequiredArgsConstructor
