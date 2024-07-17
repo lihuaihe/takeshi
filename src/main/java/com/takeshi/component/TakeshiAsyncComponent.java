@@ -4,8 +4,6 @@ import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
@@ -34,8 +32,6 @@ import java.util.Map;
 public class TakeshiAsyncComponent {
 
     private final DataSource dataSource;
-
-    private final ObjectMapper objectMapper;
 
     /**
      * 新增一条接口请求相关信息到数据库
@@ -89,14 +85,10 @@ public class TakeshiAsyncComponent {
      * @return boolean
      */
     private boolean successful(String responseData) {
-        try {
-            if (StrUtil.isNotEmpty(responseData)) {
-                ResponseData<?> data = objectMapper.readValue(responseData, ResponseData.class);
-                return data.getCode() == TakeshiCode.SUCCESS.getCode();
-            }
-        } catch (JsonProcessingException ignored) {
+        if (StrUtil.isEmpty(responseData)) {
+            return true;
         }
-        return true;
+        return GsonUtil.fromJson(responseData, ResponseData.class).getCode() == TakeshiCode.SUCCESS.getCode();
     }
 
 }
