@@ -125,9 +125,13 @@ public class TakeshiConfig {
     @Bean
     @ConditionalOnMissingBean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
-        SimpleModule simpleModule = new SimpleModule("LongToString", PackageVersion.VERSION)
+        SimpleModule simpleModule = new SimpleModule("NumberToString", PackageVersion.VERSION)
                 .addSerializer(Long.class, ToStringSerializer.instance)
                 .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                .addSerializer(Double.class, ToStringSerializer.instance)
+                .addSerializer(Double.TYPE, ToStringSerializer.instance)
+                .addSerializer(Float.class, ToStringSerializer.instance)
+                .addSerializer(Float.TYPE, ToStringSerializer.instance)
                 .addSerializer(BigInteger.class, ToStringSerializer.instance)
                 .addSerializer(BigDecimal.class, ToStringSerializer.instance)
                 .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
