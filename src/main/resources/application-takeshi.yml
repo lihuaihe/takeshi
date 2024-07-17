@@ -24,8 +24,6 @@ spring:
 
 springdoc:
   default-flat-param-object: true
-  cache:
-    disabled: true
 
 server:
   shutdown: graceful
