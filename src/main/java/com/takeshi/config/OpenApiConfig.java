@@ -65,7 +65,9 @@ import java.util.*;
 public class OpenApiConfig {
 
     private final MessageSource messageSource;
+
     private final SaTokenConfig saTokenConfig;
+
     private final ApplicationContext applicationContext;
 
     @Value("${spring.application.name:}")
@@ -85,7 +87,7 @@ public class OpenApiConfig {
         public Schema<?> resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
             JavaType javaType = objectMapperProvider.jsonMapper().constructType(type.getType());
             Class<?> clazz = javaType.getRawClass();
-            if (clazz == Long.class || clazz == BigDecimal.class || clazz == BigInteger.class) {
+            if (clazz == Long.class || clazz == Double.class || clazz == Float.class || clazz == BigDecimal.class || clazz == BigInteger.class) {
                 type.setType(String.class);
                 return chain.next().resolve(type, context, chain);
             } else if (clazz == LocalTime.class) {
@@ -168,8 +170,8 @@ public class OpenApiConfig {
             }
         });
         return groupMap.entrySet()
-                .stream()
-                .map(item -> GroupedOpenApi.builder().group(item.getKey()).pathsToMatch(item.getValue().toArray(String[]::new)).build()).toList();
+                       .stream()
+                       .map(item -> GroupedOpenApi.builder().group(item.getKey()).pathsToMatch(item.getValue().toArray(String[]::new)).build()).toList();
     }
 
     /**
@@ -196,10 +198,10 @@ public class OpenApiConfig {
                                                                  SpringDocProviders springDocProviders,
                                                                  SpringDocCustomizers springDocCustomizers) {
         return new MultipleOpenApiWebMvcResource(groupedOpenApis,
-                defaultOpenAPIBuilder, requestBuilder,
-                responseBuilder, operationParser,
-                springDocConfigProperties,
-                springDocProviders, springDocCustomizers);
+                                                 defaultOpenAPIBuilder, requestBuilder,
+                                                 responseBuilder, operationParser,
+                                                 springDocConfigProperties,
+                                                 springDocProviders, springDocCustomizers);
     }
 
     // /**
@@ -240,15 +242,15 @@ public class OpenApiConfig {
         classSet.addAll(ClassUtil.scanPackageBySuper(packageName, TakeshiCode.class));
         // 全局通用响应信息列表
         List<RetBO> retBOList = classSet.stream()
-                .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
-                .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
-                .sorted(Comparator.comparing(RetBO::getCode))
-                .map(retBO -> {
-                    // swagger文档中的响应状态码信息
-                    String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
-                    return new RetBO(retBO.getCode(), message);
-                })
-                .toList();
+                                        .flatMap(item -> Arrays.stream(ReflectUtil.getFields(item, f -> f.getType().isAssignableFrom(RetBO.class))))
+                                        .map(item -> (RetBO) ReflectUtil.getStaticFieldValue(item))
+                                        .sorted(Comparator.comparing(RetBO::getCode))
+                                        .map(retBO -> {
+                                            // swagger文档中的响应状态码信息
+                                            String message = messageSource.getMessage(StrUtil.strip(retBO.getMessage(), StrUtil.DELIM_START, StrUtil.DELIM_END), null, retBO.getMessage(), Locale.SIMPLIFIED_CHINESE);
+                                            return new RetBO(retBO.getCode(), message);
+                                        })
+                                        .toList();
         return (operation, handlerMethod) -> {
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
@@ -272,7 +274,7 @@ public class OpenApiConfig {
                 .contact(new Contact().name("七濑武【Nanase Takeshi】").email("takeshi@725.life").url("https://github.com/lihuaihe/takeshi"));
         if (StrUtil.isNotBlank(applicationName)) {
             info.title(applicationName)
-                    .description(applicationName + "通用框架接口");
+                .description(applicationName + "通用框架接口");
         }
         SecurityScheme securityScheme = new SecurityScheme()
                 .name(tokenName)
