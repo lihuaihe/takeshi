@@ -63,29 +63,93 @@ import java.util.stream.IntStream;
 public final class AmazonS3Util {
 
     /**
-     * 存储桶名称
+     * 静态内部类
      */
-    public static final String BUCKET_NAME = SpringUtil.getBean(AWSSecretsManagerCredentials.class).getBucketName();
+    private static class LazyHolder {
+
+        /**
+         * 存储桶名称
+         */
+        private static String bucketName;
+
+        /**
+         * 文件ACL
+         */
+        private static ObjectCannedACL fileAcl;
+
+        /**
+         * 用于异步访问 Amazon S3 的服务客户端
+         */
+        private static S3AsyncClient s3AsyncClient;
+
+        /**
+         * 用于管理到 Amazon S3 的传输的高级实用程序
+         */
+        private static S3TransferManager s3TransferManager;
+
+        /**
+         * 用于管理 Amazon S3 对象签名
+         */
+        private static S3Presigner s3Presigner;
+
+        static {
+            try {
+                bucketName = SpringUtil.getBean(AWSSecretsManagerCredentials.class).getBucketName();
+                fileAcl = ObjectCannedACL.fromValue(SpringUtil.getBean(AWSSecretsManagerCredentials.class).getFileAcl().getValue());
+                s3AsyncClient = SpringUtil.getBean(S3AsyncClient.class);
+                s3TransferManager = SpringUtil.getBean(S3TransferManager.class);
+                s3Presigner = SpringUtil.getBean(S3Presigner.class);
+            } catch (Exception e) {
+                log.error("Error initializing AmazonS3Util.LazyHolder", e);
+            }
+        }
+
+    }
 
     /**
-     * 文件ACL
+     * 获取存储桶名称
+     *
+     * @return 存储桶名称
      */
-    public static final ObjectCannedACL FILE_ACL = ObjectCannedACL.fromValue(SpringUtil.getBean(AWSSecretsManagerCredentials.class).getFileAcl().getValue());
+    public static String getBucketName() {
+        return LazyHolder.bucketName;
+    }
 
     /**
-     * 用于异步访问 Amazon S3 的服务客户端
+     * 获取文件ACL
+     *
+     * @return 文件ACL
      */
-    public static final S3AsyncClient s3AsyncClient = SpringUtil.getBean(S3AsyncClient.class);
+    public static ObjectCannedACL getFileAcl() {
+        return LazyHolder.fileAcl;
+    }
 
     /**
-     * 用于管理到 Amazon S3 的传输的高级实用程序
+     * 获取用于异步访问 Amazon S3 的服务客户端
+     *
+     * @return 用于异步访问 Amazon S3 的服务客户端
      */
-    public static final S3TransferManager s3TransferManager = SpringUtil.getBean(S3TransferManager.class);
+    public static S3AsyncClient getS3AsyncClient() {
+        return LazyHolder.s3AsyncClient;
+    }
 
     /**
-     * 用于管理 Amazon S3 对象签名
+     * 获取用于管理到 Amazon S3 的传输的高级实用程序
+     *
+     * @return 用于管理到 Amazon S3 的传输的高级实用程序
      */
-    public static final S3Presigner s3Presigner = SpringUtil.getBean(S3Presigner.class);
+    public static S3TransferManager getS3TransferManager() {
+        return LazyHolder.s3TransferManager;
+    }
+
+    /**
+     * 获取用于管理 Amazon S3 对象签名
+     *
+     * @return 用于管理 Amazon S3 对象签名
+     */
+    public static S3Presigner getS3Presigner() {
+        return LazyHolder.s3Presigner;
+    }
 
     /**
      * 预签名URL的有效期
@@ -95,7 +159,7 @@ public final class AmazonS3Util {
     /**
      * 文件对象的访问控制列表 (ACL)
      */
-    private ObjectCannedACL fileAcl = ObjectCannedACL.PRIVATE;
+    private ObjectCannedACL fileAcl;
 
     /**
      * 文件上传后的URL是否附带文件信息
@@ -347,9 +411,8 @@ public final class AmazonS3Util {
             if (StrUtil.isBlank(extension)) {
                 throw new TakeshiException(TakeshiCode.FILE_TYPE_ERROR);
             }
-            Instant instant = Instant.now();
             if (ObjUtil.isNull(this.fileAcl)) {
-                this.fileAcl = FILE_ACL;
+                this.fileAcl = AmazonS3Util.getFileAcl();
             }
             // 添加用户自定义元数据
             // String mainName = FileNameUtil.mainName(fileName);
@@ -366,14 +429,14 @@ public final class AmazonS3Util {
                     String thumbnailObjKey = getThumbnailObjKey(fileObjKey);
                     // 添加缩略图的S3 key
                     this.putUserMetadata(MetadataConstants.THUMBNAIL, thumbnailObjKey);
-                    s3TransferManager.upload(
+                    AmazonS3Util.getS3TransferManager().upload(
                             UploadRequest.builder()
                                          .requestBody(
                                                  AsyncRequestBody.fromBytes(thumbnailBytes)
                                          )
                                          .putObjectRequest(
                                                  PutObjectRequest.builder()
-                                                                 .bucket(BUCKET_NAME)
+                                                                 .bucket(AmazonS3Util.getBucketName())
                                                                  .key(thumbnailObjKey)
                                                                  .contentType("image/jpg")
                                                                  .contentLength((long) thumbnailBytes.length)
@@ -390,43 +453,43 @@ public final class AmazonS3Util {
             }
             long contentLength = bytes.length;
             // TransferManager 异步处理所有传输,所以这个调用立即返回
-            return s3TransferManager.upload(
-                                            UploadRequest.builder()
-                                                         .requestBody(AsyncRequestBody.fromBytes(bytes))
-                                                         .putObjectRequest(
-                                                                 PutObjectRequest.builder()
-                                                                                 .bucket(BUCKET_NAME)
-                                                                                 .key(fileObjKey)
-                                                                                 .metadata(this.userMetadata)
-                                                                                 .contentType(mediaType)
-                                                                                 .contentLength(contentLength)
-                                                                                 .acl(this.fileAcl)
-                                                                                 .build()
-                                                         )
-                                                         .build()
-                                    )
-                                    .completionFuture()
-                                    .thenApply(completedUpload -> {
-                                                   URL url = getUrl(fileObjKey);
-                                                   if (this.fileInfoUrl) {
-                                                       // 此处编码格式传null，目的是为了避免对原始URL反编码，导致访问的URL不正确
-                                                       UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
-                                                       urlBuilder.addQuery(UrlParamsConstants.CONTENT_LENGTH, contentLength);
-                                                       urlBuilder.addQuery(UrlParamsConstants.CONTENT_TYPE, mediaType);
-                                                       String videoDuration = userMetadata.get(MetadataConstants.DURATION);
-                                                       if (StrUtil.isNotBlank(videoDuration)) {
-                                                           urlBuilder.addQuery(UrlParamsConstants.DURATION, videoDuration);
-                                                       }
-                                                       String thumbnail = userMetadata.get(MetadataConstants.THUMBNAIL);
-                                                       if (StrUtil.isNotBlank(thumbnail)) {
-                                                           urlBuilder.addQuery(UrlParamsConstants.THUMBNAIL, thumbnail);
-                                                       }
-                                                       return urlBuilder.toURL();
-                                                   }
-                                                   return url;
-                                               }
-                                    )
-                                    .join();
+            return AmazonS3Util.getS3TransferManager().upload(
+                                       UploadRequest.builder()
+                                                    .requestBody(AsyncRequestBody.fromBytes(bytes))
+                                                    .putObjectRequest(
+                                                            PutObjectRequest.builder()
+                                                                            .bucket(AmazonS3Util.getBucketName())
+                                                                            .key(fileObjKey)
+                                                                            .metadata(this.userMetadata)
+                                                                            .contentType(mediaType)
+                                                                            .contentLength(contentLength)
+                                                                            .acl(this.fileAcl)
+                                                                            .build()
+                                                    )
+                                                    .build()
+                               )
+                               .completionFuture()
+                               .thenApply(completedUpload -> {
+                                              URL url = getUrl(fileObjKey);
+                                              if (this.fileInfoUrl) {
+                                                  // 此处编码格式传null，目的是为了避免对原始URL反编码，导致访问的URL不正确
+                                                  UrlBuilder urlBuilder = UrlBuilder.of(url.toString(), null);
+                                                  urlBuilder.addQuery(UrlParamsConstants.CONTENT_LENGTH, contentLength);
+                                                  urlBuilder.addQuery(UrlParamsConstants.CONTENT_TYPE, mediaType);
+                                                  String videoDuration = userMetadata.get(MetadataConstants.DURATION);
+                                                  if (StrUtil.isNotBlank(videoDuration)) {
+                                                      urlBuilder.addQuery(UrlParamsConstants.DURATION, videoDuration);
+                                                  }
+                                                  String thumbnail = userMetadata.get(MetadataConstants.THUMBNAIL);
+                                                  if (StrUtil.isNotBlank(thumbnail)) {
+                                                      urlBuilder.addQuery(UrlParamsConstants.THUMBNAIL, thumbnail);
+                                                  }
+                                                  return urlBuilder.toURL();
+                                              }
+                                              return url;
+                                          }
+                               )
+                               .join();
 
         }
     }
@@ -438,7 +501,7 @@ public final class AmazonS3Util {
      * @return URL
      */
     public static URL getUrl(String key) {
-        return s3AsyncClient.utilities().getUrl(builder -> builder.bucket(BUCKET_NAME).key(key).build());
+        return AmazonS3Util.getS3AsyncClient().utilities().getUrl(builder -> builder.bucket(AmazonS3Util.getBucketName()).key(key).build());
     }
 
     /**
@@ -526,10 +589,10 @@ public final class AmazonS3Util {
     @SneakyThrows
     public static PresignedPutObjectRequest getPutPresignedUrl(String fileName, Duration duration, ObjectCannedACL objectCannedACL, Map<String, String> metadata) {
         String key = getPutFileObjKey(fileName);
-        return s3Presigner.presignPutObject(
+        return AmazonS3Util.getS3Presigner().presignPutObject(
                 PutObjectPresignRequest.builder()
                                        .signatureDuration(duration)
-                                       .putObjectRequest(PutObjectRequest.builder().bucket(BUCKET_NAME).key(key).acl(objectCannedACL).metadata(metadata).build())
+                                       .putObjectRequest(PutObjectRequest.builder().bucket(AmazonS3Util.getBucketName()).key(key).acl(objectCannedACL).metadata(metadata).build())
                                        .build()
         );
     }
@@ -576,7 +639,7 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static PresignedGetObjectRequest getPresignedUrl(URL url, Duration duration, boolean fileInfoUrl) {
-        return getPresignedUrl(s3AsyncClient.utilities().parseUri(url.toURI()).key().orElseThrow(), duration, fileInfoUrl);
+        return getPresignedUrl(AmazonS3Util.getS3AsyncClient().utilities().parseUri(url.toURI()).key().orElseThrow(), duration, fileInfoUrl);
     }
 
     /**
@@ -635,12 +698,20 @@ public final class AmazonS3Util {
             }
             String thumbnailKey = metadata.get(MetadataConstants.THUMBNAIL);
             if (StrUtil.isNotBlank(thumbnailKey)) {
-                URL thumbnailUrl = s3Presigner.presignGetObject(builder -> builder.signatureDuration(duration).getObjectRequest(request -> request.bucket(BUCKET_NAME).key(thumbnailKey).build()).build()).url();
+                URL thumbnailUrl = AmazonS3Util.getS3Presigner()
+                                               .presignGetObject(builder ->
+                                                                         builder.signatureDuration(duration)
+                                                                                .getObjectRequest(request ->
+                                                                                                          request.bucket(AmazonS3Util.getBucketName())
+                                                                                                                 .key(thumbnailKey).build()
+                                                                                ).build()
+                                               )
+                                               .url();
                 awsRequestOverrideConfigurationBuilder.putRawQueryParameter(UrlParamsConstants.THUMBNAIL, thumbnailUrl.toString());
             }
             GetObjectRequest getObjectRequest =
                     GetObjectRequest.builder()
-                                    .bucket(BUCKET_NAME)
+                                    .bucket(AmazonS3Util.getBucketName())
                                     .key(key)
                                     .overrideConfiguration(awsRequestOverrideConfigurationBuilder.build())
                                     .build();
@@ -649,12 +720,12 @@ public final class AmazonS3Util {
                                            .signatureDuration(duration)
                                            .getObjectRequest(getObjectRequest)
                                            .build();
-            return s3Presigner.presignGetObject(getObjectPresignRequest);
+            return AmazonS3Util.getS3Presigner().presignGetObject(getObjectPresignRequest);
         }
-        return s3Presigner.presignGetObject(
+        return AmazonS3Util.getS3Presigner().presignGetObject(
                 GetObjectPresignRequest.builder()
                                        .signatureDuration(duration)
-                                       .getObjectRequest(GetObjectRequest.builder().bucket(BUCKET_NAME).key(key).build())
+                                       .getObjectRequest(GetObjectRequest.builder().bucket(AmazonS3Util.getBucketName()).key(key).build())
                                        .build()
         );
     }
@@ -666,7 +737,7 @@ public final class AmazonS3Util {
      * @return CompletableFuture
      */
     public static CompletableFuture<DeleteBucketResponse> deleteBucket(String bucketName) {
-        return s3AsyncClient.deleteBucket(builder -> builder.bucket(bucketName).build());
+        return AmazonS3Util.getS3AsyncClient().deleteBucket(builder -> builder.bucket(bucketName).build());
     }
 
     /**
@@ -676,7 +747,7 @@ public final class AmazonS3Util {
      * @return CompletableFuture
      */
     public static CompletableFuture<DeleteObjectResponse> deleteFile(String key) {
-        return s3AsyncClient.deleteObject(builder -> builder.bucket(BUCKET_NAME).key(key).build());
+        return AmazonS3Util.getS3AsyncClient().deleteObject(builder -> builder.bucket(AmazonS3Util.getBucketName()).key(key).build());
     }
 
     /**
@@ -688,15 +759,15 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static CompletableFuture<CompletedFileDownload> download(String key, File outFile) {
-        return s3TransferManager.downloadFile(builder ->
-                                                      builder.getObjectRequest(
-                                                                     GetObjectRequest.builder()
-                                                                                     .bucket(BUCKET_NAME)
-                                                                                     .key(key)
-                                                                                     .build()
-                                                             )
-                                                             .destination(outFile)
-                                                             .build()
+        return AmazonS3Util.getS3TransferManager().downloadFile(builder ->
+                                                                        builder.getObjectRequest(
+                                                                                       GetObjectRequest.builder()
+                                                                                                       .bucket(AmazonS3Util.getBucketName())
+                                                                                                       .key(key)
+                                                                                                       .build()
+                                                                               )
+                                                                               .destination(outFile)
+                                                                               .build()
         ).completionFuture();
     }
 
@@ -707,17 +778,17 @@ public final class AmazonS3Util {
      * @return boolean
      */
     public static boolean doesObjectExist(String key) {
-        return s3AsyncClient.headObject(builder -> builder.bucket(BUCKET_NAME).key(key).build())
-                            .thenApply(HeadObjectResponse::sdkHttpResponse)
-                            .thenApply(SdkHttpResponse::isSuccessful)
-                            .exceptionally(throwable -> {
-                                if (throwable.getCause() instanceof NoSuchKeyException) {
-                                    return false;
-                                } else {
-                                    throw new RuntimeException(throwable);
-                                }
-                            })
-                            .join();
+        return AmazonS3Util.getS3AsyncClient().headObject(builder -> builder.bucket(AmazonS3Util.getBucketName()).key(key).build())
+                           .thenApply(HeadObjectResponse::sdkHttpResponse)
+                           .thenApply(SdkHttpResponse::isSuccessful)
+                           .exceptionally(throwable -> {
+                               if (throwable.getCause() instanceof NoSuchKeyException) {
+                                   return false;
+                               } else {
+                                   throw new RuntimeException(throwable);
+                               }
+                           })
+                           .join();
     }
 
     /**
@@ -727,17 +798,7 @@ public final class AmazonS3Util {
      * @return S3Object
      */
     public static HeadObjectResponse getObject(String key) {
-        return s3AsyncClient.headObject(builder -> builder.bucket(BUCKET_NAME).key(key).build()).join();
-    }
-
-    /**
-     * 关闭 S3TransferManager 实例
-     */
-    public static void shutdown() {
-        if (ObjUtil.isNotNull(s3TransferManager)) {
-            log.info("Close the S3TransferManager instance...");
-            s3TransferManager.close();
-        }
+        return AmazonS3Util.getS3AsyncClient().headObject(builder -> builder.bucket(AmazonS3Util.getBucketName()).key(key).build()).join();
     }
 
     private static final DateTimeFormatter PATH_DATE_PATTERN_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd/", Locale.getDefault()).withZone(ZoneId.systemDefault());

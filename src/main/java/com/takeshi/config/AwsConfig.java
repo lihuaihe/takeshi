@@ -30,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @AutoConfiguration(value = "awsConfig")
 @ConditionalOnClass(S3TransferManager.class)
-@ConditionalOnBean(SecretsManagerClient.class)
 @RequiredArgsConstructor
 public class AwsConfig {
 
@@ -43,6 +42,7 @@ public class AwsConfig {
      */
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(SecretsManagerClient.class)
     public S3AsyncClient s3AsyncClient() {
         JsonNode secret = AwsSecretsManagerUtil.getSecret();
         String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
@@ -92,6 +92,7 @@ public class AwsConfig {
      * @return CompletableFuture
      */
     private CompletableFuture<Void> configurePublicAccessBlock(S3AsyncClient s3AsyncClient, String bucketName) {
+        boolean blockPublicAccess = awsSecretsManagerCredentials.isBlockPublicAccess();
         return s3AsyncClient.putPublicAccessBlock(
                                     PutPublicAccessBlockRequest
                                             .builder()
@@ -99,10 +100,10 @@ public class AwsConfig {
                                             .publicAccessBlockConfiguration(
                                                     PublicAccessBlockConfiguration
                                                             .builder()
-                                                            .blockPublicAcls(false)
-                                                            .ignorePublicAcls(false)
-                                                            .blockPublicPolicy(false)
-                                                            .restrictPublicBuckets(false)
+                                                            .blockPublicAcls(blockPublicAccess)
+                                                            .ignorePublicAcls(blockPublicAccess)
+                                                            .blockPublicPolicy(blockPublicAccess)
+                                                            .restrictPublicBuckets(blockPublicAccess)
                                                             .build()
                                             )
                                             .build()
@@ -126,6 +127,8 @@ public class AwsConfig {
      */
     private CompletableFuture<Void> configureRemainingSettings(S3AsyncClient s3AsyncClient, String bucketName) {
         CompletableFuture<PutBucketOwnershipControlsResponse> aclFuture = CompletableFuture.completedFuture(null);
+        CompletableFuture<PutBucketPolicyResponse> policyFuture = CompletableFuture.completedFuture(null);
+        // ACL和公共读策略二选一即可，优先ACL
         if (awsSecretsManagerCredentials.isBucketAcl()) {
             // 启用存储桶的ACL
             log.info("AwsConfig.configureRemainingSettings --> Enable ACLs for buckets");
@@ -151,9 +154,7 @@ public class AwsConfig {
                         log.error("AwsConfig.configureRemainingSettings --> Enable ACLs for buckets error", e);
                         return null;
                     });
-        }
-        CompletableFuture<PutBucketPolicyResponse> policyFuture = CompletableFuture.completedFuture(null);
-        if (awsSecretsManagerCredentials.isBucketPolicyPublicRead()) {
+        } else if (awsSecretsManagerCredentials.isBucketPolicyPublicRead()) {
             // 配置存储桶公共读策略
             log.info("AwsConfig.configureRemainingSettings --> Configure bucket public read policy");
             policyFuture = s3AsyncClient.putBucketPolicy(
@@ -269,6 +270,7 @@ public class AwsConfig {
      */
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(SecretsManagerClient.class)
     public S3Presigner s3Presigner() {
         JsonNode secret = AwsSecretsManagerUtil.getSecret();
         String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();

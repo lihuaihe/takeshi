@@ -74,14 +74,14 @@ class FrameConverterUtil {
                     String thumbnailObjKey = AmazonS3Util.getThumbnailObjKey(originalFileKey);
                     // 添加缩略图的S3 key
                     userMetadata.put(AmazonS3Util.MetadataConstants.THUMBNAIL, thumbnailObjKey);
-                    AmazonS3Util.s3TransferManager.upload(
+                    AmazonS3Util.getS3TransferManager().upload(
                             UploadRequest.builder()
                                          .requestBody(
                                                  AsyncRequestBody.fromBytes(bytes)
                                          )
                                          .putObjectRequest(
                                                  PutObjectRequest.builder()
-                                                                 .bucket(AmazonS3Util.BUCKET_NAME)
+                                                                 .bucket(AmazonS3Util.getBucketName())
                                                                  .key(thumbnailObjKey)
                                                                  .contentType("image/jpg")
                                                                  .contentLength((long) bytes.length)
