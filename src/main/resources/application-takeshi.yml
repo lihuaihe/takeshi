@@ -23,6 +23,8 @@ spring:
     timeout-per-shutdown-phase: 30s
 
 springdoc:
+  cache:
+    disabled: true
   default-flat-param-object: true
 
 server:
