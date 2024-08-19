@@ -17,7 +17,6 @@ import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -53,8 +52,7 @@ import java.util.Locale;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@AutoConfiguration(value = "TakeshiConfig")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfiguration(value = "takeshiConfig")
 @EnableCaching
 @EnableRetry
 @EnableScheduling
@@ -125,13 +123,21 @@ public class TakeshiConfig {
     @Bean
     @ConditionalOnMissingBean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
-        SimpleModule simpleModule = new SimpleModule("LongToString", PackageVersion.VERSION)
+        SimpleModule simpleModule = new SimpleModule("NumberToString", PackageVersion.VERSION)
                 .addSerializer(Long.class, ToStringSerializer.instance)
                 .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                .addSerializer(Double.class, ToStringSerializer.instance)
+                .addSerializer(Double.TYPE, ToStringSerializer.instance)
+                .addSerializer(Float.class, ToStringSerializer.instance)
+                .addSerializer(Float.TYPE, ToStringSerializer.instance)
                 .addSerializer(BigInteger.class, ToStringSerializer.instance)
                 .addSerializer(BigDecimal.class, ToStringSerializer.instance)
                 .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
                 .addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(Double.class, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Double.TYPE, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Float.class, new NumberDeserializers.FloatDeserializer(Float.class, null))
+                .addDeserializer(Float.TYPE, new NumberDeserializers.FloatDeserializer(Float.class, null))
                 .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
                 .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
         return builder.createXmlMapper(false)

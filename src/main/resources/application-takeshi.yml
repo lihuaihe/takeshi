@@ -23,9 +23,9 @@ spring:
     timeout-per-shutdown-phase: 30s
 
 springdoc:
-  default-flat-param-object: true
   cache:
-    disabled: true
+    disabled: true # 禁用缓存才可以使用动态分组功能
+  default-flat-param-object: true
 
 server:
   shutdown: graceful

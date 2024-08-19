@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration(value = "SmsBroadcastProperties")
+@AutoConfiguration(value = "smsBroadcastProperties")
 @ConfigurationProperties(prefix = "takeshi.sms-broadcast")
 public class SmsBroadcastProperties {
 

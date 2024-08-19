@@ -109,7 +109,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseData<Object> illegalArgumentException(IllegalArgumentException illegalArgumentException) {
         log.error("GlobalExceptionHandler.illegalArgumentException --> IllegalArgumentException: ", illegalArgumentException);
-        return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
+        if (StrUtil.startWith(illegalArgumentException.getMessage(), "[Assertion failed]")) {
+            // 默认的非法参数异常
+            return ResponseData.retData(TakeshiCode.PARAMETER_ERROR);
+        }
+        // 自定义的非法参数异常
+        return ResponseData.fail(illegalArgumentException.getMessage());
     }
 
     /**

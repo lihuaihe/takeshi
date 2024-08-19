@@ -71,17 +71,28 @@ public final class MandrillUtil {
         if (ObjUtil.isNull(mandrillApi)) {
             synchronized (MandrillUtil.class) {
                 if (ObjUtil.isNull(mandrillApi)) {
-                    try {
-                        MandrillCredentials mandrill = SpringUtil.getBean(MandrillCredentials.class);
-                        JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-                        fromEmail = StrUtil.isBlank(mandrill.getFromEmailSecrets()) ? mandrill.getFromEmail() : jsonNode.get(mandrill.getFromEmailSecrets()).asText();
-                        fromName = StrUtil.isBlank(mandrill.getFromNameSecrets()) ? mandrill.getFromName() : jsonNode.get(mandrill.getFromNameSecrets()).asText();
-                        String apiKey = StrUtil.isBlank(mandrill.getApiKeySecrets()) ? mandrill.getApiKey() : jsonNode.get(mandrill.getApiKeySecrets()).asText();
-                        mandrillApi = new MandrillApi(apiKey);
-                        log.info("MandrillUtil.getMandrillApi --> Mandrill Initialization successful");
-                    } catch (Exception e) {
-                        log.error("MandrillUtil.getMandrillApi --> Mandrill initialization failed, e: ", e);
+                    MandrillCredentials mandrill = SpringUtil.getBean(MandrillCredentials.class);
+                    JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
+                    String apiKey;
+                    if (StrUtil.isBlank(mandrill.getApiKeySecrets())) {
+                        apiKey = mandrill.getApiKey();
+                    } else if (jsonNode.hasNonNull(mandrill.getApiKeySecrets())) {
+                        apiKey = jsonNode.get(mandrill.getApiKeySecrets()).asText();
+                    } else {
+                        throw new IllegalArgumentException("'apiKey' is null; please provide Mandrill API key");
                     }
+                    if (StrUtil.isBlank(mandrill.getFromEmailSecrets())) {
+                        fromEmail = mandrill.getFromEmail();
+                    } else if (jsonNode.hasNonNull(mandrill.getFromEmailSecrets())) {
+                        fromEmail = jsonNode.get(mandrill.getFromEmailSecrets()).asText();
+                    }
+                    if (StrUtil.isBlank(mandrill.getFromNameSecrets())) {
+                        fromName = mandrill.getFromName();
+                    } else if (jsonNode.hasNonNull(mandrill.getFromNameSecrets())) {
+                        fromName = jsonNode.get(mandrill.getFromNameSecrets()).asText();
+                    }
+                    mandrillApi = new MandrillApi(apiKey);
+                    log.info("MandrillUtil.getMandrillApi --> Mandrill Initialization successful");
                 }
             }
         }

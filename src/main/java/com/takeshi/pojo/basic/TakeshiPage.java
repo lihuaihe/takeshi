@@ -29,10 +29,10 @@ import static java.util.stream.Collectors.toList;
 public class TakeshiPage<T> extends Page<T> {
 
     /**
-     * 额外的数据
+     * 元数据
      */
-    @Schema(description = "额外的数据", nullable = true)
-    private Object metaData;
+    @Schema(description = "元数据", nullable = true)
+    private Object metadata;
 
     @JsonIgnore
     @Schema(description = "泛型类型", hidden = true)
@@ -286,6 +286,66 @@ public class TakeshiPage<T> extends Page<T> {
     @Override
     public TakeshiPage<T> setRecords(List<T> records) {
         this.records = records;
+        return this;
+    }
+
+    /**
+     * 设置数据总数
+     *
+     * @param total 数据总数
+     * @return TakeshiPage
+     */
+    @Override
+    public TakeshiPage<T> setTotal(long total) {
+        this.total = total;
+        return this;
+    }
+
+    /**
+     * 设置每页显示条数
+     *
+     * @param size 每页显示条数
+     * @return TakeshiPage
+     */
+    @Override
+    public TakeshiPage<T> setSize(long size) {
+        this.size = size;
+        return this;
+    }
+
+    /**
+     * 设置当前页
+     *
+     * @param current 当前页
+     * @return TakeshiPage
+     */
+    @Override
+    public TakeshiPage<T> setCurrent(long current) {
+        this.current = current;
+        return this;
+    }
+
+    /**
+     * 设置是否进行 count 查询
+     *
+     * @param searchCount 是否进行 count 查询
+     * @return TakeshiPage
+     */
+    @Override
+    public TakeshiPage<T> setSearchCount(boolean searchCount) {
+        this.searchCount = searchCount;
+        return this;
+    }
+
+    /**
+     * 设置是否自动优化 COUNT SQL
+     *
+     * @param optimizeCountSql 是否自动优化 COUNT SQL
+     * @return TakeshiPage
+     */
+    @Override
+    public TakeshiPage<T> setOptimizeCountSql(boolean optimizeCountSql) {
+        this.optimizeCountSql = optimizeCountSql;
         return this;
     }
 

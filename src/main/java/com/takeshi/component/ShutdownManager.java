@@ -1,6 +1,5 @@
 package com.takeshi.component;
 
-import com.takeshi.util.AmazonS3Util;
 import com.takeshi.util.TakeshiThreadUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class ShutdownManager {
     @PreDestroy
     public void destroy() {
         TakeshiThreadUtil.shutdownAndAwaitTermination(scheduledExecutorService, lifecycleProperties.getTimeoutPerShutdownPhase());
-        AmazonS3Util.shutdown();
     }
 
 }

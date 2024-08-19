@@ -24,8 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Lion Li
  **/
 @Slf4j
-@AutoConfiguration(value = "ThreadPoolConfig")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfiguration(value = "threadPoolConfig")
 public class ThreadPoolConfig {
 
     @Value("${server.port:8080}")

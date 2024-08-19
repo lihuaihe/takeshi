@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@AutoConfiguration(value = "TwilioProperties")
+@AutoConfiguration(value = "twilioProperties")
 @ConfigurationProperties(prefix = "takeshi.twilio")
 public class TwilioProperties {
 

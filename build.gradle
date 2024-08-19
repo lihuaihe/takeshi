@@ -20,9 +20,9 @@ ext {
     javacvVersion = '1.5.9'
     mybatisPlusVersion = '3.5.5'
     knife4jVersion = '4.5.0'
-    awsJavaSdkVersion = '1.12.720'
+    awsVersion = '2.26.6'
     lutungVersion = '0.0.8'
-    firebaseVersion = '9.2.0'
+    firebaseVersion = '9.3.0'
     findbugsVersion = '3.0.1u2'
     gsonVersion = '2.10.1'
     libphonenumberVersion = '8.13.32'
@@ -37,8 +37,8 @@ ext {
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
-//version = '1.0.12'
-version = '24.05.15.0-SNAPSHOT'
+//version = '1.0.1'
+version = '24.08.19.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -72,8 +72,8 @@ java {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
             artifactId = archivesBaseName
+            from components.java
             pom {
                 name = archivesBaseName
                 description = '一个集成了各种库的，可以快速构建SpringBoot项目框架的库，GitHub地址：https://github.com/lihuaihe/takeshi'
@@ -136,8 +136,9 @@ dependencies {
 
     api "com.baomidou:mybatis-plus-spring-boot3-starter:${mybatisPlusVersion}"
     api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
-    compileOnly "com.amazonaws:aws-java-sdk-s3:${awsJavaSdkVersion}"
-    compileOnly "com.amazonaws:aws-java-sdk-secretsmanager:${awsJavaSdkVersion}"
+    compileOnly platform("software.amazon.awssdk:bom:${awsVersion}")
+    compileOnly 'software.amazon.awssdk:secretsmanager'
+    compileOnly 'software.amazon.awssdk:s3-transfer-manager'
     compileOnly "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
     compileOnly "com.google.firebase:firebase-admin:${firebaseVersion}"
     api "com.google.code.findbugs:annotations:${findbugsVersion}"

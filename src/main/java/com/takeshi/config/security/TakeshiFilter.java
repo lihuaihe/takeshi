@@ -37,8 +37,7 @@ import java.util.*;
  * TakeshiFilter
  */
 @Slf4j
-@AutoConfiguration(value = "TakeshiFilter")
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfiguration(value = "takeshiFilter")
 @RequiredArgsConstructor
 public class TakeshiFilter implements Filter {
 
