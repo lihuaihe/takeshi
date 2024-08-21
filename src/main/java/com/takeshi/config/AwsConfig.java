@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -42,11 +43,11 @@ public class AwsConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(SecretsManagerClient.class)
+    @DependsOn("secretsManagerClient")
     public S3AsyncClient s3AsyncClient() {
         JsonNode secret = AwsSecretsManagerUtil.getSecret();
-        String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
-        String secretKey = secret.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
+        String accessKey = secret.path(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
+        String secretKey = secret.path(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
         String bucketName = awsSecretsManagerCredentials.getBucketName();
         StaticCredentialsProvider staticCredentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
         S3AsyncClient s3AsyncClient = S3AsyncClient.builder()
@@ -62,6 +63,41 @@ public class AwsConfig {
                      })
                      .join();
         return s3AsyncClient;
+    }
+
+    /**
+     * 用于管理到 Amazon S3 的传输的高级实用程序
+     *
+     * @param s3AsyncClient          s3AsyncClient
+     * @param threadPoolTaskExecutor threadPoolTaskExecutor
+     * @return S3TransferManager
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @DependsOn("s3AsyncClient")
+    public S3TransferManager s3TransferManager(S3AsyncClient s3AsyncClient, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+        return S3TransferManager.builder()
+                                .s3Client(s3AsyncClient)
+                                .executor(threadPoolTaskExecutor)
+                                .build();
+    }
+
+    /**
+     * 用于管理 Amazon S3 对象签名
+     *
+     * @return S3Presigner
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(SecretsManagerClient.class)
+    public S3Presigner s3Presigner() {
+        JsonNode secret = AwsSecretsManagerUtil.getSecret();
+        String accessKey = secret.path(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
+        String secretKey = secret.path(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
+        return S3Presigner.builder()
+                          .region(Region.of(awsSecretsManagerCredentials.getRegion()))
+                          .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+                          .build();
     }
 
     /**
@@ -245,40 +281,6 @@ public class AwsConfig {
 
         // 并行执行所有剩余的配置操作
         return CompletableFuture.allOf(aclFuture, policyFuture, accelerateFuture, corsFuture, lifecycleFuture);
-    }
-
-    /**
-     * 用于管理到 Amazon S3 的传输的高级实用程序
-     *
-     * @param s3AsyncClient          s3AsyncClient
-     * @param threadPoolTaskExecutor threadPoolTaskExecutor
-     * @return S3TransferManager
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public S3TransferManager s3TransferManager(S3AsyncClient s3AsyncClient, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
-        return S3TransferManager.builder()
-                                .s3Client(s3AsyncClient)
-                                .executor(threadPoolTaskExecutor)
-                                .build();
-    }
-
-    /**
-     * 用于管理 Amazon S3 对象签名
-     *
-     * @return S3Presigner
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnBean(SecretsManagerClient.class)
-    public S3Presigner s3Presigner() {
-        JsonNode secret = AwsSecretsManagerUtil.getSecret();
-        String accessKey = secret.get(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
-        String secretKey = secret.get(awsSecretsManagerCredentials.getS3SecretKeySecrets()).asText();
-        return S3Presigner.builder()
-                          .region(Region.of(awsSecretsManagerCredentials.getRegion()))
-                          .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-                          .build();
     }
 
 }
