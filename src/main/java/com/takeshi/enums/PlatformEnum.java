@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 设备平台枚举
  *
@@ -37,9 +40,9 @@ public enum PlatformEnum {
      */
     WINDOWS("Windows"),
     /**
-     * MacOS
+     * Mac
      */
-    MACOS("MacOS"),
+    MAC("Mac"),
     /**
      * Linux
      */
@@ -48,10 +51,28 @@ public enum PlatformEnum {
 
     @EnumValue
     @JsonValue
-    private final String name;
+    private final String value;
 
-    PlatformEnum(String name) {
-        this.name = name;
+    private static final Map<String, PlatformEnum> ENUM_MAP = new HashMap<>();
+
+    static {
+        for (PlatformEnum platformEnum : values()) {
+            ENUM_MAP.put(platformEnum.value, platformEnum);
+        }
+    }
+
+    PlatformEnum(String value) {
+        this.value = value;
+    }
+
+    /**
+     * 根据value获取枚举
+     *
+     * @param value value
+     * @return PlatformEnum
+     */
+    public static PlatformEnum fromValue(String value) {
+        return ENUM_MAP.get(value);
     }
 
 }
