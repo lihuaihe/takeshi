@@ -13,32 +13,32 @@ configurations {
 }
 
 ext {
-    redissonVersion = '3.25.0'
-    tikaVersion = '2.9.1'
+    redissonVersion = '3.34.1'
+    tikaVersion = '2.9.2'
     jtsVersion = '1.19.0'
-    ffmpegVersion = '6.0-1.5.9'
-    javacvVersion = '1.5.9'
-    mybatisPlusVersion = '3.5.5'
+    ffmpegVersion = '6.1.1-1.5.10'
+    javacvVersion = '1.5.10'
+    mybatisPlusVersion = '3.5.7'
     knife4jVersion = '4.5.0'
-    awsVersion = '2.26.6'
+    awsVersion = '2.27.9'
     lutungVersion = '0.0.8'
     firebaseVersion = '9.3.0'
     findbugsVersion = '3.0.1u2'
-    gsonVersion = '2.10.1'
-    libphonenumberVersion = '8.13.32'
-    html2pdfVersion = '5.0.3'
-    hutoolVersion = '5.8.27'
-    saTokenVersion = '1.37.0'
+    gsonVersion = '2.11.0'
+    libphonenumberVersion = '8.13.43'
+    html2pdfVersion = '5.0.5'
+    hutoolVersion = '5.8.31'
+    saTokenVersion = '1.38.0'
     ognlVersion = '3.3.4' // 使用高于这个版本会提示java.lang.NoSuchMethodError
     jaxbApiVersion = '2.3.1'
-    twilioVersion = '10.1.5'
-    micaAutoVersion = '3.1.3'
+    twilioVersion = '10.4.1'
+    micaAutoVersion = '3.1.4'
 }
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.08.19.0-SNAPSHOT'
+version = '24.08.21.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
@@ -129,9 +129,10 @@ dependencies {
     api "org.locationtech.jts:jts-core:${jtsVersion}"
 
     // javacv 和 ffmpeg-platform
-    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
-    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
-    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
+//    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:macosx-x86_64"
+//    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:windows-x86_64"
+//    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}:linux-x86_64"
+    compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}"
     compileOnly "org.bytedeco:javacv:${javacvVersion}"
 
     api "com.baomidou:mybatis-plus-spring-boot3-starter:${mybatisPlusVersion}"

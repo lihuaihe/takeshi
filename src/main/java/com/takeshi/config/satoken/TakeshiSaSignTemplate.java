@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static cn.dev33.satoken.SaManager.log;
+
 /**
  * TakeshiSaSignTemplate
  *
@@ -69,7 +71,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     @Override
     public String createSign(Map<String, ?> paramsMap) {
         String secretKey = this.getSecretKey();
-        SaSignException.throwByNull(secretKey, "The secret key participating in parameter signature cannot be empty.", SaErrorCode.CODE_12201);
+        SaSignException.notEmpty(secretKey, "The secret key participating in parameter signature cannot be empty.", SaErrorCode.CODE_12201);
         // 如果调用者不小心传入了 sign 参数，则此处需要将 sign 参数排除在外
         if (paramsMap.containsKey(sign)) {
             // 为了保证不影响原有的 paramsMap，此处需要再复制一份
@@ -79,7 +81,13 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
         // 计算签名
         String paramsStr = this.joinParamsDictSort(paramsMap);
         String fullStr = paramsStr + "&" + key + "=" + secretKey;
-        return this.abstractStr(fullStr);
+        String signStr = this.abstractStr(fullStr);
+
+        // 输入日志，方便调试
+        log.debug("fullStr：{}", fullStr);
+        log.debug("signStr：{}", signStr);
+
+        return signStr;
     }
 
     /**
@@ -164,15 +172,12 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
         String nonceValue = paramMap.get(nonce);
         String signValue = paramMap.get(sign);
         // 参数非空校验
-        SaSignException.throwByNull(timestampValue, "Missing timestamp field");
-        if (this.getSignConfigOrGlobal().getIsCheckNonce()) {
-            // 配置isCheckNonce=false时，可以不传 nonce
-            SaSignException.throwByNull(nonceValue, "Missing nonce field");
+        if (SaFoxUtil.isEmpty(timestampValue) || SaFoxUtil.isEmpty(signValue)) {
+            return false;
         }
-        SaSignException.throwByNull(signValue, "Missing sign field");
         // 三个值的校验必须全部通过
         return this.isValidTimestamp(Long.parseLong(timestampValue))
-                && (!this.getSignConfigOrGlobal().getIsCheckNonce() || this.isValidNonce(nonceValue))
+                && this.isValidNonce(nonceValue)
                 && this.isValidSign(paramMap, signValue);
     }
 
@@ -188,17 +193,12 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
         String nonceValue = paramMap.get(nonce);
         String signValue = paramMap.get(sign);
         // 参数非空校验
-        SaSignException.throwByNull(timestampValue, "Missing timestamp field");
-        if (this.getSignConfigOrGlobal().getIsCheckNonce()) {
-            // 配置isCheckNonce=false时，可以不传 nonce
-            SaSignException.throwByNull(nonceValue, "Missing nonce field");
-        }
-        SaSignException.throwByNull(signValue, "Missing sign field");
+        SaSignException.notEmpty(timestampValue, "Missing timestamp field");
+        SaSignException.notEmpty(nonceValue, "Missing nonce field");
+        SaSignException.notEmpty(signValue, "Missing sign field");
         // 依次校验三个参数
         this.checkTimestamp(Long.parseLong(timestampValue));
-        if (this.getSignConfigOrGlobal().getIsCheckNonce()) {
-            this.checkNonce(nonceValue);
-        }
+        this.checkNonce(nonceValue);
         this.checkSign(paramMap, signValue);
         // 通过 √
     }
@@ -206,22 +206,32 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     /**
      * 判断：一个请求中的 nonce、timestamp、sign 是否均为合法的
      *
-     * @param request 待校验的请求对象
+     * @param request    待校验的请求对象
+     * @param paramNames 指定参与签名的参数有哪些，如果不填写则默认为全部参数
      * @return 是否合法
      */
     @Override
-    public boolean isValidRequest(SaRequest request) {
-        return this.isValidParamMap(this.getAllParamMap(request));
+    public boolean isValidRequest(SaRequest request, String... paramNames) {
+        if (paramNames.length == 0) {
+            return this.isValidParamMap(request.getParamMap());
+        } else {
+            return this.isValidParamMap(this.takeRequestParam(request, paramNames));
+        }
     }
 
     /**
      * 校验：一个请求的 nonce、timestamp、sign 是否均为合法的，如果不合法，则抛出对应的异常
      *
-     * @param request 待校验的请求对象
+     * @param paramNames 指定参与签名的参数有哪些，如果不填写则默认为全部参数
+     * @param request    待校验的请求对象
      */
     @Override
-    public void checkRequest(SaRequest request) {
-        this.checkParamMap(this.getAllParamMap(request));
+    public void checkRequest(SaRequest request, String... paramNames) {
+        if (paramNames.length == 0) {
+            this.checkParamMap(request.getParamMap());
+        } else {
+            this.checkParamMap(this.takeRequestParam(request, paramNames));
+        }
     }
 
     @SneakyThrows
