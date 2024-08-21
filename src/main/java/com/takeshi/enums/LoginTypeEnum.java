@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /**
- * 登录类型枚举
+ * 帐号登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */

@@ -6,7 +6,6 @@ import com.takeshi.util.AwsSecretsManagerUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +17,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 import java.util.concurrent.CompletableFuture;
@@ -89,7 +87,7 @@ public class AwsConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(SecretsManagerClient.class)
+    @DependsOn("secretsManagerClient")
     public S3Presigner s3Presigner() {
         JsonNode secret = AwsSecretsManagerUtil.getSecret();
         String accessKey = secret.path(awsSecretsManagerCredentials.getS3AccessKeySecrets()).asText();
