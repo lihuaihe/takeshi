@@ -81,9 +81,9 @@ public interface RequestConstants {
          *
          * @return ZoneId
          */
-        default ZoneId getTimezone() {
+        static ZoneId getTimezone() {
             try {
-                String timezone = SaHolder.getRequest().getHeader(this.TIMEZONE);
+                String timezone = SaHolder.getRequest().getHeader(TIMEZONE);
                 Assert.notBlank(timezone, "Timezone must not be null");
                 return ZoneId.of(timezone);
             } catch (ZoneRulesException e) {
@@ -96,9 +96,9 @@ public interface RequestConstants {
          *
          * @return GeoPointBO
          */
-        default GeoPointBO getGeoPoint() {
+        static GeoPointBO getGeoPoint() {
             try {
-                String geoPoint = SaHolder.getRequest().getHeader(this.GEO_POINT);
+                String geoPoint = SaHolder.getRequest().getHeader(GEO_POINT);
                 Assert.notBlank(geoPoint, "Geo point must not be null");
                 return GsonUtil.fromJson(geoPoint, GeoPointBO.class);
             } catch (IllegalArgumentException | JsonSyntaxException e) {
