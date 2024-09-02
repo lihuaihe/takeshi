@@ -74,7 +74,7 @@ function restart() {
 
 # 带时间戳的输出
 function echo_with_timestamp() {
-  echo "$(date '+%Y-%m-%d %H:%M:%S %Z') $1"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S %Z')] $1"
 }
 
 
