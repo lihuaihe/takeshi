@@ -14,7 +14,7 @@ PID_FILE_PATH="./pid/${APP_NAME}.pid"
 #启动方法
 function start() {
   if [ -f "$PID_FILE_PATH" ] && ps -p "$(< "$PID_FILE_PATH")" >/dev/null; then
-    echo "${JAR_FILE} is already running with PID $(< "$PID_FILE_PATH")"
+    echo_with_timestamp "${JAR_FILE} is already running with PID $(< "$PID_FILE_PATH")"
   else
     #设置jar包启动参数
     JAVA_OPTS="-Xms256m -Xmx1024m "
@@ -36,9 +36,9 @@ function start() {
 
     #组合启动命令
     command="nohup java ${JAVA_OPTS}-jar ${JAR_FILE} >/dev/null 2>&1 &"
-    echo "$command"
+    echo_with_timestamp "$command"
     eval "$command"
-    echo "${JAR_FILE} start success with PID $!"
+    echo_with_timestamp "${JAR_FILE} start success with PID $!"
   fi
 }
 
@@ -46,23 +46,23 @@ function start() {
 function stop() {
   if [ -f "$PID_FILE_PATH" ] && ps -p "$(< "$PID_FILE_PATH")" >/dev/null; then
     PID=$(< "$PID_FILE_PATH")
-    echo "Waiting ${JAR_FILE} (pid $PID) to die..."
-    xargs sudo kill <"$PID_FILE_PATH"
+    echo_with_timestamp "Waiting ${JAR_FILE} (pid $PID) to die..."
+    xargs kill <"$PID_FILE_PATH"
     while ps -p "$PID" >/dev/null; do
       sleep 1
     done
-    echo "${JAR_FILE} kill success with PID $PID"
+    echo_with_timestamp "${JAR_FILE} kill success with PID $PID"
   else
-    echo "${JAR_FILE} is not running"
+    echo_with_timestamp "${JAR_FILE} is not running"
   fi
 }
 
 #输出运行状态
 function status() {
   if [ -f "$PID_FILE_PATH" ] && ps -p "$(< "$PID_FILE_PATH")" >/dev/null; then
-    echo "${JAR_FILE} is running with PID $(< "$PID_FILE_PATH")"
+    echo_with_timestamp "${JAR_FILE} is running with PID $(< "$PID_FILE_PATH")"
   else
-    echo "${JAR_FILE} is not running"
+    echo_with_timestamp "${JAR_FILE} is not running"
   fi
 }
 
@@ -71,6 +71,12 @@ function restart() {
   stop
   start
 }
+
+# 带时间戳的输出
+function echo_with_timestamp() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S %Z') $1"
+}
+
 
 #根据输入参数，选择执行对应方法，不输入则执行使用说明
 case "$1" in
