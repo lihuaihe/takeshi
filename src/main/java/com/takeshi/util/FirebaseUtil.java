@@ -178,7 +178,7 @@ public final class FirebaseUtil {
                                       @Override
                                       public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
                                           if (error != null) {
-                                              log.error("Database.onComplete --> error: ", error.toException());
+                                              log.error("runTransactionOfSelfChange Database.onComplete --> error: ", error.toException());
                                           } else {
                                               completableFuture.complete(currentData);
                                           }
