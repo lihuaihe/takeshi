@@ -2,6 +2,7 @@ package com.takeshi.config.satoken;
 
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.context.model.SaRequest;
+import cn.dev33.satoken.exception.SaSignException;
 import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.servlet.model.SaRequestForServlet;
@@ -226,11 +227,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
         TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
-        boolean passPlatform = false;
-        boolean passSignature = false;
+        boolean passPlatform = false, passSignature = false, passTimestamp = false;
         if (ObjUtil.isNotNull(systemSecurity)) {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
             passSignature = systemSecurity.all() || systemSecurity.signature();
+            passSignature = systemSecurity.all() || systemSecurity.timestamp();
         }
         if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验
@@ -252,7 +253,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         // ip速率校验
         this.verifyIp(redissonClient, repeatSubmit, ipRateLimitProperties, clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
         // sign校验
-        this.verifySign(passSignature, new SaRequestForServlet(request));
+        this.verifySign(passSignature, passTimestamp, new SaRequestForServlet(request));
         // 重复提交校验
         this.verifyRepeatSubmit(redissonClient, repeatSubmit, objectMapper, clientIp, httpMethod, servletPath, loginId, paramObjectNode);
         return systemSecurity;
@@ -312,12 +313,17 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * sign校验
      *
-     * @param passSignature 是否放弃校验参数签名
+     * @param passSignature 是否放弃校验参数签名，如果需要校验参数签名，那么一定就会校验客户端的时间戳
+     * @param passTimestamp 是否放弃校验客户端的时间戳，只有放弃校验参数签名的情况下才会判断是否校验客户端的时间戳
      * @param saRequest     saRequest
      */
-    private void verifySign(boolean passSignature, SaRequest saRequest) {
+    private void verifySign(boolean passSignature, boolean passTimestamp, SaRequest saRequest) {
         if (!passSignature && StrUtil.isNotBlank(SaManager.getSaSignTemplate().getSecretKey())) {
             SaSignUtil.checkRequest(saRequest);
+        } else if (!passTimestamp) {
+            String timestampValue = saRequest.getHeader(RequestConstants.Header.TIMESTAMP);
+            SaSignException.notEmpty(timestampValue, "Missing timestamp field");
+            SaSignUtil.checkTimestamp(Long.parseLong(timestampValue));
         }
     }
 
