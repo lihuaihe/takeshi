@@ -69,7 +69,7 @@ public class AWSSecretsManagerCredentials {
     private boolean bucketAccelerate;
 
     /**
-     * 文件对象的访问控制列表 (ACL)，如果配置了bucketPolicyPublicRead，无需配置文件ACL也可公共读
+     * 文件对象的访问控制列表 (ACL)，如果配置了bucketPolicyPublicRead，无需额外配置文件ACL也可公共读
      */
     private FileAclEnum fileAcl = FileAclEnum.PRIVATE;
 

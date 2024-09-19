@@ -231,7 +231,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         if (ObjUtil.isNotNull(systemSecurity)) {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
             passSignature = systemSecurity.all() || systemSecurity.signature();
-            passSignature = systemSecurity.all() || systemSecurity.timestamp();
+            passTimestamp = systemSecurity.all() || systemSecurity.timestamp();
         }
         if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验
