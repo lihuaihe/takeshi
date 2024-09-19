@@ -57,6 +57,10 @@ public enum LogTypeEnum {
      */
     LOGOUT,
     /**
+     * 支付
+     */
+    PAY,
+    /**
      * 验证
      */
     VERIFY,
