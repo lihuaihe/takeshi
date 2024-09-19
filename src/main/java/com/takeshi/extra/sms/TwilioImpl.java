@@ -34,10 +34,10 @@ public class TwilioImpl implements SmsInterface {
     public TwilioImpl() {
         TwilioProperties twilio = SpringUtil.getBean(TwilioProperties.class);
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-        String accountSid = StrUtil.isBlank(twilio.getAccountSidSecrets()) ? twilio.getAccountSid() : jsonNode.get(twilio.getAccountSidSecrets()).asText();
-        String authToken = StrUtil.isBlank(twilio.getAuthTokenSecrets()) ? twilio.getAuthToken() : jsonNode.get(twilio.getAuthTokenSecrets()).asText();
+        String accountSid = StrUtil.blankToDefault(jsonNode.path(twilio.getAccountSidSecrets()).asText(), twilio.getAccountSid());
+        String authToken = StrUtil.blankToDefault(jsonNode.path(twilio.getAuthTokenSecrets()).asText(), twilio.getAuthToken());
         Twilio.init(accountSid, authToken);
-        messagingServiceSid = StrUtil.isBlank(twilio.getMessagingServiceSidSecrets()) ? twilio.getMessagingServiceSid() : jsonNode.get(twilio.getMessagingServiceSidSecrets()).asText();
+        messagingServiceSid = StrUtil.blankToDefault(jsonNode.path(twilio.getMessagingServiceSidSecrets()).asText(), twilio.getMessagingServiceSid());
     }
 
     /**

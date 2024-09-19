@@ -41,9 +41,9 @@ public class SmsBroadcastImpl implements SmsInterface {
     public SmsBroadcastImpl() {
         SmsBroadcastProperties smsBroadcast = SpringUtil.getBean(SmsBroadcastProperties.class);
         JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-        userName = StrUtil.isBlank(smsBroadcast.getUserNameSecrets()) ? smsBroadcast.getUserName() : jsonNode.get(smsBroadcast.getUserNameSecrets()).asText();
-        password = StrUtil.isBlank(smsBroadcast.getPasswordSecrets()) ? smsBroadcast.getPassword() : jsonNode.get(smsBroadcast.getPasswordSecrets()).asText();
-        from = StrUtil.isBlank(smsBroadcast.getFromSecrets()) ? smsBroadcast.getFrom() : jsonNode.get(smsBroadcast.getFromSecrets()).asText();
+        userName = StrUtil.blankToDefault(jsonNode.path(smsBroadcast.getUserNameSecrets()).asText(), smsBroadcast.getUserName());
+        password = StrUtil.blankToDefault(jsonNode.path(smsBroadcast.getPasswordSecrets()).asText(), smsBroadcast.getPassword());
+        from = StrUtil.blankToDefault(jsonNode.path(smsBroadcast.getFromSecrets()).asText(), smsBroadcast.getFrom());
         if (StrUtil.hasBlank(userName, password, from)) {
             throw new IllegalArgumentException("SmsBroadcast required parameter is empty, Please set the yml value of SmsBroadcast!");
         }

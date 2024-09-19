@@ -160,11 +160,6 @@ public interface TakeshiCode {
     RetBO SAME_PASSWORD = new RetBO(3006, "samePassword.message");
 
     /**
-     * 客户端日期时间错误
-     */
-    RetBO CLIENT_DATE_TIME_ERROR = new RetBO(4000, "clientDateTimeError.message");
-
-    /**
      * 参数签名认证失败
      */
     RetBO SIGN_ERROR = new RetBO(4001, "signError.message");

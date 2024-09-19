@@ -1,16 +1,13 @@
 package com.takeshi.util;
 
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.TemporalUtil;
 import cn.hutool.core.lang.Range;
 import cn.hutool.core.util.ObjUtil;
 import com.takeshi.constants.TakeshiDatePattern;
 
-import java.io.Serial;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
@@ -430,10 +427,9 @@ public final class ZonedDateTimeUtil {
      * @param startTimeInclude 开始时间（包含）
      * @param endTimeExclude   结束时间（不包含）
      * @return 时间差 {@link Duration}对象
-     * @see TemporalUtil#between(Temporal, Temporal)
      */
     public static Duration between(ZonedDateTime startTimeInclude, ZonedDateTime endTimeExclude) {
-        return TemporalUtil.between(startTimeInclude, endTimeExclude);
+        return Duration.between(startTimeInclude, endTimeExclude);
     }
 
     /**
@@ -447,7 +443,7 @@ public final class ZonedDateTimeUtil {
      * @return 时间差
      */
     public static long between(ZonedDateTime startTimeInclude, ZonedDateTime endTimeExclude, ChronoUnit unit) {
-        return TemporalUtil.between(startTimeInclude, endTimeExclude, unit);
+        return unit.between(startTimeInclude, endTimeExclude);
     }
 
     /**
@@ -727,7 +723,7 @@ public final class ZonedDateTimeUtil {
      * @return Duration
      */
     public static Duration untilEndOfDay(ZonedDateTime zonedDateTime) {
-        return Duration.between(zonedDateTime, ZonedDateTime.now().with(LocalTime.MAX));
+        return Duration.between(zonedDateTime, ZonedDateTime.now(zonedDateTime.getZone()).with(LocalTime.MAX));
     }
 
     /**
@@ -740,13 +736,23 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
+     * 到当天结束时间的间隔
+     *
+     * @param zoneId zoneId
+     * @return Duration
+     */
+    public static Duration untilEndOfDay(ZoneId zoneId) {
+        return untilEndOfDay(ZonedDateTime.now(zoneId));
+    }
+
+    /**
      * 某个时间到本周日结束时间的间隔
      *
      * @param zonedDateTime zonedDateTime
      * @return Duration
      */
     public static Duration untilEndOfWeek(ZonedDateTime zonedDateTime) {
-        return Duration.between(zonedDateTime, endOfWeek(ZonedDateTime.now()));
+        return Duration.between(zonedDateTime, endOfWeek(ZonedDateTime.now(zonedDateTime.getZone())));
     }
 
     /**
@@ -759,13 +765,23 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
+     * 到本周日结束时间的间隔
+     *
+     * @param zoneId zoneId
+     * @return Duration
+     */
+    public static Duration untilEndOfWeek(ZoneId zoneId) {
+        return untilEndOfWeek(ZonedDateTime.now(zoneId));
+    }
+
+    /**
      * 某个时间到本月结束时间的间隔
      *
      * @param zonedDateTime zonedDateTime
      * @return Duration
      */
     public static Duration untilEndOfMonth(ZonedDateTime zonedDateTime) {
-        return Duration.between(zonedDateTime, endOfMonth(ZonedDateTime.now()));
+        return Duration.between(zonedDateTime, endOfMonth(ZonedDateTime.now(zonedDateTime.getZone())));
     }
 
     /**
@@ -778,13 +794,23 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
+     * 到本月结束时间的间隔
+     *
+     * @param zoneId zoneId
+     * @return Duration
+     */
+    public static Duration untilEndOfMonth(ZoneId zoneId) {
+        return untilEndOfMonth(ZonedDateTime.now(zoneId));
+    }
+
+    /**
      * 某个时间到本年结束时间的间隔
      *
      * @param zonedDateTime zonedDateTime
      * @return Duration
      */
     public static Duration untilEndOfYear(ZonedDateTime zonedDateTime) {
-        return Duration.between(zonedDateTime, endOfYear(ZonedDateTime.now()));
+        return Duration.between(zonedDateTime, endOfYear(ZonedDateTime.now(zonedDateTime.getZone())));
     }
 
     /**
@@ -797,13 +823,22 @@ public final class ZonedDateTimeUtil {
     }
 
     /**
+     * 到本年结束时间的间隔
+     *
+     * @param zoneId zoneId
+     * @return Duration
+     */
+    public static Duration untilEndOfYear(ZoneId zoneId) {
+        return untilEndOfYear(ZonedDateTime.now(zoneId));
+    }
+
+    /**
      * 日期范围
      *
      * @author looly
      */
     public static class ZonedDateTimeRange extends Range<ZonedDateTime> {
 
-        @Serial
         private static final long serialVersionUID = 1L;
 
         /**

@@ -1,5 +1,14 @@
 package com.takeshi.constants;
 
+import cn.dev33.satoken.context.SaHolder;
+import cn.hutool.core.lang.Assert;
+import com.google.gson.JsonSyntaxException;
+import com.takeshi.pojo.bo.GeoPointBO;
+import com.takeshi.util.GsonUtil;
+
+import java.time.ZoneId;
+import java.time.zone.ZoneRulesException;
+
 /**
  * RequestConstants
  *
@@ -48,7 +57,7 @@ public interface RequestConstants {
         String TIMEZONE = "x-timezone";
 
         /**
-         * 调用接口header里面传的经纬度字段
+         * 调用接口header里面传的经纬度字段{"lon":1.0, "lat":2.0}
          */
         String GEO_POINT = "x-geo-point";
 
@@ -66,6 +75,36 @@ public interface RequestConstants {
          * 签名参数名
          */
         String SIGN = "x-sign";
+
+        /**
+         * 从header里面获取时区
+         *
+         * @return ZoneId
+         */
+        static ZoneId getTimezone() {
+            try {
+                String timezone = SaHolder.getRequest().getHeader(TIMEZONE);
+                Assert.notBlank(timezone, "Timezone must not be null");
+                return ZoneId.of(timezone);
+            } catch (ZoneRulesException e) {
+                throw new IllegalArgumentException(e.getLocalizedMessage());
+            }
+        }
+
+        /**
+         * 从header里面获取经纬度
+         *
+         * @return GeoPointBO
+         */
+        static GeoPointBO getGeoPoint() {
+            try {
+                String geoPoint = SaHolder.getRequest().getHeader(GEO_POINT);
+                Assert.notBlank(geoPoint, "Geo point must not be null");
+                return GsonUtil.fromJson(geoPoint, GeoPointBO.class);
+            } catch (IllegalArgumentException | JsonSyntaxException e) {
+                throw new IllegalArgumentException("Geo point data format error");
+            }
+        }
 
     }
 

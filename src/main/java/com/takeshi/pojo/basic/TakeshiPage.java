@@ -1,5 +1,7 @@
 package com.takeshi.pojo.basic;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -350,16 +352,41 @@ public class TakeshiPage<T> extends Page<T> {
     }
 
     /**
-     * IPage 的泛型转换
+     * TakeshiPage 的泛型转换
      *
      * @param mapper 转换函数
-     * @return 转换泛型后的 IPage
+     * @return 转换泛型后的TakeshiPage
      */
     @Override
     @SuppressWarnings("unchecked")
     public <R> TakeshiPage<R> convert(Function<? super T, ? extends R> mapper) {
         List<R> collect = this.getRecords().stream().map(mapper).collect(toList());
         return ((TakeshiPage<R>) this).setRecords(collect);
+    }
+
+    /**
+     * TakeshiPage 的泛型转换
+     *
+     * @param clazz 转换的类
+     * @param <R>   Bean类型
+     * @return 转换泛型后的TakeshiPage
+     */
+    @SuppressWarnings("unchecked")
+    public <R> TakeshiPage<R> convert(Class<R> clazz) {
+        return ((TakeshiPage<R>) this).setRecords(BeanUtil.copyToList(this.getRecords(), clazz));
+    }
+
+    /**
+     * TakeshiPage 的泛型转换
+     *
+     * @param clazz       转换的类
+     * @param copyOptions 拷贝选项
+     * @param <R>         Bean类型
+     * @return 转换泛型后的TakeshiPage
+     */
+    @SuppressWarnings("unchecked")
+    public <R> TakeshiPage<R> convert(Class<R> clazz, CopyOptions copyOptions) {
+        return ((TakeshiPage<R>) this).setRecords(BeanUtil.copyToList(this.getRecords(), clazz, copyOptions));
     }
 
     /**

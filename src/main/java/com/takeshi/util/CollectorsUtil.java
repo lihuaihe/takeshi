@@ -16,7 +16,7 @@ import java.util.stream.Collector;
  * JAVA8 分组求和要用到的
  * <pre>{@code
  * //使用方法
- * list.stream().collect(Collectors.groupingBy(Entry::getName, CollectorsUtil.summingBigDecimal(Entry::getValue)));
+ * list.stream().collect(Collectors.groupingBy(Entry::getValue, CollectorsUtil.summingBigDecimal(Entry::getValue)));
  * list.stream().collect(CollectorsUtil.summingBigDecimal(Entry::getValue));
  * CollectorsUtil
  * }</pre>

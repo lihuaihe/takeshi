@@ -55,9 +55,8 @@ public final class FirebaseUtil {
                     InputStream inputStream = ResourceUtil.getStreamSafe(firebaseJsonFileName);
                     Assert.notNull(inputStream, "firebaseJsonFileName [{}] not found", firebaseJsonFileName);
                     // Firebase Database用于数据存储的实时数据库 示例URL {https://<DATABASE_NAME>.firebaseio.com}
-                    String databaseUrl = StrUtil.removeSuffix(StrUtil.isBlank(firebase.getDatabaseUrlSecrets())
-                                                                      ? firebase.getDatabaseUrl()
-                                                                      : AwsSecretsManagerUtil.getSecret().get(firebase.getDatabaseUrlSecrets()).asText()
+                    String databaseUrl = StrUtil.removeSuffix(
+                            StrUtil.blankToDefault(AwsSecretsManagerUtil.getSecret().path(firebase.getDatabaseUrlSecrets()).asText(), firebase.getDatabaseUrl())
                             , StrUtil.SLASH);
                     FirebaseOptions options = FirebaseOptions.builder()
                                                              .setCredentials(GoogleCredentials.fromStream(inputStream))
@@ -179,7 +178,7 @@ public final class FirebaseUtil {
                                       @Override
                                       public void onComplete(DatabaseError error, boolean committed, DataSnapshot currentData) {
                                           if (error != null) {
-                                              log.error("Database.onComplete --> error: ", error.toException());
+                                              log.error("runTransactionOfSelfChange Database.onComplete --> error: ", error.toException());
                                           } else {
                                               completableFuture.complete(currentData);
                                           }

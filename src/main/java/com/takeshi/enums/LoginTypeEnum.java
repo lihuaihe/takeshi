@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /**
- * 登录类型枚举
+ * 帐号登录类型枚举
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -23,7 +23,7 @@ public enum LoginTypeEnum {
     /**
      * 微信登录
      */
-    WE_CHAT,
+    WECHAT,
     /**
      * 支付宝登录
      */
@@ -35,7 +35,7 @@ public enum LoginTypeEnum {
     /**
      * 油管登录
      */
-    YOU_TUBE,
+    YOUTUBE,
     /**
      * 电报登录
      */
@@ -55,7 +55,7 @@ public enum LoginTypeEnum {
     /**
      * 注册后自动登录
      */
-    REGISTER_AFTER_LOGIN,
+    REGISTERED,
     /**
      * 其它
      */

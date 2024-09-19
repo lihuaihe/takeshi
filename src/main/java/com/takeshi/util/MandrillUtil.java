@@ -3,6 +3,7 @@ package com.takeshi.util;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -73,24 +74,10 @@ public final class MandrillUtil {
                 if (ObjUtil.isNull(mandrillApi)) {
                     MandrillCredentials mandrill = SpringUtil.getBean(MandrillCredentials.class);
                     JsonNode jsonNode = AwsSecretsManagerUtil.getSecret();
-                    String apiKey;
-                    if (StrUtil.isBlank(mandrill.getApiKeySecrets())) {
-                        apiKey = mandrill.getApiKey();
-                    } else if (jsonNode.hasNonNull(mandrill.getApiKeySecrets())) {
-                        apiKey = jsonNode.get(mandrill.getApiKeySecrets()).asText();
-                    } else {
-                        throw new IllegalArgumentException("'apiKey' is null; please provide Mandrill API key");
-                    }
-                    if (StrUtil.isBlank(mandrill.getFromEmailSecrets())) {
-                        fromEmail = mandrill.getFromEmail();
-                    } else if (jsonNode.hasNonNull(mandrill.getFromEmailSecrets())) {
-                        fromEmail = jsonNode.get(mandrill.getFromEmailSecrets()).asText();
-                    }
-                    if (StrUtil.isBlank(mandrill.getFromNameSecrets())) {
-                        fromName = mandrill.getFromName();
-                    } else if (jsonNode.hasNonNull(mandrill.getFromNameSecrets())) {
-                        fromName = jsonNode.get(mandrill.getFromNameSecrets()).asText();
-                    }
+                    String apiKey = StrUtil.blankToDefault(jsonNode.path(mandrill.getApiKeySecrets()).asText(), mandrill.getApiKey());
+                    Assert.notBlank(apiKey, "'apiKey' is null; please provide Mandrill API key");
+                    fromEmail = StrUtil.blankToDefault(jsonNode.path(mandrill.getFromEmailSecrets()).asText(), mandrill.getFromEmail());
+                    fromName = StrUtil.blankToDefault(jsonNode.path(mandrill.getFromNameSecrets()).asText(), mandrill.getFromName());
                     mandrillApi = new MandrillApi(apiKey);
                     log.info("MandrillUtil.getMandrillApi --> Mandrill Initialization successful");
                 }

@@ -30,11 +30,18 @@ public @interface SystemSecurity {
     boolean platform() default false;
 
     /**
-     * 放弃校验参数签名，需要配置yml文件中的 takeshi.signature 参数才会生效
+     * 放弃校验参数签名，需要配置yml文件中的 sa-token.sign.secret-key 值才会生效
      *
      * @return boolean
      */
     boolean signature() default false;
+
+    /**
+     * 放弃校验客户端时间戳，如果需要校验参数签名则该配置无效，只要校验了参数签名就一定需要校验客户端的时间戳
+     *
+     * @return boolean
+     */
+    boolean timestamp() default true;
 
     /**
      * 放弃上述token,platform,signature的校验，此属性优先级别最高

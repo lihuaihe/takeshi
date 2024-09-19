@@ -234,7 +234,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SaSignException.class)
     public ResponseData<Object> saSignExceptionHandler(SaSignException saSignException) {
         log.error("GlobalExceptionHandler.saSignExceptionHandler --> SaSignException: ", saSignException);
-        return ResponseData.retData(TakeshiCode.SIGN_ERROR);
+        return ResponseData.retData(TakeshiCode.SIGN_ERROR.cloneWithMessage(saSignException.getMessage()));
     }
 
     /**

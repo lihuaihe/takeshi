@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  **/
 @Slf4j
 @AutoConfiguration(value = "threadPoolConfig")
+@AutoConfigureOrder(Integer.MIN_VALUE)
 public class ThreadPoolConfig {
 
     @Value("${server.port:8080}")
