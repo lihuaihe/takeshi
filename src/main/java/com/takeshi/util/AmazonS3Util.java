@@ -549,7 +549,7 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static PresignedPutObjectRequest getPutPresignedUrl(String fileName) {
-        return getPutPresignedUrl(fileName, Duration.ofSeconds(60));
+        return getPutPresignedUrl(fileName, Duration.ofMinutes(5));
     }
 
     /**
