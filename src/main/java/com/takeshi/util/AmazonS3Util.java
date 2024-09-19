@@ -542,7 +542,7 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期60秒
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
      *
      * @param fileName 文件名
      * @return PresignedPutObjectRequest
