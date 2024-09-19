@@ -513,7 +513,7 @@ public final class AmazonS3Util {
      * @return URL列表
      */
     public static List<URL> getPutPresignedUrl(int size) {
-        return IntStream.of(size).boxed().map(i -> getPutPresignedUrl(StrUtil.EMPTY).url()).toList();
+        return IntStream.of(size).boxed().map(i -> getPutPresignedUrl(null).url()).toList();
     }
 
     /**
@@ -526,7 +526,7 @@ public final class AmazonS3Util {
      * @return URL列表
      */
     public static List<URL> getPutPresignedUrl(int size, Duration duration) {
-        return IntStream.of(size).boxed().map(i -> getPutPresignedUrl(StrUtil.EMPTY, duration).url()).toList();
+        return IntStream.of(size).boxed().map(i -> getPutPresignedUrl(null, duration).url()).toList();
     }
 
     /**
@@ -538,7 +538,7 @@ public final class AmazonS3Util {
      */
     @SneakyThrows
     public static PresignedPutObjectRequest getPutPresignedUrl() {
-        return getPutPresignedUrl(StrUtil.EMPTY);
+        return getPutPresignedUrl(null);
     }
 
     /**
