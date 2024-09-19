@@ -2,6 +2,8 @@ package com.takeshi.constants;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.http.useragent.UserAgent;
+import cn.hutool.http.useragent.UserAgentUtil;
 import com.google.gson.JsonSyntaxException;
 import com.takeshi.pojo.bo.GeoPointBO;
 import com.takeshi.util.GsonUtil;
@@ -52,6 +54,11 @@ public interface RequestConstants {
     interface Header {
 
         /**
+         * 调用接口header里面传的User-Agent字段
+         */
+        String USER_AGENT = "User-Agent";
+
+        /**
          * 调用接口header里面传的时区字段(Asia/Shanghai)
          */
         String TIMEZONE = "x-timezone";
@@ -75,6 +82,17 @@ public interface RequestConstants {
          * 签名参数名
          */
         String SIGN = "x-sign";
+
+        /**
+         * 从header里面获取UserAgent
+         *
+         * @return UserAgent
+         */
+        static UserAgent getUserAgent() {
+            String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
+            Assert.notBlank(userAgent, "User-Agent must not be null");
+            return UserAgentUtil.parse(userAgent);
+        }
 
         /**
          * 从header里面获取时区
