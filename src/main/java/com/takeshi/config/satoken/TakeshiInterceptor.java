@@ -227,7 +227,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
         TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
-        boolean passPlatform = false, passSignature = false, passTimestamp = false;
+        boolean passPlatform = false, passSignature = false, passTimestamp = true;
         if (ObjUtil.isNotNull(systemSecurity)) {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
             passSignature = systemSecurity.all() || systemSecurity.signature();
