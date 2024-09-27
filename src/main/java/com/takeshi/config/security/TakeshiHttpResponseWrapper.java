@@ -21,10 +21,12 @@ public class TakeshiHttpResponseWrapper extends HttpServletResponseWrapper {
      * ByteArrayOutputStream
      */
     private final ByteArrayOutputStream buffer;
+
     /**
      * ServletOutputStream
      */
     private final ServletOutputStream outputStream;
+
     /**
      * PrintWriter
      */

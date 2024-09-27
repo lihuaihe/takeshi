@@ -25,7 +25,7 @@ ext {
     firebaseVersion = '9.3.0'
     findbugsVersion = '3.0.1u2'
     gsonVersion = '2.11.0'
-    libphonenumberVersion = '8.13.43'
+    libphonenumberVersion = '8.13.46'
     html2pdfVersion = '5.0.5'
     hutoolVersion = '5.8.31'
     saTokenVersion = '1.38.0'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.09.27.0-SNAPSHOT'
+version = '24.09.27.1-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 

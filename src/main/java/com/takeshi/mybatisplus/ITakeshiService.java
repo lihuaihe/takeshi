@@ -177,7 +177,7 @@ public interface ITakeshiService<T> extends IService<T> {
         }
         String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
         queryWrapper.ge(ObjUtil.isNotNull(startTime), createTime, startTime)
-                .le(ObjUtil.isNotNull(endTime), createTime, endTime);
+                    .le(ObjUtil.isNotNull(endTime), createTime, endTime);
         String sql = "CONCAT_WS(' '," + columns.stream().map(TakeshiUtil::getColumnName).collect(Collectors.joining(StrUtil.COMMA)) + ") like '%" + keyword + "%'";
         queryWrapper.apply(StrUtil.isNotBlank(keyword) && CollUtil.isNotEmpty(columns), sql);
         return queryWrapper;

@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 public class BigDecimalSummaryStatistics implements Consumer<BigDecimal> {
 
     private long count;
+
     private BigDecimal sum = BigDecimal.ZERO, min, max;
 
     /**

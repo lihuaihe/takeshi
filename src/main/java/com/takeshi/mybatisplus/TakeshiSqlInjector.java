@@ -22,4 +22,5 @@ public class TakeshiSqlInjector extends DefaultSqlInjector {
         methodList.add(new SelectIncludeDelById());
         return methodList;
     }
+
 }

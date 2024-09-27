@@ -2,6 +2,7 @@ package com.takeshi.jackson;
 
 import cn.hutool.core.util.NumberUtil;
 import com.takeshi.annotation.NumZeroFormat;
+import com.takeshi.constraints.VerifyPhoneNumber;
 import org.springframework.format.AnnotationFormatterFactory;
 import org.springframework.format.Formatter;
 import org.springframework.format.Parser;
@@ -13,10 +14,12 @@ import java.util.Set;
 
 /**
  * 数字字符串去掉首位的零，注解格式化工厂方式，只适用于非json参数
+ * <br/>
+ * 之前该注解主要是用于处理手机号码前面的0，现在可改成使用 {@link VerifyPhoneNumber}
  *
  * @author 七濑武【Nanase Takeshi】
  */
-
+@Deprecated
 public class NumZeroFormatAnnotationFormatterFactory implements AnnotationFormatterFactory<NumZeroFormat> {
 
     @Override

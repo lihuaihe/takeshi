@@ -41,9 +41,9 @@ public class SelectIncludeDelById extends AbstractMethod {
     public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
         SqlMethod sqlMethod = SqlMethod.SELECT_BY_ID;
         SqlSource sqlSource = new RawSqlSource(configuration, String.format(sqlMethod.getSql(),
-                sqlSelectColumns(tableInfo, false),
-                tableInfo.getTableName(), tableInfo.getKeyColumn(), tableInfo.getKeyProperty(),
-                EMPTY), Object.class);
+                                                                            sqlSelectColumns(tableInfo, false),
+                                                                            tableInfo.getTableName(), tableInfo.getKeyColumn(), tableInfo.getKeyProperty(),
+                                                                            EMPTY), Object.class);
         return this.addSelectMappedStatementForTable(mapperClass, methodName, sqlSource, tableInfo);
     }
 

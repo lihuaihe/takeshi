@@ -68,8 +68,8 @@ public class ThreadPoolConfig {
     @ConditionalOnMissingBean
     protected ScheduledExecutorService scheduledExecutorService() {
         return new ScheduledThreadPoolExecutor(CORE,
-                ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),
-                new ThreadPoolExecutor.CallerRunsPolicy()) {
+                                               ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),
+                                               new ThreadPoolExecutor.CallerRunsPolicy()) {
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
                 MDC.put(RequestConstants.TRACE_ID, IdUtil.fastSimpleUUID());

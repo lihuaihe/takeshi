@@ -21,6 +21,7 @@ import java.time.Instant;
 public class DefaultMetaObjectHandler implements MetaObjectHandler {
 
     private final String CREATE_TIME = TakeshiUtil.getPropertyName(AbstractBasicEntity::getCreateTime);
+
     private final String UPDATE_TIME = TakeshiUtil.getPropertyName(AbstractBasicEntity::getUpdateTime);
 
     @Override

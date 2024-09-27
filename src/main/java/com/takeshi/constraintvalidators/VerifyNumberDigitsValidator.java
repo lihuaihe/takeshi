@@ -2,7 +2,7 @@ package com.takeshi.constraintvalidators;
 
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjUtil;
-import com.takeshi.constraints.NumberDigits;
+import com.takeshi.constraints.VerifyNumberDigits;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -13,15 +13,18 @@ import java.math.BigDecimal;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public class NumberDigitsValidator implements ConstraintValidator<NumberDigits, Number> {
+public class VerifyNumberDigitsValidator implements ConstraintValidator<VerifyNumberDigits, Number> {
 
     private int maxInteger = 0;
+
     private int minInteger = 0;
+
     private int maxFraction = 0;
+
     private int minFraction = 0;
 
     @Override
-    public void initialize(NumberDigits constraintAnnotation) {
+    public void initialize(VerifyNumberDigits constraintAnnotation) {
         maxInteger = constraintAnnotation.maxInteger();
         minInteger = constraintAnnotation.minInteger();
         maxFraction = constraintAnnotation.maxFraction();

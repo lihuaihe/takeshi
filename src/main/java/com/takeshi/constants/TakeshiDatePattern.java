@@ -16,10 +16,12 @@ public abstract class TakeshiDatePattern extends DatePattern {
      * MM-dd
      */
     public static final String NORM_MONTH_DAY_PATTERN = "MM-dd";
+
     /**
      * MM-dd
      */
     public static final FastDateFormat NORM_MONTH_DAY_FORMAT = FastDateFormat.getInstance(NORM_MONTH_DAY_PATTERN);
+
     /**
      * MM-dd
      */
@@ -29,10 +31,12 @@ public abstract class TakeshiDatePattern extends DatePattern {
      * dd MMM yyyy
      */
     public static final String NORM_DATE_PATTERN_REVERSE = "dd MMM yyyy";
+
     /**
      * dd MMM yyyy
      */
     public static final FastDateFormat NORM_DATE_REVERSE_FORMAT = FastDateFormat.getInstance(NORM_DATE_PATTERN_REVERSE);
+
     /**
      * dd MMM yyyy
      */
@@ -42,10 +46,12 @@ public abstract class TakeshiDatePattern extends DatePattern {
      * yyyy MMM
      */
     public static final String SIMPLE_MONTH_PATTERN = "yyyy MMM";
+
     /**
      * yyyy MMM
      */
     public static final FastDateFormat SIMPLE_MONTH_FORMAT = FastDateFormat.getInstance(SIMPLE_MONTH_PATTERN);
+
     /**
      * yyyy MMM
      */
@@ -55,10 +61,12 @@ public abstract class TakeshiDatePattern extends DatePattern {
      * MMM yyyy
      */
     public static final String SIMPLE_MONTH_PATTERN_REVERSE = "MMM yyyy";
+
     /**
      * MMM yyyy
      */
     public static final FastDateFormat SIMPLE_MONTH_REVERSE_FORMAT = FastDateFormat.getInstance(SIMPLE_MONTH_PATTERN_REVERSE);
+
     /**
      * MMM yyyy
      */
@@ -68,10 +76,12 @@ public abstract class TakeshiDatePattern extends DatePattern {
      * yyyy/MM/dd
      */
     public static final String SLASH_SEPARATOR_DATE_PATTERN = "yyyy/MM/dd";
+
     /**
      * yyyy/MM/dd
      */
     public static final FastDateFormat SLASH_SEPARATOR_DATE_PATTERN_FORMAT = FastDateFormat.getInstance(SLASH_SEPARATOR_DATE_PATTERN);
+
     /**
      * yyyy/MM/dd
      */
