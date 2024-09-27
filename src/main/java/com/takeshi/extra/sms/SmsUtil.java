@@ -17,7 +17,7 @@ public class SmsUtil {
      * @param message     消息内容
      */
     public static void sendMessage(boolean send, String countryCode, String number, String message) {
-        SmsFactory.get().sendMessage(send, countryCode, number, message);
+        SmsFactory.get().sendMessage(send, number, message);
     }
 
 }
