@@ -10,11 +10,11 @@ header中传递参数：
     - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
     - `x-timezone`：当前设备所在的时区 (Asia/Shanghai)
     - `User-Agent`：当前项目名/当前APP版本号 (当前设备名 当前设备系统版本; 系统时区)
-        - 例如：`takeshi`是应用名称，版本号是1.0.0，设备名是iPhone，系统版本是16.0，时区是Asia/Shanghai
-            - takeshi/1.0.0 (iPhone 16.0; Asia/Shanghai)
-            - takeshi/1.0.0 (iPad 16.0; Asia/Shanghai)
-            - takeshi/1.0.0 (Android 8.5; Asia/Shanghai)
-            - takeshi/1.0.0 (Android 8.5 Tablet; Asia/Shanghai)
+        - 例如：`takeshi`是应用名称，版本号是1.0.0，设备名是iPhone 14 pro，系统版本是16.0，时区是Asia/Shanghai
+            - takeshi/1.0.0 (iPhone 14 pro v16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (iPad mini v16.0; Asia/Shanghai)
+            - takeshi/1.0.0 (Android v8.5; Asia/Shanghai)
+            - takeshi/1.0.0 (Android v8.5 Tablet; Asia/Shanghai)
 - 随机字符串：参数签名时需要传递的值
     - `x-nonce`：仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值或使用唯一ID，作为nonce值
         - 每次请求接口时，该参数值都得是唯一不重复的
