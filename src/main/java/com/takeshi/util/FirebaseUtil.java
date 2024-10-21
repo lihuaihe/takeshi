@@ -6,6 +6,8 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -21,6 +23,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
@@ -84,6 +87,8 @@ public final class FirebaseUtil {
 
         private static volatile DatabaseReference DATABASE_REFERENCE;
 
+        private static volatile ObjectMapper OBJECT_MAPPER;
+
         private Database() {
         }
 
@@ -101,6 +106,22 @@ public final class FirebaseUtil {
                 }
             }
             return DATABASE_REFERENCE;
+        }
+
+        /**
+         * 获取ObjectMapper
+         *
+         * @return ObjectMapper
+         */
+        public static ObjectMapper getObjectMapper() {
+            if (ObjUtil.isNull(OBJECT_MAPPER)) {
+                synchronized (Database.class) {
+                    if (ObjUtil.isNull(OBJECT_MAPPER)) {
+                        OBJECT_MAPPER = SpringUtil.getBean(ObjectMapper.class);
+                    }
+                }
+            }
+            return OBJECT_MAPPER;
         }
 
         /**
@@ -188,14 +209,64 @@ public final class FirebaseUtil {
         }
 
         /**
-         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将删除指定位置的数据
+         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将会删除指定位置的数据
          *
          * @param pathString 子路径，例如：/child
-         * @param value      值，可以不特地转JSON字符串<p style="color:yellow;">注意：数值类型的值过大时web端展示会精度丢失，如果是Long和BigInteger类型会转成String在存入</p>
+         * @param value      值，不需要特地转JSON字符串
+         *                   <p style="color:yellow;">
+         *                   注意：数值类型的值过大时web端展示会精度丢失，会把Long，BigInteger，Double，Float，BigDecimal的数值转成String存入database
+         *                   </p>
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Object value) {
-            return getDatabaseReference().child(pathString).setValueAsync((value instanceof Long || value instanceof BigInteger) ? StrUtil.toStringOrNull(value) : value);
+            Object obj = (value instanceof Long || value instanceof BigInteger || value instanceof Double || value instanceof Float || value instanceof BigDecimal) ? StrUtil.toStringOrNull(value) : value;
+            return getDatabaseReference().child(pathString).setValueAsync(obj);
+        }
+
+        /**
+         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将会删除指定位置的数据
+         *
+         * @param pathString 子路径，例如：/child
+         * @param value      值，继承了 {@link AbstractBasicSerializable}的类
+         *                   <p style="color:yellow;">
+         *                   会把Long，BigInteger，Double，Float，BigDecimal的数值转成String存入database
+         *                   </p>
+         * @param <T>        泛型
+         * @return {@link ApiFuture}
+         */
+        public static <T extends AbstractBasicSerializable> ApiFuture<Void> setValueAsync(String pathString, T value) {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Map<String, Object>>() {
+            }));
+        }
+
+        /**
+         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将会删除指定位置的数据
+         *
+         * @param pathString 子路径，例如：/child
+         * @param value      值，Map类型
+         *                   <p style="color:yellow;">
+         *                   会把Long，BigInteger，Double，Float，BigDecimal的数值转成String存入database
+         *                   </p>
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<Void> setValueAsync(String pathString, Map<String, Object> value) {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Map<String, Object>>() {
+            }));
+        }
+
+        /**
+         * 将此位置的数据设置为给定值。将 null 传递给 setValue() 将会删除指定位置的数据
+         *
+         * @param pathString 子路径，例如：/child
+         * @param value      值，Collection类型
+         *                   <p style="color:yellow;">
+         *                   会把Long，BigInteger，Double，Float，BigDecimal的数值转成String存入database
+         *                   </p>
+         * @return {@link ApiFuture}
+         */
+        public static ApiFuture<Void> setValueAsync(String pathString, Collection<?> value) {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Collection<Object>>() {
+            }));
         }
 
         /**
@@ -210,7 +281,7 @@ public final class FirebaseUtil {
         }
 
         /**
-         * 将此位置的值设置为 null，即删除指定位置的数据
+         * 将此位置的值设置为 null，即删除指定位置的数据，如果该路径有被监听，则路径不会被删除，只是删除其值
          *
          * @param pathString 子路径，例如：/child
          * @return {@link ApiFuture}
