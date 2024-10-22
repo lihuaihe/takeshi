@@ -47,9 +47,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.apache.tika.Tika;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -409,6 +406,11 @@ public final class TakeshiUtil {
     }
 
     /**
+     * 使用MySQL中的地球半径，单位：米
+     */
+    private static final double EARTH_RADIUS = 6370986D;
+
+    /**
      * 判断给定的经纬度坐标是否在指定半径范围内。
      *
      * @param sourcePoint 原始经纬度坐标
@@ -421,10 +423,16 @@ public final class TakeshiUtil {
         if (sourcePoint == null || targetPoint == null) {
             throw new IllegalArgumentException("Coordinate points cannot be null");
         }
-        GeometryFactory geometryFactory = new GeometryFactory();
-        Point source = geometryFactory.createPoint(new Coordinate(sourcePoint.getLon(), sourcePoint.getLat()));
-        Point target = geometryFactory.createPoint(new Coordinate(targetPoint.getLon(), targetPoint.getLat()));
-        double distance = source.distance(target);
+        double dLon = (targetPoint.getLon() - sourcePoint.getLon()) * Math.PI / 180;
+        double dLat = (targetPoint.getLat() - sourcePoint.getLat()) * Math.PI / 180;
+        double sourceLat = sourcePoint.getLat() * Math.PI / 180;
+        double targetLat = targetPoint.getLat() * Math.PI / 180;
+        // Haversine 公式
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(sourceLat) * Math.cos(targetLat);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        // 返回两点之间的距离，单位为米
+        double distance = EARTH_RADIUS * c;
         return distance <= radius;
     }
 

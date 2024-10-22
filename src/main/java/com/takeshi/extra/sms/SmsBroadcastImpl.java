@@ -54,18 +54,17 @@ public class SmsBroadcastImpl implements SmsInterface {
      * yml配置twilio或smsBroadcast
      *
      * @param send        是否发送
-     * @param countryCode 区号
-     * @param number      号码
+     * @param phoneNumber 带区号的手机号码
      * @param message     消息内容
      */
     @Override
-    public void sendMessage(boolean send, String countryCode, String number, String message) {
+    public void sendMessage(boolean send, String phoneNumber, String message) {
         if (send) {
             Map<String, Object> map = new HashMap<>(18);
             map.put("username", userName);
             map.put("password", password);
             map.put("from", from);
-            map.put("to", countryCode + number);
+            map.put("to", phoneNumber);
             map.put("message", message);
             map.put("delay", "0");
             map.put("maxsplit", String.valueOf((StrUtil.length(message) / 160) + 1));

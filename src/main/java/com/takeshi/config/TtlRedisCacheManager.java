@@ -53,14 +53,14 @@ public class TtlRedisCacheManager extends RedisCacheManager {
      */
     public static TtlRedisCacheManager defaultInstance(ObjectMapper objectMapper, RedisConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                // Set cache expiration time
-                .entryTtl(Duration.ofDays(1))
-                // Set the serialization method of the key
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                // Set the serialization method of value
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)))
-                // Do not cache null values
-                .disableCachingNullValues();
+                                                                // Set cache expiration time
+                                                                .entryTtl(Duration.ofDays(1))
+                                                                // Set the serialization method of the key
+                                                                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                                                                // Set the serialization method of value
+                                                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)))
+                                                                // Do not cache null values
+                                                                .disableCachingNullValues();
         return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);
     }
 

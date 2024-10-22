@@ -398,7 +398,7 @@ public final class AmazonS3Util {
      * 上传文件
      *
      * @param bytes    文件的字节数组
-     * @param fileName 文件名
+     * @param fileName 文件名，例如：test.png
      * @return URL
      */
     @SneakyThrows
@@ -542,26 +542,49 @@ public final class AmazonS3Util {
     }
 
     /**
-     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期60秒
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
      *
-     * @param fileName 文件名
+     * @param fileName 文件名，例如：test.png
      * @return PresignedPutObjectRequest
      */
     @SneakyThrows
     public static PresignedPutObjectRequest getPutPresignedUrl(String fileName) {
-        return getPutPresignedUrl(fileName, Duration.ofSeconds(60));
+        return getPutPresignedUrl(fileName, Duration.ofMinutes(5));
     }
 
     /**
      * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
      *
-     * @param fileName 文件名
+     * @param fileNameList 带后缀的文件名列表
+     * @return PresignedPutObjectRequest
+     */
+    @SneakyThrows
+    public static List<URL> getPutPresignedUrl(List<String> fileNameList) {
+        return getPutPresignedUrl(fileNameList, Duration.ofMinutes(5));
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param fileName 文件名，例如：test.png
      * @param duration 预签名 URL 将过期的时间
      * @return PresignedPutObjectRequest
      */
     @SneakyThrows
     public static PresignedPutObjectRequest getPutPresignedUrl(String fileName, Duration duration) {
         return getPutPresignedUrl(fileName, duration, null);
+    }
+
+    /**
+     * 获取一个客户端用来上传文件的预签名 URL，客户端使用 PUT 请求该URL来上传一个二进制文件，默认有效期5分钟
+     *
+     * @param fileNameList 带后缀的文件名列表
+     * @param duration     预签名 URL 将过期的时间
+     * @return PresignedPutObjectRequest
+     */
+    @SneakyThrows
+    public static List<URL> getPutPresignedUrl(List<String> fileNameList, Duration duration) {
+        return fileNameList.stream().map(fileName -> getPutPresignedUrl(fileName, duration, null).url()).toList();
     }
 
     /**
@@ -806,7 +829,7 @@ public final class AmazonS3Util {
     /**
      * 获取预签名上传文件时存储的完整路径（Key）
      *
-     * @param fileName 文件名
+     * @param fileName 文件名，例如：test.png
      * @return 完整路径
      */
     public static String getPutFileObjKey(String fileName) {
@@ -821,7 +844,7 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径（Key）
      *
-     * @param fileName 文件名
+     * @param fileName 文件名，例如：test.png
      * @return 完整路径
      */
     public static String getFileObjKey(String fileName) {

@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.retry.annotation.EnableRetry;
@@ -76,6 +77,8 @@ public class TakeshiConfig {
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addExposedHeader(saTokenConfig.getTokenName());
+        corsConfiguration.addExposedHeader(HttpHeaders.CONTENT_DISPOSITION);
+        corsConfiguration.addExposedHeader(HttpHeaders.ETAG);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         // 对接口配置跨域设置
         source.registerCorsConfiguration("/**", corsConfiguration);

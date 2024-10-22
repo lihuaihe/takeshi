@@ -37,7 +37,7 @@ public class ApplicationEventListener {
     @EventListener(ApplicationReadyEvent.class)
     public void handleApplicationReady() {
         log.info("""
-
+                         
                           ________    _______   ________
                          |\\_____  \\  /  ___  \\ |\\   ____\\
                           \\|___/  /|/__/|_/  /|\\ \\  \\___|_

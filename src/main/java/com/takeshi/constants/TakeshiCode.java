@@ -55,6 +55,11 @@ public interface TakeshiCode {
     String EMAIL_VERIFICATION_CODE_ERROR_STR = "{emailVerificationCodeError.message}";
 
     /**
+     * 手机号码格式错误
+     */
+    String MOBILE_VALIDATION_CODE_ERROR_STR = "{validation.mobile.message}";
+
+    /**
      * 成功
      */
     RetBO SUCCESS = new RetBO(200, "success.message");

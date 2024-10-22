@@ -12,10 +12,9 @@ public interface SmsInterface {
      * yml配置twilio或smsBroadcast
      *
      * @param send        是否发送
-     * @param countryCode 区号
-     * @param number      号码
+     * @param phoneNumber 带区号的手机号码
      * @param message     消息内容
      */
-    void sendMessage(boolean send, String countryCode, String number, String message);
+    void sendMessage(boolean send, String phoneNumber, String message);
 
 }

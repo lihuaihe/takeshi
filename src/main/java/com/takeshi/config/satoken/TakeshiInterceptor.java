@@ -227,11 +227,11 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
         TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
-        boolean passPlatform = false, passSignature = false, passTimestamp = false;
+        boolean passPlatform = false, passSignature = false, passTimestamp = true;
         if (ObjUtil.isNotNull(systemSecurity)) {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
             passSignature = systemSecurity.all() || systemSecurity.signature();
-            passSignature = systemSecurity.all() || systemSecurity.timestamp();
+            passTimestamp = systemSecurity.all() || systemSecurity.timestamp();
         }
         if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验

@@ -15,8 +15,6 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.core.Ordered;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;

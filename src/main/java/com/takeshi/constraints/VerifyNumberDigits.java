@@ -1,8 +1,7 @@
 package com.takeshi.constraints;
 
-
 import com.takeshi.constants.TakeshiCode;
-import com.takeshi.constraintvalidators.NumberDigitsValidator;
+import com.takeshi.constraintvalidators.VerifyNumberDigitsValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -15,9 +14,9 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = NumberDigitsValidator.class)
+@Constraint(validatedBy = VerifyNumberDigitsValidator.class)
 @Documented
-public @interface NumberDigits {
+public @interface VerifyNumberDigits {
 
     /**
      * 提示信息,可以写死,可以填写国际化的key

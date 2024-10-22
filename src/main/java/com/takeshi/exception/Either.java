@@ -16,6 +16,7 @@ import java.util.function.Function;
 public class Either<L, R> {
 
     private final L left;
+
     private final R right;
 
     private Either(L left, R right) {

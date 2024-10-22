@@ -43,10 +43,15 @@ public final class CollectorsUtil {
      */
     @SuppressWarnings("hiding")
     static class CollectorImpl<T, A, R> implements Collector<T, A, R> {
+
         private final Supplier<A> supplier;
+
         private final BiConsumer<A, T> accumulator;
+
         private final BinaryOperator<A> combiner;
+
         private final Function<A, R> finisher;
+
         private final Set<Characteristics> characteristics;
 
         CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher, Set<Characteristics> characteristics) {
@@ -85,6 +90,7 @@ public final class CollectorsUtil {
         public Set<Characteristics> characteristics() {
             return characteristics;
         }
+
     }
 
     /**

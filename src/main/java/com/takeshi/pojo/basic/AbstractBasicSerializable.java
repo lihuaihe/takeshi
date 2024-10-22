@@ -9,6 +9,8 @@ import java.io.Serializable;
  * @author 七濑武【Nanase Takeshi】
  */
 public abstract class AbstractBasicSerializable implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
+
 }

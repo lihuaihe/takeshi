@@ -30,13 +30,15 @@ public class StringToEnumConverterFactory implements ConverterFactory<String, En
         public T convert(String source) {
             try {
                 return Arrays.stream(enumType.getDeclaredFields())
-                        .filter(field -> field.isAnnotationPresent(JsonValue.class))
-                        .findFirst()
-                        .map(field -> Arrays.stream(enumType.getEnumConstants()).filter(enumConstant -> ReflectUtil.getFieldValue(enumConstant, field).equals(source)).findFirst().orElseThrow())
-                        .orElseGet(() -> Arrays.stream(enumType.getEnumConstants()).filter(enumConstant -> enumConstant.name().equals(source)).findFirst().orElseThrow());
+                             .filter(field -> field.isAnnotationPresent(JsonValue.class))
+                             .findFirst()
+                             .map(field -> Arrays.stream(enumType.getEnumConstants()).filter(enumConstant -> ReflectUtil.getFieldValue(enumConstant, field).equals(source)).findFirst().orElseThrow())
+                             .orElseGet(() -> Arrays.stream(enumType.getEnumConstants()).filter(enumConstant -> enumConstant.name().equals(source)).findFirst().orElseThrow());
             } catch (NoSuchElementException e) {
                 throw new IllegalArgumentException("No enum constant " + enumType.getTypeName() + "." + source);
             }
         }
+
     }
+
 }

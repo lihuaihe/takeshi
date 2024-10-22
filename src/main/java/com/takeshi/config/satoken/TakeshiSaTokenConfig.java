@@ -46,6 +46,7 @@ public interface TakeshiSaTokenConfig extends WebMvcConfigurer {
      */
     @Override
     default void addFormatters(FormatterRegistry registry) {
+        registry.addFormatterForFieldAnnotation(new PhoneNumberAnnotationFormatterFactory());
         registry.addFormatterForFieldAnnotation(new NumZeroFormatAnnotationFormatterFactory());
         registry.addFormatterForFieldAnnotation(new BigDecimalFormatAnnotationFormatterFactory());
         registry.addFormatterForFieldAnnotation(new CurrencyConversionAnnotationFormatterFactory());
