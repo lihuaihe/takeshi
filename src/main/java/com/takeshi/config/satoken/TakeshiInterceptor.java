@@ -245,10 +245,6 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String rateLimitPathKey = StrUtil.COLON + StrUtil.BRACKET_START + httpMethod + StrUtil.BRACKET_END + servletPath;
         String ipBlacklistKey = TakeshiRedisKeyEnum.IP_BLACKLIST.projectKey(clientIp);
         RedissonClient redissonClient = SpringUtil.getBean(RedissonClient.class);
-        if (redissonClient.getBucket(ipBlacklistKey).isExists()) {
-            // 黑名单中的IP
-            SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
-        }
         IpRateLimitProperties ipRateLimitProperties = SpringUtil.getBean(IpRateLimitProperties.class);
         // ip速率校验
         this.verifyIp(redissonClient, repeatSubmit, ipRateLimitProperties, clientIp, rateLimitPathKey, httpMethod, servletPath, ipBlacklistKey);
@@ -288,6 +284,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             ipRateLimitKeyParam += rateLimitPathKey;
         }
         if (iRateInterval > 0) {
+            if (iOpenBlacklist && redissonClient.getBucket(ipBlacklistKey).isExists()) {
+                // 是黑名单中的IP，禁止访问
+                SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
+            }
             String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(ipRateLimitKeyParam);
             RRateLimiter ipRateLimiter = redissonClient.getRateLimiter(ipRateLimitKey);
             if (ipRateLimiter.getConfig().getRate() != iRate
