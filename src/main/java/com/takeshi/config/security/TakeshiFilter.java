@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StopWatch;
@@ -42,6 +43,9 @@ public class TakeshiFilter implements Filter {
     private final TakeshiAsyncComponent takeshiAsyncComponent;
 
     private final TakeshiProperties takeshiProperties;
+
+    @Value("${takeshi.enable-response-data-log:true}")
+    private boolean enableResponseDataLog;
 
     private List<String> excludeUrlList;
 
@@ -72,6 +76,8 @@ public class TakeshiFilter implements Filter {
             } else {
                 takeshiHttpRequestWrapper = new TakeshiHttpRequestWrapper(httpServletRequest);
             }
+            String clientIp = TakeshiUtil.getClientIp(takeshiHttpRequestWrapper);
+            takeshiHttpRequestWrapper.setAttribute(RequestConstants.CLIENT_IP, clientIp);
             Map<String, Object> map = new LinkedHashMap<>(20);
             map.put("Request Address", StrUtil.builder(StrUtil.BRACKET_START, takeshiHttpRequestWrapper.getMethod(), StrUtil.BRACKET_END, takeshiHttpRequestWrapper.getRequestURL()));
             Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
@@ -83,8 +89,6 @@ public class TakeshiFilter implements Filter {
                     map.put("Requesting SaSessionData", saSessionDataMap);
                 }
             }
-            String clientIp = TakeshiUtil.getClientIp(takeshiHttpRequestWrapper);
-            takeshiHttpRequestWrapper.setAttribute(RequestConstants.CLIENT_IP, clientIp);
             map.put("Request IP", clientIp);
             map.put("Request UserAgent", takeshiHttpRequestWrapper.getHeader(Header.USER_AGENT.getValue()));
             map.put("Header GeoPoint", takeshiHttpRequestWrapper.getHeader(RequestConstants.Header.GEO_POINT));
@@ -98,7 +102,9 @@ public class TakeshiFilter implements Filter {
             // 获取 takeshiHttpResponseWrapper 的返回值
             byte[] bytes = takeshiHttpResponseWrapper.getResponseData();
             String responseData = StrUtil.str(bytes, StandardCharsets.UTF_8);
-            log.info("Response Data: {}", responseData);
+            if (enableResponseDataLog) {
+                log.info("Response Data: {}", responseData);
+            }
             // 将响应内容写回到原始的 HttpServletResponse 中
             try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
                 outputStream.write(bytes);

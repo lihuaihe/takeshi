@@ -36,6 +36,7 @@ import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.ZonedDateTimeUtil;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -192,7 +193,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 paramObjectNode.putPOJO("bodyObject", bodyObject);
             }
             String paramObjectValue = objectMapper.writeValueAsString(paramObjectNode);
-            log.info("Request Parameters: {}", paramObjectValue);
+            TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
+            if (takeshiProperties.isEnableRequestParamLog()) {
+                log.info("Request Parameters: {}", paramObjectValue);
+            }
             if (ObjUtil.isNotNull(takeshiLog)) {
                 String[] exclusionFieldName = Stream.of(EXCLUSION_FIELD_NAME, takeshiLog.exclusionFieldName()).flatMap(Arrays::stream).toArray(String[]::new);
                 for (String fieldName : exclusionFieldName) {
@@ -202,7 +206,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 request.setAttribute(RequestConstants.PARAM_OBJECT_VALUE, objectMapper.writeValueAsString(paramObjectNode));
             }
             // 速率限制
-            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, objectMapper, objectMapper.readValue(paramObjectValue, ObjectNode.class));
+            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, objectMapper, objectMapper.readValue(paramObjectValue, ObjectNode.class), takeshiProperties);
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
                 // 执行token认证函数
                 auth.run(handlerMethod);
@@ -217,16 +221,16 @@ public class TakeshiInterceptor implements HandlerInterceptor {
     /**
      * 速率限制
      *
-     * @param request         request
-     * @param handlerMethod   handlerMethod
-     * @param objectMapper    objectMapper
-     * @param paramObjectNode paramObjectNode
+     * @param request           request
+     * @param handlerMethod     handlerMethod
+     * @param objectMapper      objectMapper
+     * @param paramObjectNode   paramObjectNode
+     * @param takeshiProperties takeshiProperties
      */
-    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ObjectMapper objectMapper, ObjectNode paramObjectNode) throws Exception {
+    private SystemSecurity rateLimit(HttpServletRequest request, HandlerMethod handlerMethod, ObjectMapper objectMapper, ObjectNode paramObjectNode, TakeshiProperties takeshiProperties) throws Exception {
         SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                                                 .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
         String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
-        TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
         boolean passPlatform = false, passSignature = false, passTimestamp = true;
         if (ObjUtil.isNotNull(systemSecurity)) {
             passPlatform = systemSecurity.all() || systemSecurity.platform();
@@ -266,7 +270,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param servletPath           接口路径
      * @param ipBlacklistKey        是否开启了黑名单
      */
-    private void verifyIp(RedissonClient redissonClient, RepeatSubmit repeatSubmit, IpRateLimitProperties ipRateLimitProperties, String clientIp,
+    private void verifyIp(RedissonClient redissonClient, @Nullable RepeatSubmit repeatSubmit, IpRateLimitProperties ipRateLimitProperties, String clientIp,
                           String rateLimitPathKey, String httpMethod, String servletPath, String ipBlacklistKey) {
         boolean ipOverwritten = false;
         int iRate = ipRateLimitProperties.getRate();
@@ -339,7 +343,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
      * @param paramObjectNode 请求的参数
      * @throws JsonProcessingException JsonProcessingException
      */
-    private void verifyRepeatSubmit(RedissonClient redissonClient, RepeatSubmit repeatSubmit, ObjectMapper objectMapper,
+    private void verifyRepeatSubmit(RedissonClient redissonClient, @Nullable RepeatSubmit repeatSubmit, ObjectMapper objectMapper,
                                     String clientIp, String httpMethod, String servletPath, Object loginId,
                                     ObjectNode paramObjectNode) throws JsonProcessingException {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.rateInterval() > 0) {

@@ -2,6 +2,7 @@ package com.takeshi.annotation;
 
 import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.constants.TakeshiCode;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.redisson.api.RateIntervalUnit;
@@ -74,7 +75,7 @@ public @interface RepeatSubmit {
      *
      * @return int
      */
-    @PositiveOrZero
+    @Min(-1)
     int ipRateInterval() default -1;
 
     /**
