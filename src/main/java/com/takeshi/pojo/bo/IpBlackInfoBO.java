@@ -1,6 +1,5 @@
 package com.takeshi.pojo.bo;
 
-import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -54,35 +53,29 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     private Instant instant;
 
     /**
-     * 详情参考{@link IpRateLimitProperties}
+     * IP速率限制
      */
     @EqualsAndHashCode(callSuper = true)
     @Data
     @Schema
-    public static class IpRate extends IpRateLimitProperties {
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class IpRate extends AbstractBasicSerializable {
 
         /**
-         * IpRate的配置是被RepeatSubmit中的配置覆盖了的
+         * 率
          */
-        @Schema(description = "IpRate的配置是被RepeatSubmit中的配置覆盖了的")
-        private boolean ipOverwritten;
+        private int rate;
 
         /**
-         * 构造函数
-         *
-         * @param rate             rate
-         * @param rateInterval     rateInterval
-         * @param rateIntervalUnit rateIntervalUnit
-         * @param openBlacklist    openBlacklist
-         * @param ipOverwritten    ipOverwritten
+         * 速率时间间隔
          */
-        public IpRate(int rate, int rateInterval, RateIntervalUnit rateIntervalUnit, boolean openBlacklist, boolean ipOverwritten) {
-            this.setRate(rate);
-            this.setRateInterval(rateInterval);
-            this.setRateIntervalUnit(rateIntervalUnit);
-            this.setOpenBlacklist(openBlacklist);
-            this.ipOverwritten = ipOverwritten;
-        }
+        private int rateInterval;
+
+        /**
+         * 速率时间间隔单位
+         */
+        private RateIntervalUnit rateIntervalUnit;
 
     }
 

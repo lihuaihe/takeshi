@@ -53,6 +53,11 @@ public class TakeshiProperties {
     private String aesKey;
 
     /**
+     * 是否开启IP黑名单，超过请求次数则将IP加入黑名单内24小时
+     */
+    private boolean openIpBlacklist = false;
+
+    /**
      * 是否开启打印请求参数日志
      */
     private boolean enableRequestParamLog = true;
