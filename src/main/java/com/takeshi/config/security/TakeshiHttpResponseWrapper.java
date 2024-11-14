@@ -65,6 +65,11 @@ public class TakeshiHttpResponseWrapper extends HttpServletResponseWrapper {
         }
     }
 
+    @Override
+    public void resetBuffer() {
+        buffer.reset();
+    }
+
     /**
      * 获取内容
      *

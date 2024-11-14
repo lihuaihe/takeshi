@@ -402,6 +402,7 @@ public final class TakeshiUtil {
      * @return 元
      */
     public static BigDecimal currencyToYuan(BigDecimal decimal) {
+        // 此处的decimal值单位应该是分，一般分转成元，分应该没有小数点
         return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
     }
 

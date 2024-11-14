@@ -47,6 +47,7 @@ public class CurrencyToYuanSerializer extends StdSerializer<BigDecimal> implemen
 
     @Override
     public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        // 此处的value值单位应该是分，一般分转成元，分应该没有小数点
         gen.writeString(NumberUtil.decimalFormat(pattern, TakeshiUtil.currencyToYuan(value)));
     }
 
