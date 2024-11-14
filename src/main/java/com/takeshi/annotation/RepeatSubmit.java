@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 @Validated
 public @interface RepeatSubmit {
 
-    // ---------begin 此部分可对某个接口进行防重复提交限制---------
+    // ---------begin 此部分可对某个接口进行防重复提交限制，密等判断---------
 
     /**
      * <p style="color:yellow;">若要使用防重功能，此值需要设置大于0</p>
@@ -54,7 +54,9 @@ public @interface RepeatSubmit {
      */
     String msg() default TakeshiCode.REPEAT_SUBMIT_STR;
 
-    // ---------begin 此部分可对某个接口进行速率限制---------
+    // ---------end 此部分可对某个接口进行防重复提交限制，密等判断---------
+
+    // ---------begin 此部分可对某个接口进行请求速率限制---------
 
     /**
      * 速率
@@ -79,6 +81,6 @@ public @interface RepeatSubmit {
      */
     RateIntervalUnit ipRateIntervalUnit() default RateIntervalUnit.SECONDS;
 
-    // ---------end 此部分可对某个接口进行速率限制---------
+    // ---------end 此部分可对某个接口进行请求速率限制---------
 
 }
