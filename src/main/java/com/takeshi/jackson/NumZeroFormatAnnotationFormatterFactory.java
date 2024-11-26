@@ -19,7 +19,6 @@ import java.util.Set;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Deprecated
 public class NumZeroFormatAnnotationFormatterFactory implements AnnotationFormatterFactory<NumZeroFormat> {
 
     @Override

@@ -8,6 +8,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ByteOrderValues;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
@@ -32,25 +33,19 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointBO> {
     /**
      * geometry factory
      */
-    public final static GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    private final static GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
     /**
      * wkb writer
      */
-    public final static WKBWriter WKB_WRITER = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN);
-
-    /**
-     * wkb reader
-     */
-    public final static WKBReader WKB_READER = new WKBReader();
+    private final static WKBWriter WKB_WRITER = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN);
 
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, GeoPointBO geoPointBO, JdbcType jdbcType) throws SQLException {
         Point point = GEOMETRY_FACTORY.createPoint(new Coordinate(geoPointBO.getLon(), geoPointBO.getLat()));
         byte[] bytes = WKB_WRITER.write(point);
         byte[] wkb = new byte[bytes.length + 4];
-        // 设置SRID=4326，也就是谷歌地图WGS84坐标系
-        ByteOrderValues.putInt(4326, wkb, ByteOrderValues.LITTLE_ENDIAN);
+        ByteOrderValues.putInt(point.getSRID(), wkb, ByteOrderValues.LITTLE_ENDIAN);
         System.arraycopy(bytes, 0, wkb, 4, bytes.length);
         preparedStatement.setBytes(i, wkb);
     }
@@ -75,8 +70,11 @@ public class GeoPointTypeHandler extends BaseTypeHandler<GeoPointBO> {
         if (ArrayUtil.isEmpty(wkb)) {
             return null;
         }
-        byte[] bytes = ByteBuffer.allocate(wkb.length - 4).order(ByteOrder.LITTLE_ENDIAN).put(wkb, 4, wkb.length - 4).array();
-        Point point = WKB_READER.read(bytes).getInteriorPoint();
+        int srid = ByteBuffer.wrap(wkb).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        byte[] geometryBytes = new byte[wkb.length - 4];
+        System.arraycopy(wkb, 4, geometryBytes, 0, geometryBytes.length);
+        WKBReader wkbReader = new WKBReader(new GeometryFactory(new PrecisionModel(), srid));
+        Point point = (Point) wkbReader.read(geometryBytes);
         return new GeoPointBO(point.getX(), point.getY());
     }
 
