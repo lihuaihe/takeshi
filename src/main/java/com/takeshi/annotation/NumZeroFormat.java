@@ -19,7 +19,6 @@ import java.lang.annotation.*;
 @Documented
 @JacksonAnnotationsInside
 @JsonDeserialize(using = NumZeroFormatDeserializer.class)
-@Deprecated
 public @interface NumZeroFormat {
 
 }

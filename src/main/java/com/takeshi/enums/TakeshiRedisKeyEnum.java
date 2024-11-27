@@ -26,9 +26,10 @@ public enum TakeshiRedisKeyEnum implements TakeshiRedisKeyFormat {
      */
     NONCE_RATE_LIMIT("rate:nonce:{}"),
     /**
-     * ip限制{clientIp}
+     * ip限制
+     * {clientIp}{httpMethod}{requestURI}
      */
-    IP_RATE_LIMIT("rate:ip:{}"),
+    IP_RATE_LIMIT("rate:ip:{}:{}:{}"),
     /**
      * 重复提交{MD5后的值}
      */

@@ -74,7 +74,7 @@ public class StaticConfig {
         StaticConfig.takeshiProperties = takeshiProperties;
         String aesKey = takeshiProperties.getAesKey();
         if (StrUtil.isBlank(aesKey)) {
-            // 如果没有指定aes的key，则使用默认的aesKey对项目名+环境进行加密后截取前16位得到新的aesKey
+            // 如果没有指定aes的key，则使用默认的aesKey对项目名称+环境进行加密后截取前16位得到新的aesKey
             String data = StrUtil.concat(true, StrUtil.blankToDefault(takeshiProperties.getProjectName(), applicationName), StrUtil.DASHED, active);
             aesKey = StrUtil.subPre(
                     SecureUtil.aes("NT0Z1y2X725C6b7A".getBytes(StandardCharsets.UTF_8)).encryptBase64(data)

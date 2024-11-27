@@ -1,6 +1,5 @@
 package com.takeshi.annotation;
 
-import com.takeshi.config.properties.IpRateLimitProperties;
 import com.takeshi.constants.TakeshiCode;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -20,7 +19,7 @@ import java.lang.annotation.*;
 @Validated
 public @interface RepeatSubmit {
 
-    // ---------begin 此部分可对某个接口进行防重复提交限制---------
+    // ---------begin 此部分可对某个接口进行防重复提交限制，密等判断---------
 
     /**
      * <p style="color:yellow;">若要使用防重功能，此值需要设置大于0</p>
@@ -55,11 +54,12 @@ public @interface RepeatSubmit {
      */
     String msg() default TakeshiCode.REPEAT_SUBMIT_STR;
 
-    // ---------begin 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
+    // ---------end 此部分可对某个接口进行防重复提交限制，密等判断---------
+
+    // ---------begin 此部分可对某个接口进行请求速率限制---------
 
     /**
-     * 可覆盖${takeshi.rate.ip.rate}值<br/>
-     * 详情请参考{@link IpRateLimitProperties#rate}
+     * 速率
      *
      * @return int
      */
@@ -67,32 +67,20 @@ public @interface RepeatSubmit {
     int ipRate() default 10;
 
     /**
-     * 可覆盖${takeshi.rate.ip.rate-interval}值<br/>
-     * 默认-1，即不覆盖，0则不校验<br/>
-     * ipRateInterval大于0则ipRate，ipRateInterval，ipRateIntervalUnit，ipRateOpenBlacklist都会覆盖takeshi.rate.ip里的值<br/>
-     * 详情请参考{@link IpRateLimitProperties#rateInterval}
+     * 速率时间间隔，设置0则不对接口IP限制
      *
      * @return int
      */
     @PositiveOrZero
-    int ipRateInterval() default -1;
+    int ipRateInterval() default 0;
 
     /**
-     * 可覆盖${takeshi.rate.ip.rate-interval-unit}值<br/>
-     * 详情请参考{@link IpRateLimitProperties#rateIntervalUnit}
+     * 速率时间间隔单位
      *
      * @return RateIntervalUnit
      */
     RateIntervalUnit ipRateIntervalUnit() default RateIntervalUnit.SECONDS;
 
-    /**
-     * 可覆盖${takeshi.rate.ip.open-blacklist}值<br/>
-     * 详情请参考{@link IpRateLimitProperties#openBlacklist}
-     *
-     * @return boolean
-     */
-    boolean ipRateOpenBlacklist() default true;
-
-    // ---------end 此部分可对 takeshi.rate.ip 的yml配置内容进行覆盖，但仅针对该注解修饰的请求路径生效---------
+    // ---------end 此部分可对某个接口进行请求速率限制---------
 
 }

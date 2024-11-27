@@ -17,7 +17,6 @@ import java.io.IOException;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-@Deprecated
 @JacksonStdImpl
 public class NumZeroFormatDeserializer extends StdDeserializer<String> {
 

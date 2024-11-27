@@ -11,6 +11,7 @@ import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.util.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.exceptions.IbatisException;
 import org.redisson.client.RedisException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.validation.BindException;
@@ -70,7 +71,7 @@ public class GlobalExceptionHandler {
      * @param exception 异常
      * @return {@link ResponseData}
      */
-    @ExceptionHandler({SQLException.class, DataAccessException.class})
+    @ExceptionHandler({SQLException.class, DataAccessException.class, IbatisException.class})
     public ResponseData<Object> sqlExceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.sqlExceptionHandler --> SQLException: ", exception);
         return ResponseData.retData(TakeshiCode.DB_ERROR);

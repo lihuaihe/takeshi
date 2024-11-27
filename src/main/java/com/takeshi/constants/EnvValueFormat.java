@@ -39,7 +39,9 @@ public interface EnvValueFormat {
      * @return Object
      */
     default Object getEnvValue(Object... params) {
-        Object envValue = switch (StaticConfig.active) {
+        // 如果是本地运行获取不到值或没有配置多环境，则默认为dev环境
+        String active = StrUtil.blankToDefault(StaticConfig.active, "dev");
+        Object envValue = switch (active) {
             case "dev" -> this.getDevValue();
             case "sandbox" -> this.getSandboxValue();
             case "prod" -> this.getProdValue();
