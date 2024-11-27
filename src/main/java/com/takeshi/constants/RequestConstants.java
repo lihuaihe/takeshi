@@ -2,6 +2,7 @@ package com.takeshi.constants;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.google.gson.JsonSyntaxException;
@@ -84,7 +85,7 @@ public interface RequestConstants {
         String SIGN = "x-sign";
 
         /**
-         * 从header里面获取UserAgent
+         * 从header里面获取UserAgent，如果没有则抛出异常
          *
          * @return UserAgent
          */
@@ -95,7 +96,20 @@ public interface RequestConstants {
         }
 
         /**
-         * 从header里面获取时区
+         * 从header里面获取UserAgent，如果没有则返回NULL
+         *
+         * @return UserAgent
+         */
+        static UserAgent getUserAgentDefaultNull() {
+            String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
+            if (StrUtil.isBlank(userAgent)) {
+                return null;
+            }
+            return UserAgentUtil.parse(userAgent);
+        }
+
+        /**
+         * 从header里面获取时区，如果没有则抛出异常
          *
          * @return ZoneId
          */
@@ -110,7 +124,20 @@ public interface RequestConstants {
         }
 
         /**
-         * 从header里面获取经纬度
+         * 从header里面获取时区，如果没有则返回NULL
+         *
+         * @return ZoneId
+         */
+        static ZoneId getTimezoneDefaultNull() {
+            String timezone = SaHolder.getRequest().getHeader(TIMEZONE);
+            if (StrUtil.isBlank(timezone)) {
+                return null;
+            }
+            return ZoneId.of(timezone);
+        }
+
+        /**
+         * 从header里面获取经纬度，如果没有则抛出异常
          *
          * @return GeoPointBO
          */
@@ -122,6 +149,19 @@ public interface RequestConstants {
             } catch (IllegalArgumentException | JsonSyntaxException e) {
                 throw new IllegalArgumentException("Geo point data format error");
             }
+        }
+
+        /**
+         * 从header里面获取经纬度，如果没有则返回NULL
+         *
+         * @return GeoPointBO
+         */
+        static GeoPointBO getGeoPointDefaultNull() {
+            String geoPoint = SaHolder.getRequest().getHeader(GEO_POINT);
+            if (StrUtil.isBlank(geoPoint)) {
+                return null;
+            }
+            return GsonUtil.fromJson(geoPoint, GeoPointBO.class);
         }
 
     }
