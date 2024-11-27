@@ -37,6 +37,13 @@ public @interface VerifyPhoneNumber {
     String message() default TakeshiCode.MOBILE_VALIDATION_CODE_ERROR_STR;
 
     /**
+     * 默认国家代码，例如：CN
+     *
+     * @return 国家代码
+     */
+    String defaultRegion() default "";
+
+    /**
      * 下面这两个属性必须添加
      *
      * @return groups
@@ -49,10 +56,5 @@ public @interface VerifyPhoneNumber {
      * @return payload
      */
     Class<? extends Payload>[] payload() default {};
-
-    /**
-     * @return 默认国家代码，例如：CN
-     */
-    String defaultRegion() default "";
 
 }
