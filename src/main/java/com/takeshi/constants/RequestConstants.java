@@ -8,9 +8,15 @@ import cn.hutool.http.useragent.UserAgentUtil;
 import com.google.gson.JsonSyntaxException;
 import com.takeshi.pojo.bo.GeoPointBO;
 import com.takeshi.util.GsonUtil;
+import lombok.SneakyThrows;
+import org.apache.tomcat.util.http.parser.AcceptLanguage;
 
+import java.io.StringReader;
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * RequestConstants
@@ -55,6 +61,11 @@ public interface RequestConstants {
     interface Header {
 
         /**
+         * 调用接口header里面传的Accept-Language字段
+         */
+        String ACCEPT_LANGUAGE = "Accept-Language";
+
+        /**
          * 调用接口header里面传的User-Agent字段
          */
         String USER_AGENT = "User-Agent";
@@ -83,6 +94,40 @@ public interface RequestConstants {
          * 签名参数名
          */
         String SIGN = "x-sign";
+
+        /**
+         * 从header里面获取Accept-Language，且按照优先级排序，如果转换不了返回NULL
+         *
+         * @return
+         */
+        @SneakyThrows
+        static List<AcceptLanguage> getAcceptLanguageDefaultNull() {
+            String acceptLanguage = SaHolder.getRequest().getHeader(ACCEPT_LANGUAGE);
+            if (StrUtil.isBlank(acceptLanguage)) {
+                return null;
+            }
+            List<AcceptLanguage> list = AcceptLanguage.parse(new StringReader(acceptLanguage));
+            list.sort(Comparator.comparing(AcceptLanguage::getQuality).reversed());
+            return list;
+        }
+
+        /**
+         * 从header里面获取Accept-Language，只获取优先级最高的，如果转换不了返回NULL
+         *
+         * @return
+         */
+        @SneakyThrows
+        static Locale getLanguageDefaultNull() {
+            String acceptLanguage = SaHolder.getRequest().getHeader(ACCEPT_LANGUAGE);
+            if (StrUtil.isBlank(acceptLanguage)) {
+                return null;
+            }
+            return AcceptLanguage.parse(new StringReader(acceptLanguage))
+                                 .stream()
+                                 .max(Comparator.comparing(AcceptLanguage::getQuality))
+                                 .map(AcceptLanguage::getLocale)
+                                 .orElse(null);
+        }
 
         /**
          * 从header里面获取UserAgent，如果没有则抛出异常
