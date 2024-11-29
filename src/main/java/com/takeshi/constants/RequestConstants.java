@@ -98,7 +98,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取Accept-Language，且按照优先级排序，如果转换不了返回NULL
          *
-         * @return
+         * @return {@link List<AcceptLanguage>}
          */
         @SneakyThrows
         static List<AcceptLanguage> getAcceptLanguageDefaultNull() {
@@ -114,7 +114,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取Accept-Language，只获取优先级最高的，如果转换不了返回NULL
          *
-         * @return
+         * @return {@link Locale}
          */
         @SneakyThrows
         static Locale getLanguageDefaultNull() {
@@ -132,7 +132,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取UserAgent，如果没有则抛出异常
          *
-         * @return UserAgent
+         * @return {@link UserAgent}
          */
         static UserAgent getUserAgent() {
             String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
@@ -143,7 +143,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取UserAgent，如果没有则返回NULL
          *
-         * @return UserAgent
+         * @return {@link UserAgent}
          */
         static UserAgent getUserAgentDefaultNull() {
             String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
@@ -156,7 +156,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取时区，如果没有则抛出异常
          *
-         * @return ZoneId
+         * @return {@link ZoneId}
          */
         static ZoneId getTimezone() {
             try {
@@ -171,7 +171,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取时区，如果没有则返回NULL
          *
-         * @return ZoneId
+         * @return {@link ZoneId}
          */
         static ZoneId getTimezoneDefaultNull() {
             String timezone = SaHolder.getRequest().getHeader(TIMEZONE);
@@ -184,7 +184,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取经纬度，如果没有则抛出异常
          *
-         * @return GeoPointBO
+         * @return {@link GeoPointBO}
          */
         static GeoPointBO getGeoPoint() {
             try {
@@ -199,7 +199,7 @@ public interface RequestConstants {
         /**
          * 从header里面获取经纬度，如果没有则返回NULL
          *
-         * @return GeoPointBO
+         * @return {@link GeoPointBO}
          */
         static GeoPointBO getGeoPointDefaultNull() {
             String geoPoint = SaHolder.getRequest().getHeader(GEO_POINT);
