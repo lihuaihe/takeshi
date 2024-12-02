@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.takeshi.pojo.basic.AbstractBasicEntity;
 import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.reflection.MetaObject;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -18,6 +19,7 @@ import java.time.Instant;
  * @author 七濑武【Nanase Takeshi】
  */
 @Component
+@ConditionalOnMissingBean
 public class DefaultMetaObjectHandler implements MetaObjectHandler {
 
     private final String CREATE_TIME = TakeshiUtil.getPropertyName(AbstractBasicEntity::getCreateTime);
