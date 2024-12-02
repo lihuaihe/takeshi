@@ -14,31 +14,31 @@ configurations {
 
 ext {
     redissonVersion = '3.34.1'
-    tikaVersion = '2.9.2'
+    tikaVersion = '3.0.0'
     jtsVersion = '1.20.0'
-    ffmpegVersion = '6.1.1-1.5.10'
-    javacvVersion = '1.5.10'
-    mybatisPlusVersion = '3.5.7'
-    knife4jVersion = '4.5.0'
-    awsVersion = '2.27.9'
+    ffmpegVersion = '7.1-1.5.11'
+    javacvVersion = '1.5.11'
+    mybatisPlusVersion = '3.5.9'
+    springdocVersion = '2.7.0'
+    awsVersion = '2.29.23'
     lutungVersion = '0.0.8'
-    firebaseVersion = '9.3.0'
+    firebaseVersion = '9.4.1'
     findbugsVersion = '3.0.1u2'
     gsonVersion = '2.11.0'
-    libphonenumberVersion = '8.13.46'
-    html2pdfVersion = '5.0.5'
-    hutoolVersion = '5.8.31'
-    saTokenVersion = '1.38.0'
-    ognlVersion = '3.3.4' // 使用高于这个版本会提示java.lang.NoSuchMethodError
+    libphonenumberVersion = '8.13.51'
+    html2pdfVersion = '6.0.0'
+    hutoolVersion = '5.8.34'
+    saTokenVersion = '1.39.0'
+    ognlVersion = '3.4.3' // 使用高于这个版本会提示java.lang.NoSuchMethodError
     jaxbApiVersion = '2.3.1'
-    twilioVersion = '10.4.1'
+    twilioVersion = '10.6.3'
     micaAutoVersion = '3.1.4'
 }
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.11.29.0-SNAPSHOT'
+version = '24.12.02.2-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -134,11 +134,16 @@ dependencies {
     compileOnly "org.bytedeco:ffmpeg:${ffmpegVersion}"
     compileOnly "org.bytedeco:javacv:${javacvVersion}"
 
-    api "com.baomidou:mybatis-plus-spring-boot3-starter:${mybatisPlusVersion}"
-    api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
+    api platform("com.baomidou:mybatis-plus-bom:${mybatisPlusVersion}")
+    api "com.baomidou:mybatis-plus-spring-boot3-starter"
+    api "com.baomidou:mybatis-plus-jsqlparser"
+
+    api "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
     compileOnly platform("software.amazon.awssdk:bom:${awsVersion}")
     compileOnly 'software.amazon.awssdk:secretsmanager'
     compileOnly 'software.amazon.awssdk:s3-transfer-manager'
+
     compileOnly "com.mandrillapp.wrapper.lutung:lutung:${lutungVersion}"
     compileOnly "com.google.firebase:firebase-admin:${firebaseVersion}"
     api "com.google.code.findbugs:annotations:${findbugsVersion}"

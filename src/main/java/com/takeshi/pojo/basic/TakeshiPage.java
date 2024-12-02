@@ -287,7 +287,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setRecords(List<T> records) {
-        this.records = records;
+        super.setRecords(records);
         return this;
     }
 
@@ -299,7 +299,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setTotal(long total) {
-        this.total = total;
+        super.setTotal(total);
         return this;
     }
 
@@ -311,7 +311,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setSize(long size) {
-        this.size = size;
+        super.setSize(size);
         return this;
     }
 
@@ -323,7 +323,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setCurrent(long current) {
-        this.current = current;
+        super.setCurrent(current);
         return this;
     }
 
@@ -335,7 +335,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setSearchCount(boolean searchCount) {
-        this.searchCount = searchCount;
+        super.setSearchCount(searchCount);
         return this;
     }
 
@@ -347,7 +347,7 @@ public class TakeshiPage<T> extends Page<T> {
      */
     @Override
     public TakeshiPage<T> setOptimizeCountSql(boolean optimizeCountSql) {
-        this.optimizeCountSql = optimizeCountSql;
+        super.setOptimizeCountSql(optimizeCountSql);
         return this;
     }
 

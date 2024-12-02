@@ -7,6 +7,7 @@ import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.servlet.model.SaRequestForServlet;
 import cn.dev33.satoken.sign.SaSignUtil;
+import cn.dev33.satoken.strategy.SaAnnotationStrategy;
 import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
@@ -210,7 +211,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 auth.run(handlerMethod);
             }
             // 注解式鉴权，对角色和权限进行验证，需要实现StpInterface接口
-            SaStrategy.instance.checkMethodAnnotation.accept(method);
+            SaAnnotationStrategy.instance.checkMethodAnnotation.accept(method);
         }
         // 通过验证
         return true;

@@ -15,6 +15,7 @@ import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.DateSchema;
@@ -282,6 +283,7 @@ public class OpenApiConfig {
                 .in(SecurityScheme.In.HEADER);
         return new OpenAPI()
                 .info(info)
+                // .specVersion(SpecVersion.V31)
                 .addSecurityItem(new SecurityRequirement().addList(tokenName))
                 .components(new Components().addSecuritySchemes(tokenName, securityScheme));
     }
