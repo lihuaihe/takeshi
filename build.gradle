@@ -3,8 +3,8 @@ plugins {
     id 'java-library'
     id 'signing'
     id 'maven-publish'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 configurations {
     compileOnly {
@@ -29,7 +29,7 @@ ext {
     html2pdfVersion = '6.0.0'
     hutoolVersion = '5.8.34'
     saTokenVersion = '1.39.0'
-    ognlVersion = '3.4.3' // 使用高于这个版本会提示java.lang.NoSuchMethodError
+    ognlVersion = '3.4.3'
     jaxbApiVersion = '2.3.1'
     twilioVersion = '10.6.3'
     micaAutoVersion = '3.1.4'
@@ -38,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.12.02.5-SNAPSHOT'
+version = '24.12.02.6-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
