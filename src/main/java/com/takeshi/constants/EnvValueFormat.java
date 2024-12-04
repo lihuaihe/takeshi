@@ -40,14 +40,7 @@ public interface EnvValueFormat {
      * @return Object
      */
     default Object getEnvValue(Object... params) {
-        // 如果是本地运行获取不到值或没有配置多环境，则默认为dev环境
-        String active = StrUtil.blankToDefault(StaticConfig.active, "dev");
-        Object envValue = switch (active) {
-            case "dev" -> this.getDevValue();
-            case "sandbox" -> this.getSandboxValue();
-            case "prod" -> this.getProdValue();
-            default -> null;
-        };
+        Object envValue = getEnvValueByActive();
         if (envValue instanceof CharSequence template && StrUtil.isNotBlank(template) && ArrayUtil.isNotEmpty(params)) {
             return StrUtil.format(template, params);
         } else {
@@ -63,13 +56,18 @@ public interface EnvValueFormat {
      * @return T
      */
     default <T> T getEnvValue(Class<T> beanClass) {
-        Object envValue = switch (StaticConfig.active) {
+        return Convert.convert(beanClass, getEnvValueByActive());
+    }
+
+    private Object getEnvValueByActive() {
+        // 如果是本地运行获取不到值或没有配置多环境，则默认为dev环境
+        String active = StrUtil.blankToDefault(StaticConfig.active, "dev");
+        return switch (active) {
             case "dev" -> this.getDevValue();
             case "sandbox" -> this.getSandboxValue();
             case "prod" -> this.getProdValue();
             default -> null;
         };
-        return Convert.convert(beanClass, envValue);
     }
 
 }
