@@ -38,16 +38,11 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.12.02.6-SNAPSHOT'
+version = '24.12.04.0-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
 
 // 不生成可运行的jar包
 bootJar.enabled = false

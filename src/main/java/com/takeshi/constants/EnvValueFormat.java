@@ -1,6 +1,7 @@
 package com.takeshi.constants;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.takeshi.config.StaticConfig;
 
@@ -47,7 +48,7 @@ public interface EnvValueFormat {
             case "prod" -> this.getProdValue();
             default -> null;
         };
-        if (envValue instanceof CharSequence template && StrUtil.isNotBlank(template)) {
+        if (envValue instanceof CharSequence template && StrUtil.isNotBlank(template) && ArrayUtil.isNotEmpty(params)) {
             return StrUtil.format(template, params);
         } else {
             return envValue;
