@@ -68,8 +68,8 @@ public class TakeshiProperties {
     private boolean enableResponseDataLog = true;
 
     /**
-     * redisson缓存配置，例如：使用classpath:redisson-cache.yaml，也可以使用json文件的路径，内容：{@link org.redisson.spring.cache.CacheConfig}
+     * redisson缓存配置，例如：使用classpath:redisson-cache-config.yml，也可以使用json文件的路径，内容：{@link org.redisson.spring.cache.CacheConfig}
      */
-    private String redissonCacheFilePath;
+    private String redissonCacheConfigLocation;
 
 }

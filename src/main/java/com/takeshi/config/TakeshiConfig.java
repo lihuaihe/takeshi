@@ -191,7 +191,7 @@ public class TakeshiConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    public CacheManager cacheManager(RedissonClient redissonClient, @Value("${takeshi.redisson-cache-file-path:#{null}}") String configLocation) {
+    public CacheManager cacheManager(RedissonClient redissonClient, @Value("${takeshi.redisson-cache-config-location:#{null}}") String configLocation) {
         TtlRedissonCacheManager ttlRedissonCacheManager = new TtlRedissonCacheManager(redissonClient, configLocation);
         // 禁止缓存NULL值，如果缓存NULL值就跳过
         ttlRedissonCacheManager.setAllowNullValues(false);
