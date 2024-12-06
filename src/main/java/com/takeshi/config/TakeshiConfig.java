@@ -27,7 +27,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -186,14 +185,17 @@ public class TakeshiConfig {
     /**
      * 配置cache缓存到redis
      *
-     * @param objectMapper objectMapper
-     * @param factory      factory
+     * @param redissonClient redissonClient
+     * @param configLocation configLocation
      * @return CacheManager
      */
     @Bean
     @ConditionalOnMissingBean
-    public CacheManager cacheManager(ObjectMapper objectMapper, RedisConnectionFactory factory) {
-        return TtlRedisCacheManager.defaultInstance(objectMapper, factory);
+    public CacheManager cacheManager(RedissonClient redissonClient, @Value("${takeshi.redisson-cache-file-path:#{null}}") String configLocation) {
+        TtlRedissonCacheManager ttlRedissonCacheManager = new TtlRedissonCacheManager(redissonClient, configLocation);
+        // 禁止缓存NULL值，如果缓存NULL值就跳过
+        ttlRedissonCacheManager.setAllowNullValues(false);
+        return ttlRedissonCacheManager;
     }
 
     /**

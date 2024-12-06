@@ -65,8 +65,9 @@ public class TtlRedisCacheManager extends RedisCacheManager {
                                        .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                                        // 定义用于反/序列化缓存值
                                        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(om)))
-                                       // 禁止缓存空值，如果缓存空值就抛出异常
+                                       // 禁止缓存NULL值，如果缓存NULL值就抛出异常
                                        .disableCachingNullValues();
+        // 使用redis配置，会导致@Cacheable(sync=true)时，同步锁只对cacheName加锁，不是对完整的key进行加锁，建议使用RedissonSpringCacheManager
         return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);
     }
 
