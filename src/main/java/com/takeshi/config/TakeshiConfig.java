@@ -149,6 +149,7 @@ public class TakeshiConfig {
                       .build()
                       .findAndRegisterModules()
                       .registerModule(simpleModule)
+                      // 配置序列化日期时间序列化成字符串而不是时间戳
                       .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 

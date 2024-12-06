@@ -1,13 +1,14 @@
 package com.takeshi.config;
 
 import cn.hutool.core.util.ObjUtil;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.lang.Nullable;
@@ -52,15 +53,20 @@ public class TtlRedisCacheManager extends RedisCacheManager {
      * @return TtlRedisCacheManager
      */
     public static TtlRedisCacheManager defaultInstance(ObjectMapper objectMapper, RedisConnectionFactory factory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                                                                // Set cache expiration time
-                                                                .entryTtl(Duration.ofDays(1))
-                                                                // Set the serialization method of the key
-                                                                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                                                                // Set the serialization method of value
-                                                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)))
-                                                                // Do not cache null values
-                                                                .disableCachingNullValues();
+        // 复制一个全新的ObjectMapper，避免修改全局配置
+        ObjectMapper om = objectMapper.copy();
+        // 配置保存到redis中带完全限定类名
+        om.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        RedisCacheConfiguration config =
+                RedisCacheConfiguration.defaultCacheConfig()
+                                       // cacheNames没有使用#分隔时，设置默认缓存过期时间
+                                       .entryTtl(Duration.ofDays(1))
+                                       // 定义用于反/序列化缓存键
+                                       .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                                       // 定义用于反/序列化缓存值
+                                       .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(om)))
+                                       // 禁止缓存空值，如果缓存空值就抛出异常
+                                       .disableCachingNullValues();
         return new TtlRedisCacheManager(RedisCacheWriter.lockingRedisCacheWriter(factory), config);
     }
 
