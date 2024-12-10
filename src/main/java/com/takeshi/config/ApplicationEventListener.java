@@ -36,6 +36,7 @@ public class ApplicationEventListener {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void handleApplicationReady() {
+        String localhostStr = TakeshiUtil.getLocalhostStr();
         log.info("""
                          
                           ________    _______   ________
@@ -47,10 +48,11 @@ public class ApplicationEventListener {
                             |__|/       \\|_______||\\_________\\
                                                   \\|_________|
                          Application {} Successfully started using Java {} with PID {}. Default language: {}. Default region: {}. Default TimeZone: {}
-                         Swagger Api Url: http://{}:{}{}/swagger-ui/index.html""",
-                 applicationName, javaVersion, ProcessHandle.current().pid(), Locale.getDefault().getLanguage(),
-                 Locale.getDefault().getCountry(), ZoneId.systemDefault(), TakeshiUtil.getLocalhostStr(),
-                 serverPort, contextPath);
+                         Swagger Api Url: http://{}:{}{}/swagger-ui/index.html
+                         Knife4j Api Url: http://{}:{}{}/doc.html""",
+                 applicationName, javaVersion, ProcessHandle.current().pid(), Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), ZoneId.systemDefault(),
+                 localhostStr, serverPort, contextPath,
+                 localhostStr, serverPort, contextPath);
     }
 
 }

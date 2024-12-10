@@ -2,13 +2,11 @@ package com.takeshi.mybatisplus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
@@ -19,11 +17,8 @@ import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
-import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.logging.LogFactory;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.takeshi.pojo.basic.AbstractBasicEntity;
 import com.takeshi.util.TakeshiUtil;
 import org.apache.ibatis.reflection.MetaObject;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;

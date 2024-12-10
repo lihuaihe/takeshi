@@ -8,7 +8,6 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.servlet.model.SaRequestForServlet;
 import cn.dev33.satoken.sign.SaSignUtil;
 import cn.dev33.satoken.strategy.SaAnnotationStrategy;
-import cn.dev33.satoken.strategy.SaStrategy;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.util.ArrayUtil;

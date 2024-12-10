@@ -8,6 +8,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
+import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
 import io.swagger.v3.core.converter.AnnotatedType;
@@ -15,7 +16,6 @@ import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.DateSchema;
@@ -205,29 +205,6 @@ public class OpenApiConfig {
                                                  springDocProviders, springDocCustomizers);
     }
 
-    // /**
-    //  * 自定义
-    //  *
-    //  * @return GlobalOpenApiCustomizer
-    //  */
-    // @SuppressWarnings("unchecked")
-    // @Bean
-    // public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
-    //     return openApi -> {
-    //         if (CollUtil.isNotEmpty(openApi.getComponents().getSchemas())) {
-    //             openApi.getComponents()
-    //                     .getSchemas()
-    //                     .forEach((name, schema) -> {
-    //                         Map<String, Schema<?>> properties = schema.getProperties();
-    //                         if (CollUtil.isNotEmpty(properties)) {
-    //                             properties.forEach((k, v) -> {
-    //                             });
-    //                         }
-    //                     });
-    //         }
-    //     };
-    // }
-
     /**
      * 自定义
      *
@@ -258,6 +235,14 @@ public class OpenApiConfig {
             retBOList.forEach(retBO -> {
                 apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage()));
             });
+            boolean passToken = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
+                                        .or(() -> Optional.ofNullable(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class)))
+                                        .map(annotation -> annotation.all() || annotation.token())
+                                        .orElse(false);
+            if (!passToken) {
+                // Knife4j需要的全局添加鉴权参数
+                operation.addSecurityItem(new SecurityRequirement().addList(saTokenConfig.getTokenName()));
+            }
             return operation;
         };
     }
@@ -283,7 +268,6 @@ public class OpenApiConfig {
                 .in(SecurityScheme.In.HEADER);
         return new OpenAPI()
                 .info(info)
-                // .specVersion(SpecVersion.V31)
                 .addSecurityItem(new SecurityRequirement().addList(tokenName))
                 .components(new Components().addSecuritySchemes(tokenName, securityScheme));
     }

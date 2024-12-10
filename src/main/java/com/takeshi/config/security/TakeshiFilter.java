@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StopWatch;
-import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import java.io.IOException;

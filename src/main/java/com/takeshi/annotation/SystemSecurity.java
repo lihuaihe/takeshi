@@ -44,11 +44,14 @@ public @interface SystemSecurity {
     boolean timestamp() default true;
 
     /**
-     * 放弃上述token,platform,signature的校验，此属性优先级别最高
+     * 放弃上述token, platform, signature, timestamp的校验
+     * <p style="color: yellow;">此属性优先级别最高</p>
      *
      * @return boolean
      */
     boolean all() default false;
+
+    // ----------------------------------------------------- 分隔线 -----------------------------------------------------
 
     /**
      * 入参是否解密，默认不解密
