@@ -1,5 +1,6 @@
 package com.takeshi.mybatisplus.typehandler;
 
+import cn.hutool.core.util.StrUtil;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -14,7 +15,7 @@ import java.util.Locale;
  * <p>注意！！ 使用typeHandler，必须开启autoResultMap映射注解</p>
  * <p>@TableName(autoResultMap = true)</p>
  * <p>@TableField(typeHandler = LocaleTypeHandler.class)</p>
- * <p>转换{@link java.util.Locale}，存入数据库使用zh-CN存入，而不是zh_CN存入</p>
+ * <p>转换{@link java.util.Locale}，存入数据库使用zh_CN存入，而不是zh-CN存入</p>
  *
  * @author 七濑武【Nanase Takeshi】
  */
@@ -23,22 +24,29 @@ public class LocaleTypeHandler extends BaseTypeHandler<Locale> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, Locale parameter, JdbcType jdbcType)
             throws SQLException {
-        ps.setString(i, parameter.toLanguageTag());
+        ps.setString(i, parameter.toString());
     }
 
     @Override
     public Locale getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return Locale.forLanguageTag(rs.getString(columnName));
+        return this.strToLocale(rs.getString(columnName));
     }
 
     @Override
     public Locale getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return Locale.forLanguageTag(rs.getString(columnIndex));
+        return this.strToLocale(rs.getString(columnIndex));
     }
 
     @Override
     public Locale getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return Locale.forLanguageTag(cs.getString(columnIndex));
+        return this.strToLocale(cs.getString(columnIndex));
+    }
+
+    private Locale strToLocale(String str) {
+        if (StrUtil.isBlankIfStr(str)) {
+            return null;
+        }
+        return Locale.forLanguageTag(str.replace(StrUtil.UNDERLINE, StrUtil.DASHED));
     }
 
 }
