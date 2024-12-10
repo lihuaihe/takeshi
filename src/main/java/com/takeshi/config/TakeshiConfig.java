@@ -1,6 +1,5 @@
 package com.takeshi.config;
 
-import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -61,8 +60,6 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class TakeshiConfig {
 
-    private final SaTokenConfig saTokenConfig;
-
     /**
      * 跨域配置
      *
@@ -75,7 +72,6 @@ public class TakeshiConfig {
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addExposedHeader(saTokenConfig.getTokenName());
         corsConfiguration.addExposedHeader(HttpHeaders.CONTENT_DISPOSITION);
         corsConfiguration.addExposedHeader(HttpHeaders.ETAG);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
