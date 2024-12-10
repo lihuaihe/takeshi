@@ -12,9 +12,7 @@ import java.util.Locale;
 
 /**
  * <p>LocaleTypeHandler</p>
- * <p>注意！！ 使用typeHandler，必须开启autoResultMap映射注解</p>
- * <p>@TableName(autoResultMap = true)</p>
- * <p>@TableField(typeHandler = LocaleTypeHandler.class)</p>
+ * <p>无需在配置typeHandler = LocaleTypeHandler.class，已注册到mybatis中，自动生效</p>
  * <p>转换{@link java.util.Locale}，存入数据库使用zh_CN存入，而不是zh-CN存入</p>
  *
  * @author 七濑武【Nanase Takeshi】

@@ -22,9 +22,7 @@ import java.sql.SQLException;
 
 /**
  * <p>GeoPointTypeHandler</p>
- * <p>注意！！ 使用typeHandler，必须开启autoResultMap映射注解</p>
- * <p>@TableName(autoResultMap = true)</p>
- * <p>@TableField(typeHandler = GeoPointTypeHandler.class)</p>
+ * <p>无需在配置typeHandler = GeoPointTypeHandler.class，已注册到mybatis中，自动生效</p>
  *
  * @author 七濑武【Nanase Takeshi】
  */
