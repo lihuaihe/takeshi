@@ -5,6 +5,7 @@ import cn.hutool.core.lang.Range;
 import cn.hutool.core.util.ObjUtil;
 import com.takeshi.constants.TakeshiDatePattern;
 
+import java.io.Serial;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -839,6 +840,7 @@ public final class ZonedDateTimeUtil {
      */
     public static class ZonedDateTimeRange extends Range<ZonedDateTime> {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         /**

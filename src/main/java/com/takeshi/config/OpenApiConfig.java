@@ -232,9 +232,7 @@ public class OpenApiConfig {
         return (operation, handlerMethod) -> {
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
-            retBOList.forEach(retBO -> {
-                apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage()));
-            });
+            retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage())));
             boolean passToken = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                                         .or(() -> Optional.ofNullable(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class)))
                                         .map(annotation -> annotation.all() || annotation.token())

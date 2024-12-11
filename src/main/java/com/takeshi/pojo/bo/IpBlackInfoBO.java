@@ -63,19 +63,14 @@ public class IpBlackInfoBO extends AbstractBasicSerializable {
     public static class IpRate extends AbstractBasicSerializable {
 
         /**
-         * 率
+         * 速率，多少毫秒内允许多少次请求
          */
-        private int rate;
+        private Long rate;
 
         /**
-         * 速率时间间隔
+         * 速率时间间隔，设置0则不对接口IP限制，单位：毫秒
          */
-        private int rateInterval;
-
-        /**
-         * 速率时间间隔单位
-         */
-        private RateIntervalUnit rateIntervalUnit;
+        private Long rateInterval;
 
     }
 

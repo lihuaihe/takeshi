@@ -39,7 +39,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RRateLimiter;
-import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpMethod;
@@ -269,9 +268,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                           String clientIp, String httpMethod, String requestURI, String ipBlacklistKey) {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() > 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
-            int iRate = repeatSubmit.ipRate();
-            int iRateInterval = repeatSubmit.ipRateInterval();
-            RateIntervalUnit iRateIntervalUnit = repeatSubmit.ipRateIntervalUnit();
+            long iRate = repeatSubmit.ipRate();
+            long iRateInterval = repeatSubmit.ipRateInterval();
             if (openIpBlacklist && redissonClient.getBucket(ipBlacklistKey).isExists()) {
                 // 是黑名单中的IP，禁止访问
                 SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
@@ -279,12 +277,12 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(clientIp, httpMethod, requestURI);
             RRateLimiter ipRateLimiter = redissonClient.getRateLimiter(ipRateLimitKey);
             // 接口IP限流
-            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, iRateInterval, iRateIntervalUnit);
+            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, Duration.ofMillis(iRateInterval), Duration.ofDays(1));
             // 设置限流器过期时间
             ipRateLimiter.expire(DURATION);
             if (!ipRateLimiter.tryAcquire()) {
                 if (openIpBlacklist) {
-                    IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval, iRateIntervalUnit);
+                    IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval);
                     // 超过请求次数则将IP加入黑名单内24小时
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, httpMethod, requestURI, ipBlackInfoIpRate, Instant.now());
                     redissonClient.getBucket(ipBlacklistKey).set(ipBlackInfoBO, Duration.ofHours(24));
@@ -343,7 +341,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = redissonClient.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次
-            rateLimiter.trySetRate(RateType.PER_CLIENT, 1, rateInterval, repeatSubmit.rateIntervalUnit());
+            rateLimiter.trySetRate(RateType.PER_CLIENT, 1, Duration.ofMillis(rateInterval), Duration.ofHours(1));
             // 设置限流器过期时间
             rateLimiter.expire(DURATION);
             if (!rateLimiter.tryAcquire()) {

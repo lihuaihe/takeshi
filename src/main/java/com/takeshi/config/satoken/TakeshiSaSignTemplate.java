@@ -38,7 +38,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     /**
      * body
      */
-    public static String body = "body";
+    public static final String BODY = "body";
 
     /**
      * 将所有参数连接成一个字符串(不排序)，形如：b=28a=18c=3，忽略null值
@@ -247,7 +247,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
                         paramMap.putAll(map);
                     }
                 } else {
-                    paramMap.put(body, objectMapper.writeValueAsString(jsonNode));
+                    paramMap.put(BODY, objectMapper.writeValueAsString(jsonNode));
                 }
             }
         }
