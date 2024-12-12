@@ -4,12 +4,14 @@ import cn.dev33.satoken.exception.*;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.google.gson.reflect.TypeToken;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
-import com.takeshi.util.GsonUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.exceptions.IbatisException;
 import org.redisson.client.RedisException;
@@ -33,9 +35,12 @@ import java.util.concurrent.CompletionException;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private static final String SQL_CAUSE = "java.sql.SQL";
+
+    private final ObjectMapper objectMapper;
 
     /**
      * 异常处理
@@ -144,8 +149,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TakeshiException.class)
     public ResponseData<Object> takeshiException(TakeshiException takeshiException) {
         log.error("GlobalExceptionHandler.takeshiException --> TakeshiException: ", takeshiException);
-        return GsonUtil.fromJson(takeshiException.getMessage(), new TypeToken<>() {
-        });
+        try {
+            TypeReference<ResponseData<Object>> typeRef = new TypeReference<>() {
+            };
+            return objectMapper.readValue(takeshiException.getMessage(), typeRef);
+        } catch (JsonProcessingException e) {
+            return ResponseData.fail(e.getMessage());
+        }
     }
 
     /**

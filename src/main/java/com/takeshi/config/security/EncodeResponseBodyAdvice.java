@@ -3,10 +3,12 @@ package com.takeshi.config.security;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.pojo.basic.ResponseData;
-import com.takeshi.util.GsonUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -26,7 +28,10 @@ import java.util.Objects;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData<Object>> {
+
+    private final ObjectMapper objectMapper;
 
     /**
      * Whether this component supports the given controller method return type
@@ -62,12 +67,13 @@ public class EncodeResponseBodyAdvice implements ResponseBodyAdvice<ResponseData
      * @param response              the current response
      * @return the BODY that was passed in or a modified (possibly new) instance
      */
+    @SneakyThrows
     @Nullable
     @Override
     public ResponseData<Object> beforeBodyWrite(@Nullable ResponseData<Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         if (ObjUtil.isNotNull(body) && ObjUtil.isNotNull(body.getData())) {
             // 这里使用rsa私钥加密，前端使用rsa公钥解密
-            String str = CharSequence.class.isAssignableFrom(body.getData().getClass()) ? (String) body.getData() : GsonUtil.toJson(body.getData());
+            String str = CharSequence.class.isAssignableFrom(body.getData().getClass()) ? (String) body.getData() : objectMapper.writeValueAsString(body.getData());
             String data = StaticConfig.rsa.encryptBase64(str, KeyType.PrivateKey);
             body.setData(data);
         }

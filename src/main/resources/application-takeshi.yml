@@ -28,6 +28,9 @@ springdoc:
   default-flat-param-object: true
 
 server:
+  servlet:
+    encoding:
+      force: true
   shutdown: graceful
   max-http-request-header-size: 32KB
   tomcat:

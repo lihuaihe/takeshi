@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
-import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.slf4j.MDC;
 
@@ -19,8 +19,8 @@ import java.time.Instant;
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@Accessors(chain = true)
 @Schema(description = "接口返回值对象")
+@Accessors(chain = true)
 public class ResponseData<T> implements Serializable {
 
     @Serial
@@ -43,7 +43,7 @@ public class ResponseData<T> implements Serializable {
      */
     @JsonIgnore
     @Schema(hidden = true)
-    private Object[] args;
+    private transient Object[] args;
 
     /**
      * 数据
@@ -387,9 +387,14 @@ public class ResponseData<T> implements Serializable {
         this.traceId = MDC.get(RequestConstants.TRACE_ID);
     }
 
-    @Override
-    public String toString() {
-        return GsonUtil.toJson(this);
+    /**
+     * 转为json
+     *
+     * @return JsonString
+     */
+    @SneakyThrows
+    public String toJson() {
+        return TakeshiUtil.objectMapper.writeValueAsString(this);
     }
 
 }
