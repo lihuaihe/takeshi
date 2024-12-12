@@ -3,7 +3,6 @@ package com.takeshi.annotation;
 import com.takeshi.constants.TakeshiCode;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import org.redisson.api.RateIntervalUnit;
 import org.springframework.validation.annotation.Validated;
 
 import java.lang.annotation.*;
@@ -23,21 +22,14 @@ public @interface RepeatSubmit {
 
     /**
      * <p style="color:yellow;">若要使用防重功能，此值需要设置大于0</p>
-     * 间隔时间，小于此时间视为重复提交
+     * 间隔时间，小于此时间视为重复提交，单位：毫秒
      * <br/>
      * 设置0则不开启重复提交校验
      *
      * @return 时间
      */
     @PositiveOrZero
-    int rateInterval() default 0;
-
-    /**
-     * 重复提交 速率时间间隔单位
-     *
-     * @return 时间单位
-     */
-    RateIntervalUnit rateIntervalUnit() default RateIntervalUnit.SECONDS;
+    long rateInterval() default 0;
 
     /**
      * 重复提交 排除的字段名称<br/>
@@ -59,27 +51,20 @@ public @interface RepeatSubmit {
     // ---------begin 此部分可对某个接口进行请求速率限制---------
 
     /**
-     * 速率
+     * 速率，多少毫秒内允许多少次请求
      *
      * @return int
      */
     @Positive
-    int ipRate() default 10;
+    long ipRate() default 10;
 
     /**
-     * 速率时间间隔，设置0则不对接口IP限制
+     * 速率时间间隔，设置0则不对接口IP限制，单位：毫秒
      *
      * @return int
      */
     @PositiveOrZero
-    int ipRateInterval() default 0;
-
-    /**
-     * 速率时间间隔单位
-     *
-     * @return RateIntervalUnit
-     */
-    RateIntervalUnit ipRateIntervalUnit() default RateIntervalUnit.SECONDS;
+    long ipRateInterval() default 0;
 
     // ---------end 此部分可对某个接口进行请求速率限制---------
 
