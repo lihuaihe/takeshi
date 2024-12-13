@@ -4,8 +4,6 @@ import cn.dev33.satoken.exception.*;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.takeshi.config.StaticConfig;
@@ -49,7 +47,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(Exception.class)
-    public ResponseData<Object> exceptionHandler(Exception exception) {
+    public ResponseData<?> exceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.exceptionHandler --> Exception: ", exception);
         if (null != exception.getCause() && exception.getCause().toString().startsWith(SQL_CAUSE)) {
             return ResponseData.retData(TakeshiCode.DB_ERROR);
@@ -65,7 +63,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(NullPointerException.class)
-    public ResponseData<Object> nullPointerException(NullPointerException nullPointerException) {
+    public ResponseData<?> nullPointerException(NullPointerException nullPointerException) {
         log.error("GlobalExceptionHandler.nullPointerException --> NullPointerException: ", nullPointerException);
         return ResponseData.retData(TakeshiCode.SYS_NULL_POINT);
     }
@@ -77,7 +75,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler({SQLException.class, DataAccessException.class, IbatisException.class})
-    public ResponseData<Object> sqlExceptionHandler(Exception exception) {
+    public ResponseData<?> sqlExceptionHandler(Exception exception) {
         log.error("GlobalExceptionHandler.sqlExceptionHandler --> SQLException: ", exception);
         return ResponseData.retData(TakeshiCode.DB_ERROR);
     }
@@ -89,7 +87,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(RedisException.class)
-    public ResponseData<Object> redisExceptionHandler(RedisException redisException) {
+    public ResponseData<?> redisExceptionHandler(RedisException redisException) {
         log.error("GlobalExceptionHandler.redisExceptionHandler --> redisException: ", redisException);
         return ResponseData.retData(TakeshiCode.REDIS_ERROR);
     }
@@ -101,7 +99,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseData<Object> noSuchElementException(NoSuchElementException noSuchElementException) {
+    public ResponseData<?> noSuchElementException(NoSuchElementException noSuchElementException) {
         log.error("GlobalExceptionHandler.noSuchElementException --> NoSuchElementException: ", noSuchElementException);
         return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
     }
@@ -113,7 +111,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseData<Object> illegalArgumentException(IllegalArgumentException illegalArgumentException) {
+    public ResponseData<?> illegalArgumentException(IllegalArgumentException illegalArgumentException) {
         log.error("GlobalExceptionHandler.illegalArgumentException --> IllegalArgumentException: ", illegalArgumentException);
         if (StrUtil.startWith(illegalArgumentException.getMessage(), "[Assertion failed]")) {
             // 默认的非法参数异常
@@ -130,7 +128,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(InvalidFormatException.class)
-    public ResponseData<Object> invalidFormatException(InvalidFormatException invalidFormatException) {
+    public ResponseData<?> invalidFormatException(InvalidFormatException invalidFormatException) {
         log.error("GlobalExceptionHandler.invalidFormatException --> InvalidFormatException: ", invalidFormatException);
         if (invalidFormatException.getTargetType().isEnum()) {
             // 传递的值和接收的枚举类型值不匹配
@@ -147,15 +145,9 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(TakeshiException.class)
-    public ResponseData<Object> takeshiException(TakeshiException takeshiException) {
+    public ResponseData<?> takeshiException(TakeshiException takeshiException) {
         log.error("GlobalExceptionHandler.takeshiException --> TakeshiException: ", takeshiException);
-        try {
-            TypeReference<ResponseData<Object>> typeRef = new TypeReference<>() {
-            };
-            return objectMapper.readValue(takeshiException.getMessage(), typeRef);
-        } catch (JsonProcessingException e) {
-            return ResponseData.fail(e.getMessage());
-        }
+        return takeshiException.getResponseData();
     }
 
     /**
@@ -165,7 +157,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(CompletionException.class)
-    public ResponseData<Object> completionException(CompletionException completionException) {
+    public ResponseData<?> completionException(CompletionException completionException) {
         Throwable rootCause = ExceptionUtil.getRootCause(completionException);
         if (rootCause instanceof TakeshiException takeshiException) {
             return this.takeshiException(takeshiException);
@@ -181,7 +173,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(RuntimeException.class)
-    public ResponseData<Object> runtimeExceptionHandler(RuntimeException runtimeException) {
+    public ResponseData<?> runtimeExceptionHandler(RuntimeException runtimeException) {
         log.error("GlobalExceptionHandler.runtimeExceptionHandler --> RuntimeException: ", runtimeException);
         return ResponseData.fail(ExceptionUtil.getRootCause(runtimeException).getMessage());
     }
@@ -193,7 +185,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
-    public ResponseData<Object> parameterBindHandler(BindException bindException) {
+    public ResponseData<?> parameterBindHandler(BindException bindException) {
         log.error("GlobalExceptionHandler.parameterBindHandler --> BindException: ", bindException);
         BindingResult bindingResult = bindException.getBindingResult();
         FieldError fieldError = bindingResult.getFieldError();
@@ -213,7 +205,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(NotLoginException.class)
-    public ResponseData<Object> notLoginExceptionHandler(NotLoginException notLoginException) {
+    public ResponseData<?> notLoginExceptionHandler(NotLoginException notLoginException) {
         log.error("GlobalExceptionHandler.notLoginExceptionHandler --> NotLoginException: ", notLoginException);
         if (notLoginException.getType().equals(NotLoginException.NOT_TOKEN)) {
             // 未提供token
@@ -243,7 +235,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(SaSignException.class)
-    public ResponseData<Object> saSignExceptionHandler(SaSignException saSignException) {
+    public ResponseData<?> saSignExceptionHandler(SaSignException saSignException) {
         log.error("GlobalExceptionHandler.saSignExceptionHandler --> SaSignException: ", saSignException);
         return ResponseData.retData(TakeshiCode.SIGN_ERROR.cloneWithMessage(saSignException.getMessage()));
     }
@@ -255,7 +247,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(NotRoleException.class)
-    public ResponseData<Object> notRoleExceptionHandler(NotRoleException notRoleException) {
+    public ResponseData<?> notRoleExceptionHandler(NotRoleException notRoleException) {
         log.error("GlobalExceptionHandler.notRoleExceptionHandler --> NotRoleException: ", notRoleException);
         return ResponseData.retData(TakeshiCode.NOT_ROLE_EXCEPTION, new Object[]{notRoleException.getRole()});
     }
@@ -267,7 +259,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(NotPermissionException.class)
-    public ResponseData<Object> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
+    public ResponseData<?> notPermissionExceptionHandler(NotPermissionException notPermissionException) {
         log.error("GlobalExceptionHandler.notPermissionExceptionHandler --> NotPermissionException: ", notPermissionException);
         return ResponseData.retData(TakeshiCode.NOT_PERMISSION_EXCEPTION, new Object[]{notPermissionException.getPermission()});
     }
@@ -279,7 +271,7 @@ public class GlobalExceptionHandler {
      * @return {@link ResponseData}
      */
     @ExceptionHandler(DisableServiceException.class)
-    public ResponseData<Object> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
+    public ResponseData<?> disableLoginExceptionHandler(DisableServiceException disableServiceException) {
         log.error("GlobalExceptionHandler.disableLoginExceptionHandler --> DisableLoginException: ", disableServiceException);
         return ResponseData.retData(TakeshiCode.DISABLE_SERVICE_EXCEPTION, new Object[]{disableServiceException.getDisableTime()});
     }

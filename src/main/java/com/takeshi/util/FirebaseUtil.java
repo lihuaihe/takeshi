@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -86,6 +87,8 @@ public final class FirebaseUtil {
 
         private static volatile DatabaseReference DATABASE_REFERENCE;
 
+        private static volatile ObjectMapper OBJECT_MAPPER;
+
         private Database() {
         }
 
@@ -103,6 +106,22 @@ public final class FirebaseUtil {
                 }
             }
             return DATABASE_REFERENCE;
+        }
+
+        /**
+         * 获取ObjectMapper
+         *
+         * @return ObjectMapper
+         */
+        public static ObjectMapper getObjectMapper() {
+            if (ObjUtil.isNull(OBJECT_MAPPER)) {
+                synchronized (Database.class) {
+                    if (ObjUtil.isNull(OBJECT_MAPPER)) {
+                        OBJECT_MAPPER = SpringUtil.getBean(ObjectMapper.class);
+                    }
+                }
+            }
+            return OBJECT_MAPPER;
         }
 
         /**
@@ -216,7 +235,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static <T extends AbstractBasicSerializable> ApiFuture<Void> setValueAsync(String pathString, T value) {
-            return getDatabaseReference().child(pathString).setValueAsync(TakeshiUtil.objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Map<String, Object>>() {
             }));
         }
 
@@ -231,7 +250,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Map<String, Object> value) {
-            return getDatabaseReference().child(pathString).setValueAsync(TakeshiUtil.objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Map<String, Object>>() {
             }));
         }
 
@@ -246,7 +265,7 @@ public final class FirebaseUtil {
          * @return {@link ApiFuture}
          */
         public static ApiFuture<Void> setValueAsync(String pathString, Collection<?> value) {
-            return getDatabaseReference().child(pathString).setValueAsync(TakeshiUtil.objectMapper.convertValue(value, new TypeReference<Collection<Object>>() {
+            return getDatabaseReference().child(pathString).setValueAsync(getObjectMapper().convertValue(value, new TypeReference<Collection<Object>>() {
             }));
         }
 

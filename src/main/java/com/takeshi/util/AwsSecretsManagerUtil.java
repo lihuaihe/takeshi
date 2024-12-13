@@ -43,7 +43,7 @@ public final class AwsSecretsManagerUtil {
                                                  .secretId(secretId)
                                                  .build();
                     GetSecretValueResponse valueResponse = SpringUtil.getBean(SecretsManagerClient.class).getSecretValue(valueRequest);
-                    SECRET = TakeshiUtil.objectMapper.readTree(valueResponse.secretString());
+                    SECRET = SpringUtil.getBean(ObjectMapper.class).readTree(valueResponse.secretString());
                     log.info("AwsSecretsManagerUtil.getSecret --> AWSSecretsManager Initialization successful");
                 }
             }
@@ -59,7 +59,7 @@ public final class AwsSecretsManagerUtil {
      * @return T
      */
     public static <T> T getSecret(Class<T> beanClass) {
-        return TakeshiUtil.objectMapper.convertValue(getSecret(), beanClass);
+        return SpringUtil.getBean(ObjectMapper.class).convertValue(getSecret(), beanClass);
     }
 
 }

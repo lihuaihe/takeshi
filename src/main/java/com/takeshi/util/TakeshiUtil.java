@@ -35,12 +35,6 @@ import cn.hutool.jwt.signers.EllipticCurveJWTSigner;
 import cn.hutool.jwt.signers.JWTSigner;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.cfg.PackageVersion;
-import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.takeshi.config.StaticConfig;
 import com.takeshi.config.satoken.TakeshiSaSignTemplate;
 import com.takeshi.constants.TakeshiCode;
@@ -59,7 +53,6 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -80,44 +73,9 @@ public final class TakeshiUtil {
     private static final String LOCAL_IP = "0:0:0:0:0:0:0:1";
 
     /**
-     * ObjectMapper
-     */
-    public static ObjectMapper objectMapper = configObjectMapper();
-
-    /**
      * 构造函数
      */
     private TakeshiUtil() {
-    }
-
-    /**
-     * 配置ObjectMapper
-     *
-     * @return ObjectMapper
-     */
-    private static ObjectMapper configObjectMapper() {
-        SimpleModule simpleModule = new SimpleModule("NumberToString", PackageVersion.VERSION)
-                .addSerializer(Long.class, ToStringSerializer.instance)
-                .addSerializer(Long.TYPE, ToStringSerializer.instance)
-                .addSerializer(Double.class, ToStringSerializer.instance)
-                .addSerializer(Double.TYPE, ToStringSerializer.instance)
-                .addSerializer(Float.class, ToStringSerializer.instance)
-                .addSerializer(Float.TYPE, ToStringSerializer.instance)
-                .addSerializer(BigInteger.class, ToStringSerializer.instance)
-                .addSerializer(BigDecimal.class, ToStringSerializer.instance)
-                .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
-                .addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null))
-                .addDeserializer(Double.class, new NumberDeserializers.DoubleDeserializer(Double.class, null))
-                .addDeserializer(Double.TYPE, new NumberDeserializers.DoubleDeserializer(Double.class, null))
-                .addDeserializer(Float.class, new NumberDeserializers.FloatDeserializer(Float.class, null))
-                .addDeserializer(Float.TYPE, new NumberDeserializers.FloatDeserializer(Float.class, null))
-                .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
-                .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
-        return new ObjectMapper()
-                .findAndRegisterModules()
-                .registerModule(simpleModule)
-                // 配置序列化日期时间序列化成字符串而不是时间戳
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     /**

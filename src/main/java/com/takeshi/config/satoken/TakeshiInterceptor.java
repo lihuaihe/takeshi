@@ -143,6 +143,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             request.setAttribute(RequestConstants.METHOD_NAME, methodName);
             TakeshiLog takeshiLog = method.getAnnotation(TakeshiLog.class);
             log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, request.getMethod(), StrUtil.BRACKET_END, methodName));
+            ObjectMapper objectMapper = SpringUtil.getBean(ObjectMapper.class);
             Map<String, String> urlParam = JakartaServletUtil.getParamMap(request);
             Map<String, String> multipart = null;
             Object bodyObject = null;
@@ -160,13 +161,13 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                  )
                                         );
             } else if (!HttpMethod.GET.matches(request.getMethod())) {
-                JsonNode jsonNode = TakeshiUtil.objectMapper.readTree(request.getInputStream());
+                JsonNode jsonNode = objectMapper.readTree(request.getInputStream());
                 if (!jsonNode.isNull()) {
                     if (jsonNode.isObject()) {
-                        bodyObject = TakeshiUtil.objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {
+                        bodyObject = objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {
                         });
                     } else if (jsonNode.isArray()) {
-                        bodyObject = TakeshiUtil.objectMapper.<Collection<Object>>convertValue(jsonNode, new TypeReference<>() {
+                        bodyObject = objectMapper.<Collection<Object>>convertValue(jsonNode, new TypeReference<>() {
                         });
                     } else if (jsonNode.isTextual()) {
                         bodyObject = jsonNode.textValue();
@@ -179,7 +180,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                     }
                 }
             }
-            ObjectNode paramObjectNode = TakeshiUtil.objectMapper.createObjectNode();
+            ObjectNode paramObjectNode = objectMapper.createObjectNode();
             if (CollUtil.isNotEmpty(urlParam)) {
                 paramObjectNode.putPOJO("urlParam", urlParam);
             }
@@ -189,7 +190,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             if (ObjUtil.isNotEmpty(bodyObject)) {
                 paramObjectNode.putPOJO("bodyObject", bodyObject);
             }
-            String paramObjectValue = TakeshiUtil.objectMapper.writeValueAsString(paramObjectNode);
+            String paramObjectValue = objectMapper.writeValueAsString(paramObjectNode);
             TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
             if (takeshiProperties.isEnableRequestParamLog()) {
                 log.info("Request Parameters: {}", paramObjectValue);
@@ -200,10 +201,10 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                     paramObjectNode.findParents(fieldName).forEach(item -> ((ObjectNode) item).remove(fieldName));
                 }
                 request.setAttribute(RequestConstants.TAKESHI_LOG, takeshiLog);
-                request.setAttribute(RequestConstants.PARAM_OBJECT_VALUE, TakeshiUtil.objectMapper.writeValueAsString(paramObjectNode));
+                request.setAttribute(RequestConstants.PARAM_OBJECT_VALUE, objectMapper.writeValueAsString(paramObjectNode));
             }
             // 速率限制
-            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, TakeshiUtil.objectMapper, TakeshiUtil.objectMapper.readValue(paramObjectValue, ObjectNode.class), takeshiProperties);
+            SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, objectMapper, objectMapper.readValue(paramObjectValue, ObjectNode.class), takeshiProperties);
             if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
                 // 执行token认证函数
                 auth.run(handlerMethod);

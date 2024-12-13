@@ -3,6 +3,7 @@ package com.takeshi.exception;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.RetBO;
+import com.takeshi.util.TakeshiUtil;
 import lombok.Getter;
 
 import java.io.Serial;
@@ -20,10 +21,16 @@ public class TakeshiException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 接口统一返回值
+     */
+    private final ResponseData<?> responseData;
+
+    /**
      * 构造函数
      */
     public TakeshiException() {
-        super(ResponseData.retData(TakeshiCode.FAIL).toJson());
+        super(TakeshiUtil.formatMessage(TakeshiCode.FAIL.getMessage()));
+        this.responseData = ResponseData.instance(TakeshiCode.FAIL);
     }
 
     /**
@@ -32,7 +39,8 @@ public class TakeshiException extends RuntimeException {
      * @param message 消息
      */
     public TakeshiException(String message) {
-        super(ResponseData.fail(message).toJson());
+        super(TakeshiUtil.formatMessage(message));
+        this.responseData = ResponseData.instance(super.getMessage());
     }
 
     /**
@@ -42,7 +50,8 @@ public class TakeshiException extends RuntimeException {
      * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     public TakeshiException(String message, Object[] args) {
-        super(ResponseData.fail(message, args).toJson());
+        super(TakeshiUtil.formatMessage(message, args));
+        this.responseData = ResponseData.instance(super.getMessage());
     }
 
     /**
@@ -52,7 +61,8 @@ public class TakeshiException extends RuntimeException {
      * @param message 消息
      */
     public TakeshiException(int code, String message) {
-        super(ResponseData.retData(code, message).toJson());
+        super(TakeshiUtil.formatMessage(message));
+        this.responseData = ResponseData.instance(code, super.getMessage());
     }
 
     /**
@@ -63,7 +73,8 @@ public class TakeshiException extends RuntimeException {
      * @param args    将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     public TakeshiException(int code, String message, Object[] args) {
-        super(ResponseData.retData(code, message, args).toJson());
+        super(TakeshiUtil.formatMessage(message, args));
+        this.responseData = ResponseData.instance(code, super.getMessage());
     }
 
     /**
@@ -75,7 +86,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>     T
      */
     public <T> TakeshiException(int code, String message, T data) {
-        super(ResponseData.retData(code, message, data).toJson());
+        super(TakeshiUtil.formatMessage(message));
+        this.responseData = ResponseData.instance(code, super.getMessage(), data);
     }
 
     /**
@@ -88,7 +100,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>     T
      */
     public <T> TakeshiException(int code, String message, T data, Object[] args) {
-        super(ResponseData.retData(code, message, data, args).toJson());
+        super(TakeshiUtil.formatMessage(message, args));
+        this.responseData = ResponseData.instance(code, super.getMessage(), data);
     }
 
     /**
@@ -100,7 +113,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, int code, String message) {
-        super(ResponseData.retData(code, message).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(message));
+        this.responseData = ResponseData.instance(code, super.getMessage()).setMetadata(metadata);
     }
 
     /**
@@ -113,7 +127,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, int code, String message, Object[] args) {
-        super(ResponseData.retData(code, message, args).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(message, args));
+        this.responseData = ResponseData.instance(code, super.getMessage()).setMetadata(metadata);
     }
 
     /**
@@ -126,7 +141,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, int code, String message, T data) {
-        super(ResponseData.retData(code, message, data).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(message));
+        this.responseData = ResponseData.instance(code, super.getMessage(), data).setMetadata(metadata);
     }
 
     /**
@@ -140,7 +156,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, int code, String message, T data, Object[] args) {
-        super(ResponseData.retData(code, message, data, args).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(message, args));
+        this.responseData = ResponseData.instance(code, super.getMessage(), data).setMetadata(metadata);
     }
 
     /**
@@ -149,7 +166,8 @@ public class TakeshiException extends RuntimeException {
      * @param retBO 消息
      */
     public TakeshiException(RetBO retBO) {
-        super(ResponseData.retData(retBO).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage()));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage());
     }
 
     /**
@@ -159,7 +177,8 @@ public class TakeshiException extends RuntimeException {
      * @param args  将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     public TakeshiException(RetBO retBO, Object[] args) {
-        super(ResponseData.retData(retBO, args).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage(), args));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage());
     }
 
     /**
@@ -170,7 +189,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>   T
      */
     public <T> TakeshiException(RetBO retBO, T data) {
-        super(ResponseData.retData(retBO, data).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage()));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage(), data);
     }
 
     /**
@@ -182,7 +202,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>   T
      */
     public <T> TakeshiException(RetBO retBO, T data, Object[] args) {
-        super(ResponseData.retData(retBO, data, args).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage(), args));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage(), data);
     }
 
     /**
@@ -192,7 +213,8 @@ public class TakeshiException extends RuntimeException {
      * @param retBO    消息
      */
     public TakeshiException(Object metadata, RetBO retBO) {
-        super(ResponseData.retData(retBO).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage()));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage()).setMetadata(metadata);
     }
 
     /**
@@ -203,7 +225,8 @@ public class TakeshiException extends RuntimeException {
      * @param args     将为消息中的参数填充的参数数组（参数在消息中类似于“{0}”、“{1,date}”、“{2,time}”），如果没有则为null
      */
     public TakeshiException(Object metadata, RetBO retBO, Object[] args) {
-        super(ResponseData.retData(retBO, args).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage(), args));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage()).setMetadata(metadata);
     }
 
     /**
@@ -215,7 +238,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, RetBO retBO, T data) {
-        super(ResponseData.retData(retBO, data).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage()));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage(), data).setMetadata(metadata);
     }
 
     /**
@@ -228,7 +252,8 @@ public class TakeshiException extends RuntimeException {
      * @param <T>      T
      */
     public <T> TakeshiException(Object metadata, RetBO retBO, T data, Object[] args) {
-        super(ResponseData.retData(retBO, data, args).setMetadata(metadata).toJson());
+        super(TakeshiUtil.formatMessage(retBO.getMessage(), args));
+        this.responseData = ResponseData.instance(retBO.getCode(), super.getMessage(), data).setMetadata(metadata);
     }
 
     /**
@@ -237,7 +262,8 @@ public class TakeshiException extends RuntimeException {
      * @param responseData responseData
      */
     public TakeshiException(ResponseData<?> responseData) {
-        super(responseData.toJson());
+        super(responseData.getMessage());
+        this.responseData = responseData;
     }
 
     /**

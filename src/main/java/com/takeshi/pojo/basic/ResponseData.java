@@ -7,7 +7,6 @@ import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.slf4j.MDC;
 
@@ -16,6 +15,8 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
+ * 接口统一返回值
+ *
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
@@ -388,13 +389,50 @@ public class ResponseData<T> implements Serializable {
     }
 
     /**
-     * 转为json
+     * 创建实例
      *
-     * @return JsonString
+     * @param retBO retBO
+     * @param <T>   T
+     * @return ResponseData
      */
-    @SneakyThrows
-    public String toJson() {
-        return TakeshiUtil.objectMapper.writeValueAsString(this);
+    public static <T> ResponseData<T> instance(RetBO retBO) {
+        return instance(retBO.getCode(), retBO.getMessage());
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param message 提示信息
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(String message) {
+        return instance(TakeshiCode.FAIL.getCode(), message);
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param code    状态码
+     * @param message 提示信息
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(int code, String message) {
+        return instance(code, message, null);
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param code    状态码
+     * @param message 提示信息
+     * @param data    附加对象
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(int code, String message, T data) {
+        return new ResponseData<T>().setCode(code).setMessage(message).setData(data);
     }
 
 }

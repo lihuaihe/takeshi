@@ -2,9 +2,13 @@ package com.takeshi.config;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.PackageVersion;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.takeshi.config.satoken.TakeshiInterceptor;
 import com.takeshi.config.satoken.TakeshiSaTokenConfig;
-import com.takeshi.util.TakeshiUtil;
 import lombok.RequiredArgsConstructor;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -23,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -34,6 +39,8 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -110,12 +117,35 @@ public class TakeshiConfig {
     /**
      * 统一配置，解决前后端交互大数值类型精度丢失的问题
      *
+     * @param builder Jackson2ObjectMapperBuilder
      * @return ObjectMapper
      */
     @Bean
     @ConditionalOnMissingBean
-    public ObjectMapper objectMapper() {
-        return TakeshiUtil.objectMapper;
+    public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+        SimpleModule simpleModule = new SimpleModule("NumberToString", PackageVersion.VERSION)
+                .addSerializer(Long.class, ToStringSerializer.instance)
+                .addSerializer(Long.TYPE, ToStringSerializer.instance)
+                .addSerializer(Double.class, ToStringSerializer.instance)
+                .addSerializer(Double.TYPE, ToStringSerializer.instance)
+                .addSerializer(Float.class, ToStringSerializer.instance)
+                .addSerializer(Float.TYPE, ToStringSerializer.instance)
+                .addSerializer(BigInteger.class, ToStringSerializer.instance)
+                .addSerializer(BigDecimal.class, ToStringSerializer.instance)
+                .addDeserializer(Long.class, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(Long.TYPE, new NumberDeserializers.LongDeserializer(Long.class, null))
+                .addDeserializer(Double.class, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Double.TYPE, new NumberDeserializers.DoubleDeserializer(Double.class, null))
+                .addDeserializer(Float.class, new NumberDeserializers.FloatDeserializer(Float.class, null))
+                .addDeserializer(Float.TYPE, new NumberDeserializers.FloatDeserializer(Float.class, null))
+                .addDeserializer(BigDecimal.class, NumberDeserializers.BigDecimalDeserializer.instance)
+                .addDeserializer(BigInteger.class, NumberDeserializers.BigIntegerDeserializer.instance);
+        return builder.createXmlMapper(false)
+                      .build()
+                      .findAndRegisterModules()
+                      .registerModule(simpleModule)
+                      // 配置序列化日期时间序列化成字符串而不是时间戳
+                      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     /**
