@@ -152,7 +152,7 @@ public final class GlobalPhoneNumberUtil {
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String phoneNumber) throws NumberParseException {
-        return parse(phoneNumber, null);
+        return parseWithRegion(phoneNumber, null);
     }
 
     /**
