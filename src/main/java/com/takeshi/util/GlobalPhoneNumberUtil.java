@@ -1,5 +1,6 @@
 package com.takeshi.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
@@ -31,8 +32,8 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配
      *
-     * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param countryCode 区号，例如：+86，不带+号会自动补全+号
+     * @param number      无区号的电话号码
      * @return boolean
      */
     @SneakyThrows
@@ -43,7 +44,7 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配
      *
-     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      * @return boolean
      */
     @SneakyThrows
@@ -54,7 +55,7 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配
      *
-     * @param phoneNumber   带区号的电话号码，例如：+8618888888888
+     * @param phoneNumber   带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      * @param defaultRegion 默认国家区域，例如：CN
      * @return boolean
      */
@@ -76,8 +77,8 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配，不匹配抛出异常
      *
-     * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param countryCode 区号，例如：+86，不带+号会自动补全+号
+     * @param number      无区号的电话号码
      */
     public static void verifyNumber(String countryCode, String number) {
         try {
@@ -92,7 +93,7 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配，不匹配抛出异常
      *
-     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      */
     public static void verifyNumber(String phoneNumber) {
         try {
@@ -107,7 +108,7 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 测试电话号码是否与有效模式匹配，不匹配抛出异常
      *
-     * @param phoneNumber   带区号的电话号码，例如：+8618888888888
+     * @param phoneNumber   带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      * @param defaultRegion 默认国家区域，例如：CN
      */
     public static void verifyNumberWithRegion(String phoneNumber, String defaultRegion) {
@@ -134,36 +135,36 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param countryCode 区号，例如：+86，不带+号会自动补全+号
+     * @param number      无区号的电话号码
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String countryCode, String number) throws NumberParseException {
-        return instance.parse(countryCode.concat(number), null);
+        return parse(countryCode + number);
     }
 
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param phoneNumber 带区号的电话号码
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String phoneNumber) throws NumberParseException {
-        return instance.parse(phoneNumber, null);
+        return parse(phoneNumber, null);
     }
 
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param phoneNumber   电话号码，例如：+8618888888888
+     * @param phoneNumber   带区号的电话号码，例如：+8618888888888，不带+号会自动补全+号
      * @param defaultRegion 默认国家区域，例如：CN
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parseWithRegion(String phoneNumber, String defaultRegion) throws NumberParseException {
-        return instance.parse(phoneNumber, defaultRegion);
+        return instance.parse(StrUtil.addPrefixIfNot(phoneNumber, "+"), defaultRegion);
     }
 
     /**

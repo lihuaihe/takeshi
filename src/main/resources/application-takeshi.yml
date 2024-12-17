@@ -36,19 +36,19 @@ server:
   tomcat:
     uri-encoding: UTF-8
 
-knife4j:
-  enable: true
-  documents:
-    - group: default
-      name: 接口说明
-      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
-  setting:
-    language: zh_cn
-    enable-version: true
-    enable-open-api: false
-    enable-footer: false
-    enable-after-script: false
-    enable-dynamic-parameter: true
+#knife4j:
+#  enable: true
+#  documents:
+#    - group: default
+#      name: 接口说明
+#      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
+#  setting:
+#    language: zh_cn
+#    enable-version: true
+#    enable-open-api: false
+#    enable-footer: false
+#    enable-after-script: false
+#    enable-dynamic-parameter: true
 
 logging:
   file:

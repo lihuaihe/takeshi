@@ -233,14 +233,14 @@ public class OpenApiConfig {
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
             retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage())));
-            boolean passToken = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
-                                        .or(() -> Optional.ofNullable(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class)))
-                                        .map(annotation -> annotation.all() || annotation.token())
-                                        .orElse(false);
-            if (!passToken) {
-                // Knife4j需要的全局添加鉴权参数
-                operation.addSecurityItem(new SecurityRequirement().addList(saTokenConfig.getTokenName()));
-            }
+            // boolean passToken = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
+            //                             .or(() -> Optional.ofNullable(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class)))
+            //                             .map(annotation -> annotation.all() || annotation.token())
+            //                             .orElse(false);
+            // if (!passToken) {
+            //     // Knife4j需要的全局添加鉴权参数
+            //     operation.addSecurityItem(new SecurityRequirement().addList(saTokenConfig.getTokenName()));
+            // }
             return operation;
         };
     }

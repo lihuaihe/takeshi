@@ -19,11 +19,10 @@ ext {
     ffmpegVersion = '7.1-1.5.11'
     javacvVersion = '1.5.11'
     mybatisPlusVersion = '3.5.9'
-    knife4jVersion = '4.6.0'
     springdocVersion = '2.7.0'
     awsVersion = '2.29.23'
     lutungVersion = '0.0.8'
-    firebaseVersion = '9.4.1'
+    firebaseVersion = '9.4.2'
     findbugsVersion = '3.0.1u2'
     gsonVersion = '2.11.0'
     libphonenumberVersion = '8.13.51'
@@ -39,7 +38,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '24.12.13.1-SNAPSHOT'
+version = '24.12.17.0-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -137,8 +136,6 @@ dependencies {
     api platform("com.baomidou:mybatis-plus-bom:${mybatisPlusVersion}")
     api "com.baomidou:mybatis-plus-spring-boot3-starter"
     api "com.baomidou:mybatis-plus-jsqlparser"
-//    api "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
-    api "com.github.xingfudeshi:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
 
     api "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
