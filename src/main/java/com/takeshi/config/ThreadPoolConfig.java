@@ -56,6 +56,12 @@ public class ThreadPoolConfig {
         executor.setThreadNamePrefix("task-" + serverPort + "-exec-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setThreadFactory(r -> {
+            Thread thread = new Thread(r);
+            thread.setUncaughtExceptionHandler((t, e) -> log.error("ThreadPoolConfig.threadPoolTaskExecutor --> e: ", e));
+            return thread;
+        });
+        executor.initialize();
         return executor;
     }
 
