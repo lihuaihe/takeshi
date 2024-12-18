@@ -8,7 +8,6 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
-import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
 import io.swagger.v3.core.converter.AnnotatedType;
@@ -42,6 +41,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -62,6 +62,7 @@ import java.util.*;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration(value = "openApiConfig")
+@ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class OpenApiConfig {
 
