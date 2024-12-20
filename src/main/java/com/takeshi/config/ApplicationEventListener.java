@@ -22,6 +22,9 @@ public class ApplicationEventListener {
     @Value("${spring.application.name:}")
     private String applicationName;
 
+    @Value("${java.vendor}")
+    private String javaVendor;
+
     @Value("${java.version}")
     private String javaVersion;
 
@@ -46,10 +49,10 @@ public class ApplicationEventListener {
                             /__/ /     |\\________\\ ____\\_\\  \\
                             |__|/       \\|_______||\\_________\\
                                                   \\|_________|
-                         Application {} Successfully started using Java {} with PID {}
+                         Application {} Successfully started using ({}) Java {} with PID {}
                          Default language: {}. Default region: {}. Default TimeZone: {}
                          Swagger Api Url: http://{}:{}{}/swagger-ui/index.html""",
-                 applicationName, javaVersion, ProcessHandle.current().pid(),
+                 applicationName, javaVendor, javaVersion, ProcessHandle.current().pid(),
                  Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), ZoneId.systemDefault(),
                  TakeshiUtil.getLocalhostStr(), serverPort, contextPath);
     }
