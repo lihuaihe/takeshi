@@ -49,10 +49,10 @@ public class ApplicationEventListener {
                             /__/ /     |\\________\\ ____\\_\\  \\
                             |__|/       \\|_______||\\_________\\
                                                   \\|_________|
-                         Application {} Successfully started using ({}) Java {} with PID {}
+                         Application {} Successfully started using Java ({}) {} with PID {}
                          Default language: {}. Default region: {}. Default TimeZone: {}
                          Swagger Api Url: http://{}:{}{}/swagger-ui/index.html""",
-                 applicationName, javaVendor, javaVersion, ProcessHandle.current().pid(),
+                 applicationName, javaVersion, javaVendor, ProcessHandle.current().pid(),
                  Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), ZoneId.systemDefault(),
                  TakeshiUtil.getLocalhostStr(), serverPort, contextPath);
     }
