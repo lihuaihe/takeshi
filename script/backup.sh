@@ -78,7 +78,9 @@ if ! command -v aws &> /dev/null; then
   yum remove -y awscli
   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
   unzip -u awscliv2.zip
+  tip_message "aws-cli 解压成功，开始安装..."
   ./aws/install
+  tip_message "aws-cli 安装成功，删除下载的文件"
   # 删除下载的文件
   rm -rf awscliv2.zip aws
   # 根据提示添加密钥和区域
