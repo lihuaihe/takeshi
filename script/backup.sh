@@ -63,8 +63,8 @@ fi
 CURRENT_USER=$(id -un)
 
 cd ..
-sudo mkdir -p backup
-sudo chown -R "$CURRENT_USER:$CURRENT_USER" backup
+mkdir -p backup
+chown -R "$CURRENT_USER:$CURRENT_USER" backup
 cd backup
 mkdir -p mysql
 BACKUP_DIR=$(pwd)
@@ -75,10 +75,10 @@ tip_message "备份的jar日志目录是： $CRT_DIR/logs"
 # 检测是否已安装 aws-cli
 if ! command -v aws &> /dev/null; then
   # aws-cli 未安装，执行安装命令
-  sudo yum remove -y awscli
+  yum remove -y awscli
   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
   unzip -u awscliv2.zip
-  sudo ./aws/install
+  ./aws/install
   # 删除下载的文件
   rm -rf awscliv2.zip aws
   # 根据提示添加密钥和区域
