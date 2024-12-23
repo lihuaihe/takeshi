@@ -84,7 +84,7 @@ if ! command -v aws &> /dev/null; then
   # 删除下载的文件
   rm -rf awscliv2.zip aws
   # 根据提示添加密钥和区域
-  aws --verison
+  aws --version
   aws configure
 fi
 AWS_PATH=$(which aws)
