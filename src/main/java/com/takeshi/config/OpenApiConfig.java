@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
 import com.takeshi.constants.TakeshiCode;
+import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.pojo.bo.RetBO;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverter;
@@ -17,9 +18,9 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.DateSchema;
-import io.swagger.v3.oas.models.media.DateTimeSchema;
+import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -91,54 +92,57 @@ public class OpenApiConfig {
             Class<?> clazz = javaType.getRawClass();
             if (clazz == Long.class || clazz == Double.class || clazz == Float.class || clazz == BigDecimal.class || clazz == BigInteger.class) {
                 type.setType(String.class);
-                return chain.next().resolve(type, context, chain);
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample("0");
+                }
+                return schema;
+            } else if (clazz == Byte.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                // 使用新的Schema替换原来的，否则example不生效
+                return new IntegerSchema().description(schema.getDescription()).example(0).minimum(new BigDecimal("-128")).maximum(new BigDecimal("127"));
+            } else if (clazz == Date.class || clazz == LocalDateTime.class) {
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                // 使用新的Schema替换原来的，否则example不生效
+                return new StringSchema().description(schema.getDescription()).example(LocalDateTime.now().format(TakeshiDatePattern.NORM_DATETIME_FORMATTER));
             } else if (clazz == LocalTime.class) {
                 type.setType(String.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 if (!schema.getExampleSetFlag()) {
                     schema.setFormat("time");
-                    schema.setExample("01:02:03");
+                    schema.setExample(LocalTime.now().withNano(0));
                 }
                 return schema;
             } else if (clazz == Year.class) {
+                type.setType(Integer.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 if (!schema.getExampleSetFlag()) {
-                    schema.setExample("2024");
+                    schema.setExample(Year.now());
                 }
                 return schema;
             } else if (clazz == YearMonth.class) {
+                type.setType(String.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 if (!schema.getExampleSetFlag()) {
-                    schema.setExample("2024-01");
+                    schema.setExample(YearMonth.now());
                 }
                 return schema;
             } else if (clazz == MonthDay.class) {
+                type.setType(String.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 if (!schema.getExampleSetFlag()) {
-                    schema.setExample("--01-01");
+                    schema.setExample(MonthDay.now());
                 }
                 return schema;
             } else if (clazz == OffsetTime.class) {
+                type.setType(String.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 if (!schema.getExampleSetFlag()) {
-                    schema.setExample("10:15:30+01:00");
+                    schema.setExample(OffsetTime.now().withNano(0));
                 }
                 return schema;
             }
-            if (chain.hasNext()) {
-                Schema<?> schema = chain.next().resolve(type, context, chain);
-                if (schema instanceof DateSchema) {
-                    if (!schema.getExampleSetFlag()) {
-                        schema.setExample("2024-01-01");
-                    }
-                } else if (schema instanceof DateTimeSchema) {
-                    if (!schema.getExampleSetFlag()) {
-                        schema.setExample("2024-01-01T00:00:00.000Z");
-                    }
-                }
-                return schema;
-            }
-            return null;
+            return chain.hasNext() ? chain.next().resolve(type, context, chain) : null;
         }
 
     }
@@ -234,14 +238,6 @@ public class OpenApiConfig {
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
             retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage())));
-            // boolean passToken = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
-            //                             .or(() -> Optional.ofNullable(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class)))
-            //                             .map(annotation -> annotation.all() || annotation.token())
-            //                             .orElse(false);
-            // if (!passToken) {
-            //     // Knife4j需要的全局添加鉴权参数
-            //     operation.addSecurityItem(new SecurityRequirement().addList(saTokenConfig.getTokenName()));
-            // }
             return operation;
         };
     }
