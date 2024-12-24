@@ -62,7 +62,7 @@ import java.util.*;
  * @author 七濑武【Nanase Takeshi】
  */
 @AutoConfiguration(value = "openApiConfig")
-@ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class OpenApiConfig {
 
