@@ -1,8 +1,7 @@
 # 项目框架说明
 
-<span style="color: brown;">如果需要在文档中展示自定义的一些项目约定信息，可以在`resources/static`目录下创建一个
-`rdoc-project.md`
-文件</span>
+- <span style="color: brown;"> 如果需要给接口增加开发者姓名，可以在方法上使用`@ApiSupport`注解 </span>
+- <span style="color: brown;"> 如果需要在文档中展示自定义的一些项目约定信息，可以在`resources/static`目录下创建一个`rdoc-project.md`文件 </span>
 
 ### header中传递参数：
 
