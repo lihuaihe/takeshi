@@ -2,12 +2,13 @@ package com.takeshi.config;
 
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ClassUtil;
-import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.ReflectUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.*;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
+import com.takeshi.annotation.ApiSupport;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.pojo.bo.RetBO;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springdoc.core.customizers.SpringDocCustomizers;
 import org.springdoc.core.models.GroupedOpenApi;
@@ -56,6 +58,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * OpenApiConfig
@@ -177,7 +181,13 @@ public class OpenApiConfig {
         });
         return groupMap.entrySet()
                        .stream()
-                       .map(item -> GroupedOpenApi.builder().group(item.getKey()).pathsToMatch(item.getValue().toArray(String[]::new)).build()).toList();
+                       .map(item ->
+                                    GroupedOpenApi.builder()
+                                                  .group(item.getKey())
+                                                  .pathsToMatch(item.getValue().toArray(String[]::new))
+                                                  .build()
+                       )
+                       .toList();
     }
 
     /**
@@ -211,12 +221,33 @@ public class OpenApiConfig {
     }
 
     /**
-     * 自定义
+     * 全局OpenApiCustomizer
+     *
+     * @return GlobalOpenApiCustomizer
+     */
+    @Bean
+    public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
+        return openApi -> {
+            if (CollUtil.isNotEmpty(openApi.getTags())) {
+                // 只有@Tag注解的description有值时getTags才不会为空
+                openApi.getTags().forEach(tag -> {
+                    // 设置标签默认折叠
+                    tag.addExtension("x-tag-expanded", false);
+                });
+            }
+        };
+    }
+
+    /**
+     * 全局OperationCustomizer
      *
      * @return GlobalOperationCustomizer
      */
     @Bean
     public GlobalOperationCustomizer globalOperationCustomizer() {
+        String[] colors = new String[]{"red", "pink", "green", "blue", "orange", "yellow", "purple", "brown", "primary-color"};
+        Map<String, String> authorColorMap = new ConcurrentHashMap<>();
+        AtomicInteger colorIndex = new AtomicInteger();
         // 查询TakeshiCode子类集合
         Set<Class<?>> classSet = new HashSet<>();
         classSet.add(TakeshiCode.class);
@@ -235,6 +266,19 @@ public class OpenApiConfig {
                                         })
                                         .toList();
         return (operation, handlerMethod) -> {
+            ApiSupport apiSupport = handlerMethod.getMethodAnnotation(ApiSupport.class);
+            if (ObjUtil.isNotNull(apiSupport)) {
+                // 添加接口开发者名字
+                String[] authors = ArrayUtil.defaultIfEmpty(apiSupport.authors(), new String[]{apiSupport.author()});
+                List<JSONObject> list = Arrays.stream(authors)
+                                              .map(author -> {
+                                                  String color = authorColorMap.putIfAbsent(author, colors[colorIndex.get() % colors.length]);
+                                                  colorIndex.incrementAndGet();
+                                                  return JSONUtil.createObj().set("color", color).set("label", author);
+                                              })
+                                              .toList();
+                operation.addExtension("x-badges", list);
+            }
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
             retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage())));
@@ -243,7 +287,7 @@ public class OpenApiConfig {
     }
 
     /**
-     * 自定义配置
+     * 自定义OpenAPI
      *
      * @return OpenAPI
      */
@@ -251,11 +295,10 @@ public class OpenApiConfig {
     public OpenAPI customOpenApi() {
         String tokenName = saTokenConfig.getTokenName();
         Info info = new Info()
-                .description("七濑武【Nanase Takeshi】通用框架接口")
+                .description(ResourceUtil.readUtf8Str("takeshi-markdown/takeshi.md"))
                 .contact(new Contact().name("七濑武【Nanase Takeshi】").email("takeshi@725.life").url("https://github.com/lihuaihe/takeshi"));
         if (StrUtil.isNotBlank(applicationName)) {
-            info.title(applicationName)
-                .description(applicationName + "通用框架接口");
+            info.title(applicationName);
         }
         SecurityScheme securityScheme = new SecurityScheme()
                 .name(tokenName)

@@ -14,12 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.exceptions.IbatisException;
 import org.redisson.client.RedisException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -102,6 +104,18 @@ public class GlobalExceptionHandler {
     public ResponseData<?> noSuchElementException(NoSuchElementException noSuchElementException) {
         log.error("GlobalExceptionHandler.noSuchElementException --> NoSuchElementException: ", noSuchElementException);
         return ResponseData.retData(TakeshiCode.RESOURCE_DOES_NOT_EXIST);
+    }
+
+    /**
+     * 请求的接口路径或静态资源不存在异常处理
+     *
+     * @param noResourceFoundException 异常
+     * @return {@link ResponseData}
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<?> noSuchElementException(NoResourceFoundException noResourceFoundException) {
+        log.error("GlobalExceptionHandler.noSuchElementException --> noResourceFoundException: ", noResourceFoundException);
+        return ResponseEntity.notFound().build();
     }
 
     /**

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <script>
+        const prefixUrl = 'v3/api-docs/';
+        // fetch请求会缓存，修改文件后需要强制刷新才会显示修改后的内容
+        const configPromise = fetch(prefixUrl + 'swagger-config').then(res => res.json());
+        const mdPromise = fetch('rdoc-project.md').then(res => res.text());
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const versionSelectorEl = document.getElementById('version-selector');
+            let overviewEl = document.getElementById('overview');
+            const rdocEl = document.getElementById('rdoc');
+            rdocEl.addEventListener('before-render', (e) => {
+                rdocEl.setAttribute('nav-active-item-marker', 'colored-block')
+            });
+            rdocEl.addEventListener('spec-loaded', (e) => {
+                document.title = e.detail.info.title;
+            })
+            Promise.all([configPromise, mdPromise])
+                .then(([config, md]) => {
+                    if (config) {
+                        config.urls.forEach(res => {
+                            let optionEl = document.createElement('option');
+                            optionEl.value = res.name;
+                            optionEl.textContent = res.name;
+                            versionSelectorEl.appendChild(optionEl);
+                        });
+                        rdocEl.setAttribute("spec-url", prefixUrl + versionSelectorEl.value);
+                        versionSelectorEl.addEventListener('change', (event) => {
+                            const selectedVersion = event.target.value;
+                            rdocEl.setAttribute('spec-url', prefixUrl + selectedVersion);
+                        });
+                        versionSelectorEl.removeAttribute('hidden');
+                    }
+                    if (md) {
+                        overviewEl.innerHTML = marked.parse(md);
+                        overviewEl.removeAttribute('hidden');
+                    }
+                })
+                .catch(e => console.log(e));
+        });
+    </script>
+    <style>
+        #version-selector {
+            width: 86%;
+            margin: 10px auto 0 auto;
+            padding: 5px;
+            border: 1px solid #5472b1;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+
+        #overview {
+            margin-top: 25px;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<rapi-doc
+        id="rdoc"
+        render-style="focused"
+        show-header="false"
+        schema-style="table"
+        info-description-headings-in-navbar="true"
+        show-method-in-nav-bar="as-colored-block"
+        nav-item-spacing="relaxed"
+        allow-server-selection="false"
+        primary-color="#3B5998"
+>
+    <select slot="nav-logo" id="version-selector" hidden></select>
+    <div slot="overview" id="overview" hidden></div>
+</rapi-doc>
+</body>
+</html>

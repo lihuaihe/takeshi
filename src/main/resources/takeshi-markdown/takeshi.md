@@ -1,6 +1,10 @@
-> 七濑武【Nanase Takeshi】的项目框架说明
+# 项目框架说明
 
-header中传递参数：
+<span style="color: brown;">如果需要在文档中展示自定义的一些项目约定信息，可以在`resources/static`目录下创建一个
+`rdoc-project.md`
+文件</span>
+
+### header中传递参数：
 
 - 国际化消息(接口返回值中的message语言):
     - `Accept-Language`
@@ -8,9 +12,9 @@ header中传递参数：
         - `zh-CN`(返回中文)
 - 必传参数:
     - `x-timestamp`：调用接口的时间戳，13位的毫秒级时间戳
-    - `x-timezone`：当前设备所在的时区 (Asia/Shanghai)
+    - `x-timezone`：当前设备所在的时区 (例如：`Asia/Shanghai`)
     - `User-Agent`：当前项目名/当前APP版本号 (当前设备名 当前设备系统版本; 系统时区)
-        - 例如：`takeshi`是应用名称，版本号是1.0.0，设备名是iPhone 14 pro，系统版本是16.0，时区是Asia/Shanghai
+        - 例如：`takeshi`是应用名称，应用版本号是1.0.0，设备名是iPhone 14 pro，系统版本是16.0，时区是Asia/Shanghai
             - takeshi/1.0.0 (iPhone 14 pro v16.0; Asia/Shanghai)
             - takeshi/1.0.0 (iPad mini v16.0; Asia/Shanghai)
             - takeshi/1.0.0 (Android v8.5; Asia/Shanghai)
@@ -37,7 +41,7 @@ header中传递参数：
     - `x-geo-point`：设备经纬度json字符串
         - {"lon":1.0, "lat":2.0}
 
-参数和接口返回值加解密(看后台系统是否开启了加解密)
+### 参数和接口返回值加解密(看后台系统是否开启了加解密)
 
 - 【加密】传递参数时，如果请求的接口是POST且是`Content-type: application/json`的参数，需要使用RSA算法进行公钥加密参数
 - 【解密】获取接口返回值时，如果返回值字段`data`有值，则需要使用RSA算法进行公钥解密`data`值

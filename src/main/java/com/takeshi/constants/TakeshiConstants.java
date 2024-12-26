@@ -20,7 +20,7 @@ public interface TakeshiConstants {
     /**
      * 需要排除的页面路径
      */
-    String[] EXCLUDE_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error"};
+    String[] EXCLUDE_URL = {"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/swagger-config/**", "/webjars/**", "/v3/api-docs/**", "/doc.html", "/favicon.ico", "/error", "/rdoc-project.md"};
 
     /**
      * 版本号校验正则

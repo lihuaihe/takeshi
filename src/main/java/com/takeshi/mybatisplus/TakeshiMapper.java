@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 /**
  * 扩展的 mybatis-plus mapper 层接口
  * <pre>{@code
- * 自定义多表关联分页查询，在mapper层新建一个方法
- * //示例：
- * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
+ * // 自定义多表关联分页查询，在mapper层新建一个方法
+ * // 示例：
+ * // @Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
  * TakeshiPage<T> pageList(TakeshiPage<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
  * }
  * </pre>
