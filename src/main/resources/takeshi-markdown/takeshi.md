@@ -1,6 +1,7 @@
 # 项目框架说明
 
 - <span style="color: brown;"> 如果需要给接口增加开发者姓名，可以在方法上使用`@ApiSupport`注解 </span>
+- <span style="color: brown;"> 如果需要在打开文档时默认折叠标签下的接口，则需要在对应的`@Tag`接口上将`description`属性值填写一下即可 </span>
 - <span style="color: brown;"> 如果需要在文档中展示自定义的一些项目约定信息，可以在`resources/static`目录下创建一个`rdoc-project.md`文件 </span>
 
 ### header中传递参数：
