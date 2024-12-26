@@ -10,6 +10,7 @@
     <script>
         const prefixUrl = 'v3/api-docs/';
         // fetch请求会缓存，修改文件后需要强制刷新才会显示修改后的内容
+        // 如果禁用了springdoc.swagger-ui.enabled，则接口/swagger-config请求不通
         const configPromise = fetch(prefixUrl + 'swagger-config').then(res => res.json());
         const mdPromise = fetch('rdoc-project.md').then(res => res.text());
         window.addEventListener('DOMContentLoaded', (event) => {
