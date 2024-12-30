@@ -9,42 +9,137 @@
     <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
     <script>
         const prefixUrl = 'v3/api-docs/';
-        // fetch请求会缓存，修改文件后需要强制刷新才会显示修改后的内容
+        // fetch请求会缓存，修改文件后有时需要强制刷新才会显示修改后的内容
         // 如果禁用了springdoc.swagger-ui.enabled，则接口/swagger-config请求不通
         const configPromise = fetch(prefixUrl + 'swagger-config').then(res => res.json());
-        const mdPromise = fetch('rdoc-project.md').then(res => res.text());
+        const mdPromise = fetch('rdoc-project.md').then(res => {
+            if (res.ok) {
+                return res.text();
+            }
+        });
         window.addEventListener('DOMContentLoaded', (event) => {
             const versionSelectorEl = document.getElementById('version-selector');
             let overviewEl = document.getElementById('overview');
             const rdocEl = document.getElementById('rdoc');
             rdocEl.addEventListener('before-render', (e) => {
+                document.title = e.detail.spec.info.title;
                 rdocEl.setAttribute('nav-active-item-marker', 'colored-block')
             });
             rdocEl.addEventListener('spec-loaded', (e) => {
-                document.title = e.detail.info.title;
+                let rdocShadowRoot = document.querySelector('rapi-doc').shadowRoot;
+                addChangResponseStyleBt(rdocShadowRoot);
+                rdocShadowRoot.querySelectorAll('[part*="section-navbar-path"]')
+                    .forEach(el => {
+                        el.addEventListener('click', (e) => {
+                            addChangResponseStyleBt(rdocShadowRoot);
+                        })
+                    });
             })
-            Promise.all([configPromise, mdPromise])
-                .then(([config, md]) => {
-                    if (config) {
-                        config.urls.forEach(res => {
-                            let optionEl = document.createElement('option');
-                            optionEl.value = res.name;
-                            optionEl.textContent = res.name;
-                            versionSelectorEl.appendChild(optionEl);
-                        });
-                        rdocEl.setAttribute("spec-url", prefixUrl + versionSelectorEl.value);
-                        versionSelectorEl.addEventListener('change', (event) => {
-                            const selectedVersion = event.target.value;
-                            rdocEl.setAttribute('spec-url', prefixUrl + selectedVersion);
-                        });
-                        versionSelectorEl.removeAttribute('hidden');
+
+            async function addChangResponseStyleBt(rdocShadowRoot) {
+                const startTime = Date.now();
+                let apiResponseEl;
+                while (!apiResponseEl) {
+                    apiResponseEl = rdocShadowRoot.querySelector('api-response');
+                    if (Date.now() - startTime > 2000) {
+                        return;
                     }
-                    if (md) {
-                        overviewEl.innerHTML = marked.parse(md);
-                        overviewEl.removeAttribute('hidden');
+                    if (apiResponseEl) {
+                        let shadowRoot = apiResponseEl.shadowRoot;
+                        let responseBtEl = shadowRoot.getElementById('response-bt');
+                        if (responseBtEl) {
+                            responseBtEl.textContent = 'ROW';
+                            responseBtEl.parentElement.nextElementSibling.style.display = 'block';
+                            responseBtEl.parentElement.parentElement.lastElementChild.style.display = 'none';
+                        } else {
+                            let styleElement = document.createElement('style');
+                            styleElement.textContent = `
+                              #response-col .res-code-msg {
+                                display: flex;
+                                align-items: center;
+                              }
+                              #response-col .res-code-msg p:first-of-type {
+                                margin-right: 10px;
+                              }
+                              #response-col .res-code-msg p {
+                                margin-block-end: 0.5em;
+                              }
+                            `;
+                            shadowRoot.appendChild(styleElement);
+                            let resPanelEl = shadowRoot.firstElementChild;
+                            let responseEl = resPanelEl.firstElementChild;
+                            responseEl.style.display = 'flex';
+                            responseEl.style.justifyContent = 'space-between';
+
+                            let bt = document.createElement('button');
+                            bt.id = 'response-bt';
+                            bt.classList.add('m-btn', 'primary', 'thin-border');
+                            bt.textContent = 'ROW'
+                            responseEl.appendChild(bt);
+
+                            let el = resPanelEl.lastElementChild;
+
+                            let newDiv = document.createElement('div');
+                            newDiv.style.display = 'none';
+                            newDiv.id = 'response-col';
+                            let codeArray = el.firstElementChild.children;
+                            let msgArray = el.children;
+                            for (let i = 0; i < codeArray.length; i++) {
+                                let divEl = document.createElement('div');
+                                divEl.classList.add('res-code-msg');
+                                let p1 = document.createElement('p');
+                                p1.textContent = codeArray[i].textContent;
+                                divEl.appendChild(p1);
+                                let p2 = document.createElement('p');
+                                p2.textContent = msgArray[i + 1].firstElementChild.querySelector('p').textContent;
+                                divEl.appendChild(p2);
+                                newDiv.appendChild(divEl);
+                            }
+                            resPanelEl.appendChild(newDiv);
+
+                            bt.addEventListener('click', (e) => {
+                                if (e.target.textContent === 'ROW') {
+                                    // 隐藏col的样式
+                                    el.style.display = 'none';
+                                    // 显示row的样式
+                                    newDiv.style.display = 'block';
+                                    e.target.textContent = 'COL';
+                                } else {
+                                    // 显示col的样式
+                                    el.style.display = 'block';
+                                    // 隐藏row的样式
+                                    newDiv.style.display = 'none';
+                                    e.target.textContent = 'ROW';
+                                }
+                            });
+                        }
                     }
-                })
-                .catch(e => console.log(e));
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            }
+
+            configPromise.then(config => {
+                if (config) {
+                    config.urls.forEach(res => {
+                        let optionEl = document.createElement('option');
+                        optionEl.value = res.name;
+                        optionEl.textContent = res.name;
+                        versionSelectorEl.appendChild(optionEl);
+                    });
+                    rdocEl.loadSpec(prefixUrl + versionSelectorEl.value);
+                    versionSelectorEl.addEventListener('change', (event) => {
+                        const selectedVersion = event.target.value;
+                        rdocEl.setAttribute('spec-url', prefixUrl + selectedVersion);
+                    });
+                    versionSelectorEl.removeAttribute('hidden');
+                }
+            }).catch(e => console.log(e));
+            mdPromise.then((md) => {
+                if (md) {
+                    overviewEl.innerHTML = marked.parse(md);
+                    overviewEl.removeAttribute('hidden');
+                }
+            }).catch(e => console.log(e));
         });
     </script>
     <style>
