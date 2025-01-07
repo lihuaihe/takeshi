@@ -288,7 +288,7 @@ public class OpenApiConfig {
             }
             // 生成通用响应信息
             ApiResponses apiResponses = operation.getResponses();
-            retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> ObjUtil.defaultIfNull(v, new ApiResponse()).description(retBO.getMessage())));
+            retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> Optional.ofNullable(v).orElse(new ApiResponse()).description(retBO.getMessage())));
             return operation;
         };
     }

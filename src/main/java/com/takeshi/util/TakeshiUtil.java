@@ -392,7 +392,18 @@ public final class TakeshiUtil {
      * @return 分
      */
     public static BigDecimal currencyToCent(BigDecimal decimal) {
-        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointRight(2);
+        return Optional.ofNullable(decimal).orElse(BigDecimal.ZERO).movePointRight(2);
+    }
+
+    /**
+     * 货币分转元
+     *
+     * @param decimal 分
+     * @return 元
+     */
+    public static BigDecimal currencyToYuan(Long decimal) {
+        // 此处的decimal值单位应该是分，一般分转成元，分应该没有小数点
+        return Optional.ofNullable(decimal).map(BigDecimal::valueOf).orElse(BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
     }
 
     /**
@@ -403,7 +414,7 @@ public final class TakeshiUtil {
      */
     public static BigDecimal currencyToYuan(BigDecimal decimal) {
         // 此处的decimal值单位应该是分，一般分转成元，分应该没有小数点
-        return ObjUtil.defaultIfNull(decimal, BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
+        return Optional.ofNullable(decimal).orElse(BigDecimal.ZERO).movePointLeft(2).setScale(2, RoundingMode.UNNECESSARY);
     }
 
     /**

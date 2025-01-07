@@ -2,7 +2,6 @@ package com.takeshi.util;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.lang.Range;
-import cn.hutool.core.util.ObjUtil;
 import com.takeshi.constants.TakeshiDatePattern;
 
 import java.io.Serial;
@@ -13,6 +12,7 @@ import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -127,7 +127,7 @@ public final class ZonedDateTimeUtil {
      * @return ZonedDateTime
      */
     public static ZonedDateTime ofInstant(Instant instant, TimeZone timeZone) {
-        return ofInstant(instant, ObjUtil.defaultIfNull(timeZone, TimeZone::getDefault).toZoneId());
+        return ofInstant(instant, Optional.ofNullable(timeZone).map(TimeZone::toZoneId).orElse(ZoneId.systemDefault()));
     }
 
     /**
