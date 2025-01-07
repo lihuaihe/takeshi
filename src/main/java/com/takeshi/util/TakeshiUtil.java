@@ -409,7 +409,7 @@ public final class TakeshiUtil {
     /**
      * 使用MySQL中的地球半径，单位：米
      */
-    private static final double EARTH_RADIUS = 6370986D;
+    private static final double EARTH_RADIUS = 6370986.0D;
 
     /**
      * 判断给定的经纬度坐标是否在指定半径范围内。
@@ -424,14 +424,14 @@ public final class TakeshiUtil {
         if (sourcePoint == null || targetPoint == null) {
             throw new IllegalArgumentException("Coordinate points cannot be null");
         }
-        double dLon = (targetPoint.getLon() - sourcePoint.getLon()) * Math.PI / 180;
-        double dLat = (targetPoint.getLat() - sourcePoint.getLat()) * Math.PI / 180;
-        double sourceLat = sourcePoint.getLat() * Math.PI / 180;
-        double targetLat = targetPoint.getLat() * Math.PI / 180;
+        double dLon = (targetPoint.getLon() - sourcePoint.getLon()) * Math.PI / 180.0;
+        double dLat = (targetPoint.getLat() - sourcePoint.getLat()) * Math.PI / 180.0;
+        double sourceLat = sourcePoint.getLat() * Math.PI / 180.0;
+        double targetLat = targetPoint.getLat() * Math.PI / 180.0;
         // Haversine 公式
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(sourceLat) * Math.cos(targetLat);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double a = Math.sin(dLat / 2.0) * Math.sin(dLat / 2.0) +
+                Math.sin(dLon / 2.0) * Math.sin(dLon / 2.0) * Math.cos(sourceLat) * Math.cos(targetLat);
+        double c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
         // 返回两点之间的距离，单位为米
         double distance = EARTH_RADIUS * c;
         return distance <= radius;

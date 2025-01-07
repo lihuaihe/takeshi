@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.takeshi.mybatisplus.typehandler.GeoPointTypeHandler;
 import com.takeshi.mybatisplus.typehandler.LocaleTypeHandler;
 import com.takeshi.mybatisplus.typehandler.TakeshiInstantTypeHandler;
+import com.takeshi.mybatisplus.typehandler.ZoneIdTypeHandler;
 import com.takeshi.util.GsonUtil;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -80,6 +81,7 @@ public class MybatisPlusConfig {
             typeHandlerRegistry.register(TakeshiInstantTypeHandler.class);
             typeHandlerRegistry.register(GeoPointTypeHandler.class);
             typeHandlerRegistry.register(LocaleTypeHandler.class);
+            typeHandlerRegistry.register(ZoneIdTypeHandler.class);
         };
     }
 
