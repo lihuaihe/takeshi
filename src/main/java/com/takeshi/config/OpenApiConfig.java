@@ -145,6 +145,13 @@ public class OpenApiConfig {
                     schema.setExample(OffsetTime.now().withNano(0));
                 }
                 return schema;
+            } else if (clazz == ZoneId.class) {
+                type.setType(String.class);
+                Schema<?> schema = chain.next().resolve(type, context, chain);
+                if (!schema.getExampleSetFlag()) {
+                    schema.setExample(ZoneId.systemDefault());
+                }
+                return schema;
             }
             return chain.hasNext() ? chain.next().resolve(type, context, chain) : null;
         }
