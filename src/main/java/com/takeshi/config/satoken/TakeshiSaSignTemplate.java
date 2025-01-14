@@ -11,12 +11,12 @@ import cn.hutool.core.map.MapUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takeshi.config.security.TakeshiHttpRequestWrapper;
 import com.takeshi.constants.RequestConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -237,8 +237,9 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     @SneakyThrows
     private Map<String, String> getAllParamMap(SaRequest request) {
         Map<String, String> paramMap = new HashMap<>(request.getParamMap());
-        if (!HttpMethod.GET.matches(request.getMethod()) && request.getSource() instanceof TakeshiHttpRequestWrapper takeshiHttpRequestWrapper) {
-            JsonNode jsonNode = objectMapper.readTree(takeshiHttpRequestWrapper.getInputStream());
+        if (!HttpMethod.GET.matches(request.getMethod())
+                && request.getSource() instanceof ContentCachingRequestWrapper contentCachingRequestWrapper) {
+            JsonNode jsonNode = objectMapper.readTree(contentCachingRequestWrapper.getContentAsByteArray());
             if (!jsonNode.isNull()) {
                 if (jsonNode.isObject()) {
                     Map<String, String> map = objectMapper.convertValue(jsonNode, new TypeReference<>() {

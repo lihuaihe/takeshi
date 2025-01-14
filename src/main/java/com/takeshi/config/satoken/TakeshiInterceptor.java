@@ -34,7 +34,6 @@ import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.bo.IpBlackInfoBO;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.GsonUtil;
-import com.takeshi.util.TakeshiUtil;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -49,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -147,8 +147,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             Map<String, String> urlParam = JakartaServletUtil.getParamMap(request);
             Map<String, String> multipart = null;
             Object bodyObject = null;
-            if (HttpMethod.POST.matches(request.getMethod())
-                    && request instanceof StandardMultipartHttpServletRequest multipartRequest) {
+            if (request instanceof StandardMultipartHttpServletRequest multipartRequest) {
                 MultiValueMap<String, MultipartFile> multiFileMap = multipartRequest.getMultiFileMap();
                 multipart = multiFileMap.entrySet()
                                         .stream()
@@ -161,7 +160,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                  )
                                         );
             } else if (!HttpMethod.GET.matches(request.getMethod())) {
-                JsonNode jsonNode = objectMapper.readTree(request.getInputStream());
+                JsonNode jsonNode = objectMapper.readTree(((ContentCachingRequestWrapper) request).getContentAsByteArray());
                 if (!jsonNode.isNull()) {
                     if (jsonNode.isObject()) {
                         bodyObject = objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {

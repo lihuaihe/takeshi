@@ -26,6 +26,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -75,7 +77,7 @@ public class TakeshiFilter implements Filter {
                 if (standardServletMultipartResolver.isMultipart(httpServletRequest)) {
                     takeshiHttpRequestWrapper = standardServletMultipartResolver.resolveMultipart(httpServletRequest);
                 } else {
-                    takeshiHttpRequestWrapper = new TakeshiHttpRequestWrapper(httpServletRequest);
+                    takeshiHttpRequestWrapper = new ContentCachingRequestWrapper(httpServletRequest);
                 }
                 String clientIp = TakeshiUtil.getClientIp(takeshiHttpRequestWrapper);
                 takeshiHttpRequestWrapper.setAttribute(RequestConstants.CLIENT_IP, clientIp);
@@ -97,20 +99,17 @@ public class TakeshiFilter implements Filter {
                 map.put("Header Timestamp", takeshiHttpRequestWrapper.getHeader(RequestConstants.Header.TIMESTAMP));
                 map.put("Header Nonce", takeshiHttpRequestWrapper.getHeader(RequestConstants.Header.NONCE));
                 log.info("TakeshiFilter.doFilter --> Request Start: {}", GsonUtil.toJson(map));
-                TakeshiHttpResponseWrapper takeshiHttpResponseWrapper = new TakeshiHttpResponseWrapper(httpServletResponse);
+
+                ContentCachingResponseWrapper contentCachingResponseWrapper = new ContentCachingResponseWrapper(httpServletResponse);
                 // 执行过滤器
-                chain.doFilter(takeshiHttpRequestWrapper, takeshiHttpResponseWrapper);
-                // 获取 takeshiHttpResponseWrapper 的返回值
-                byte[] bytes = takeshiHttpResponseWrapper.getResponseData();
+                chain.doFilter(takeshiHttpRequestWrapper, contentCachingResponseWrapper);
+                // 获取 contentCachingResponseWrapper 的返回值
+                byte[] bytes = contentCachingResponseWrapper.getContentAsByteArray();
                 String responseData = StrUtil.str(bytes, StandardCharsets.UTF_8);
                 if (enableResponseDataLog) {
                     log.info("Response Data: {}", responseData);
                 }
-                // 将响应内容写回到原始的 HttpServletResponse 中
-                try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
-                    outputStream.write(bytes);
-                    outputStream.flush();
-                }
+                contentCachingResponseWrapper.copyBodyToResponse();
                 stopWatch.stop();
                 long totalTimeMillis = stopWatch.getTotalTimeMillis();
                 log.info("End Of Response, Time Consuming: {} ms", totalTimeMillis);

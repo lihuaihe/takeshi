@@ -149,7 +149,7 @@ public class AwsConfig {
                                                                           .corsRules(
                                                                                   CORSRule.builder()
                                                                                           .allowedHeaders("*")
-                                                                                          .allowedMethods("GET", "HEAD")
+                                                                                          .allowedMethods("GET", "PUT", "HEAD")
                                                                                           .allowedOrigins("*")
                                                                                           .exposeHeaders("ETag", "x-amz-meta-custom-header")
                                                                                           .maxAgeSeconds(3000)
