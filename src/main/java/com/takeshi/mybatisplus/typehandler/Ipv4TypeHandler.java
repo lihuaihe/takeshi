@@ -2,9 +2,13 @@ package com.takeshi.mybatisplus.typehandler;
 
 import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.ObjUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,12 +24,20 @@ import java.sql.SQLException;
  *
  * @author 七濑武【Nanase Takeshi】
  */
+@Slf4j
 public class Ipv4TypeHandler extends BaseTypeHandler<String> {
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType)
             throws SQLException {
-        ps.setLong(i, Ipv4Util.ipv4ToLong(parameter));
+        try {
+            InetAddress inetAddress = InetAddress.getByName(parameter);
+            if (inetAddress instanceof Inet4Address) {
+                ps.setLong(i, Ipv4Util.ipv4ToLong(parameter));
+            }
+        } catch (UnknownHostException e) {
+            log.error("Ipv4TypeHandler.setNonNullParameter --> e: ", e);
+        }
     }
 
     @Override
