@@ -18,7 +18,9 @@ import com.google.firebase.messaging.*;
 import com.takeshi.config.properties.FirebaseCredentials;
 import com.takeshi.pojo.basic.AbstractBasicSerializable;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -312,8 +314,6 @@ public final class FirebaseUtil {
         @Data
         @Schema
         @Accessors(chain = true)
-        @AllArgsConstructor
-        @NoArgsConstructor
         public static class MessageParams extends AbstractBasicSerializable {
 
             /**
@@ -462,8 +462,6 @@ public final class FirebaseUtil {
         @Data
         @Schema
         @Accessors(chain = true)
-        @AllArgsConstructor
-        @NoArgsConstructor
         public static class MulticastMessageParams extends AbstractBasicSerializable {
 
             /**
