@@ -28,24 +28,27 @@ springdoc:
   default-flat-param-object: true
 
 server:
+  servlet:
+    encoding:
+      force: true
   shutdown: graceful
   max-http-request-header-size: 32KB
   tomcat:
     uri-encoding: UTF-8
 
-knife4j:
-  enable: true
-  documents:
-    - group: default
-      name: 接口说明
-      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
-  setting:
-    language: zh_cn
-    enable-version: true
-    enable-open-api: false
-    enable-footer: false
-    enable-after-script: false
-    enable-dynamic-parameter: true
+#knife4j:
+#  enable: true
+#  documents:
+#    - group: default
+#      name: 接口说明
+#      locations: classpath:takeshi-markdown/**;classpath:markdown/**;
+#  setting:
+#    language: zh_cn
+#    enable-version: true
+#    enable-open-api: false
+#    enable-footer: false
+#    enable-after-script: false
+#    enable-dynamic-parameter: true
 
 logging:
   file:
@@ -91,3 +94,5 @@ sa-token:
   is-read-cookie: false
   # 是否尝试从请求体里读取token
   is-read-body: false
+  # 是否在登录后将 token 写入到响应头
+  is-write-header: true

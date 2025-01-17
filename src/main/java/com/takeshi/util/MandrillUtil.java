@@ -334,7 +334,7 @@ public final class MandrillUtil {
      * <br/>
      * 正文中需要使用 img 标签 src="cid:名称"
      * <br/>
-     * 例如：src="cid:logo.png"，name就必须是logo.png
+     * 例如：src="cid:favicon.ico"，name就必须是logo.png
      * <br/>
      * 该名称要与下面代码中的 setName 中的值一值
      *
@@ -360,7 +360,7 @@ public final class MandrillUtil {
      * <br/>
      * src中的名称要与下面代码中的 setName 中的值一值
      * <br/>
-     * 例如：src="cid:logo.png"，imageName就必须是logo.png
+     * 例如：src="cid:favicon.ico"，imageName就必须是logo.png
      *
      * @param inputStream 嵌入的图像文件流
      * @param imageName   cid的名称
@@ -385,7 +385,7 @@ public final class MandrillUtil {
      * <br/>
      * src中的名称要与下面代码中的 setName 中的值一值
      * <br/>
-     * 例如：src="cid:logo.png"，imageName就必须是logo.png
+     * 例如：src="cid:favicon.ico"，imageName就必须是logo.png
      *
      * @param bytes     嵌入的图像文件字节数组
      * @param imageName cid的名称

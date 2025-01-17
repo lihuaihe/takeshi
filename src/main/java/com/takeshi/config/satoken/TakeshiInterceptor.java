@@ -7,7 +7,7 @@ import cn.dev33.satoken.fun.SaParamFunction;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.servlet.model.SaRequestForServlet;
 import cn.dev33.satoken.sign.SaSignUtil;
-import cn.dev33.satoken.strategy.SaStrategy;
+import cn.dev33.satoken.strategy.SaAnnotationStrategy;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.util.ArrayUtil;
@@ -16,10 +16,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,6 +27,7 @@ import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.config.security.CachedBodyHttpServletRequest;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
@@ -39,21 +40,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RRateLimiter;
-import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -145,12 +148,12 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, request.getMethod(), StrUtil.BRACKET_END, methodName));
             ObjectMapper objectMapper = SpringUtil.getBean(ObjectMapper.class);
             Map<String, String> urlParam = JakartaServletUtil.getParamMap(request);
-            Map<String, String> multipart = null;
-            Object bodyObject = null;
-            if (HttpMethod.POST.matches(request.getMethod())
-                    && request instanceof StandardMultipartHttpServletRequest multipartRequest) {
+            Object fileParam = null;
+            JsonNode bodyParam = null;
+            if (request instanceof MultipartHttpServletRequest multipartRequest) {
+                // multipart/form-data方式上传的文件
                 MultiValueMap<String, MultipartFile> multiFileMap = multipartRequest.getMultiFileMap();
-                multipart = multiFileMap.entrySet()
+                fileParam = multiFileMap.entrySet()
                                         .stream()
                                         .collect(Collectors.toMap(
                                                          Map.Entry::getKey,
@@ -160,35 +163,22 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                                        .collect(Collectors.joining(StrUtil.COMMA))
                                                  )
                                         );
-            } else if (!HttpMethod.GET.matches(request.getMethod())) {
-                JsonNode jsonNode = objectMapper.readTree(request.getInputStream());
-                if (!jsonNode.isNull()) {
-                    if (jsonNode.isObject()) {
-                        bodyObject = objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {
-                        });
-                    } else if (jsonNode.isArray()) {
-                        bodyObject = objectMapper.<Collection<Object>>convertValue(jsonNode, new TypeReference<>() {
-                        });
-                    } else if (jsonNode.isTextual()) {
-                        bodyObject = jsonNode.textValue();
-                    } else if (jsonNode.isNumber()) {
-                        bodyObject = jsonNode.numberValue();
-                    } else if (jsonNode.isBoolean()) {
-                        bodyObject = jsonNode.booleanValue();
-                    } else {
-                        bodyObject = jsonNode.toString();
-                    }
-                }
+            } else if (StrUtil.startWithIgnoreCase(request.getContentType(), ContentType.OCTET_STREAM.toString())) {
+                // application/octet-stream方式上传的文件
+                fileParam = DataSizeUtil.format(request.getContentLength());
+            } else if (!HttpMethod.GET.matches(request.getMethod()) && request instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest) {
+                bodyParam = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
             }
             ObjectNode paramObjectNode = objectMapper.createObjectNode();
+            paramObjectNode.put("contentType", request.getContentType());
             if (CollUtil.isNotEmpty(urlParam)) {
                 paramObjectNode.putPOJO("urlParam", urlParam);
             }
-            if (CollUtil.isNotEmpty(multipart)) {
-                paramObjectNode.putPOJO("multipart", multipart);
+            if (ObjUtil.isNotNull(fileParam)) {
+                paramObjectNode.putPOJO("fileParam", fileParam);
             }
-            if (ObjUtil.isNotEmpty(bodyObject)) {
-                paramObjectNode.putPOJO("bodyObject", bodyObject);
+            if (ObjUtil.isNotNull(bodyParam)) {
+                paramObjectNode.set("bodyParam", bodyParam);
             }
             String paramObjectValue = objectMapper.writeValueAsString(paramObjectNode);
             TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
@@ -210,7 +200,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 auth.run(handlerMethod);
             }
             // 注解式鉴权，对角色和权限进行验证，需要实现StpInterface接口
-            SaStrategy.instance.checkMethodAnnotation.accept(method);
+            SaAnnotationStrategy.instance.checkMethodAnnotation.accept(method);
         }
         // 通过验证
         return true;
@@ -269,9 +259,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                           String clientIp, String httpMethod, String requestURI, String ipBlacklistKey) {
         if (ObjUtil.isNotNull(repeatSubmit) && repeatSubmit.ipRateInterval() > 0) {
             // 通过RepeatSubmit注解的值重新设定当前接口的IP限制速率
-            int iRate = repeatSubmit.ipRate();
-            int iRateInterval = repeatSubmit.ipRateInterval();
-            RateIntervalUnit iRateIntervalUnit = repeatSubmit.ipRateIntervalUnit();
+            long iRate = repeatSubmit.ipRate();
+            long iRateInterval = repeatSubmit.ipRateInterval();
             if (openIpBlacklist && redissonClient.getBucket(ipBlacklistKey).isExists()) {
                 // 是黑名单中的IP，禁止访问
                 SaRouter.back(ResponseData.retData(TakeshiCode.BLACK_LIST_RATE_LIMIT));
@@ -279,12 +268,12 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String ipRateLimitKey = TakeshiRedisKeyEnum.IP_RATE_LIMIT.projectKey(clientIp, httpMethod, requestURI);
             RRateLimiter ipRateLimiter = redissonClient.getRateLimiter(ipRateLimitKey);
             // 接口IP限流
-            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, iRateInterval, iRateIntervalUnit);
+            ipRateLimiter.trySetRate(RateType.PER_CLIENT, iRate, Duration.ofMillis(iRateInterval), Duration.ofDays(1));
             // 设置限流器过期时间
             ipRateLimiter.expire(DURATION);
             if (!ipRateLimiter.tryAcquire()) {
                 if (openIpBlacklist) {
-                    IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval, iRateIntervalUnit);
+                    IpBlackInfoBO.IpRate ipBlackInfoIpRate = new IpBlackInfoBO.IpRate(iRate, iRateInterval);
                     // 超过请求次数则将IP加入黑名单内24小时
                     IpBlackInfoBO ipBlackInfoBO = new IpBlackInfoBO(clientIp, httpMethod, requestURI, ipBlackInfoIpRate, Instant.now());
                     redissonClient.getBucket(ipBlacklistKey).set(ipBlackInfoBO, Duration.ofHours(24));
@@ -343,7 +332,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             String repeatSubmitKey = TakeshiRedisKeyEnum.REPEAT_SUBMIT.projectKey(SecureUtil.md5(GsonUtil.toJson(map)));
             RRateLimiter rateLimiter = redissonClient.getRateLimiter(repeatSubmitKey);
             // 限制xx毫秒1次
-            rateLimiter.trySetRate(RateType.PER_CLIENT, 1, rateInterval, repeatSubmit.rateIntervalUnit());
+            rateLimiter.trySetRate(RateType.PER_CLIENT, 1, Duration.ofMillis(rateInterval), Duration.ofHours(1));
             // 设置限流器过期时间
             rateLimiter.expire(DURATION);
             if (!rateLimiter.tryAcquire()) {

@@ -5,7 +5,8 @@ userLanguage='en'
 userRegion='US'
 userTimezone='UTC'
 
-APP_NAME=$2
+#jar包模块名：例如：takeshi-app
+APP_NAME="$2"
 #完整的jar包名称
 JAR_FILE="prod-${APP_NAME}-0.0.1-SNAPSHOT.jar"
 #ApplicationPidFileWriter监听器生成的pid文件

@@ -2,10 +2,7 @@ package com.takeshi.util;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.lang.Singleton;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.LongSerializationPolicy;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.gson.*;
@@ -42,6 +39,7 @@ public final class GsonUtil {
                 .registerTypeAdapter(MonthDay.class, new MonthDayTypeAdapter())
                 .registerTypeAdapter(OffsetTime.class, new OffsetTimeTypeAdapter())
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .setObjectToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER)
                 .create());
     }
 

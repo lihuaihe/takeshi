@@ -4,6 +4,7 @@ import cn.hutool.core.img.Img;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.net.url.UrlBuilder;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -415,8 +416,8 @@ public final class AmazonS3Util {
                 this.fileAcl = AmazonS3Util.getFileAcl();
             }
             // 添加用户自定义元数据
-            // String mainName = FileNameUtil.mainName(fileName);
-            String fileObjKey = getFileObjKey(fileName);
+            String mainName = FileNameUtil.mainName(fileName);
+            String fileObjKey = getFileObjKey(mainName, extension);
             if (mediaType.startsWith("video/") || "image/gif".equals(mediaType)) {
                 if (this.thumbnail || this.duration) {
                     Map<String, String> map = FrameConverterUtil.saveThumbnail(tikaInputStream, fileObjKey, this.fileAcl, mediaType, this.thumbnail, this.duration);
@@ -844,15 +845,14 @@ public final class AmazonS3Util {
     /**
      * 获取文件存储的完整路径（Key）
      *
-     * @param fileName 文件名，例如：test.png
+     * @param mainName  主文件名，例如：test
+     * @param extension 扩展名，例如：.png
      * @return 完整路径
      */
-    public static String getFileObjKey(String fileName) {
+    public static String getFileObjKey(String mainName, String extension) {
         String dateFormat = PATH_DATE_PATTERN_FORMATTER.format(Instant.now());
         String objectId = IdUtil.objectId();
-        if (StrUtil.isBlank(fileName)) {
-            fileName = IdUtil.objectId();
-        }
+        String fileName = mainName + extension;
         return StrUtil.builder(dateFormat, objectId, StrUtil.SLASH, fileName).toString();
     }
 

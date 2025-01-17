@@ -4,8 +4,10 @@ import com.takeshi.constants.TakeshiConstants;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.redisson.spring.cache.CacheConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -66,5 +68,10 @@ public class TakeshiProperties {
      * 是否开启打印响应数据日志
      */
     private boolean enableResponseDataLog = true;
+
+    /**
+     * 注解{@link Cacheable}使用的redisson缓存配置，例如：使用classpath:redisson-cache-config.yml，也可以使用json文件的路径，填写内容参考：{@link CacheConfig}
+     */
+    private String redissonCacheConfigLocation;
 
 }

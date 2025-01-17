@@ -55,7 +55,6 @@ _本库中引入了一堆的依赖，可自行查询使用，下面只列出部�
 |:---------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------|
 | [sa-token](https://sa-token.cc/)                                                                                                       | 一个轻量级 java 权限认证框架，让鉴权变得简单、优雅！                                |
 | [mybatis-plus-boot-starter](https://baomidou.com/)                                                                                     | 为简化开发而生                                                      |
-| [knife4j-openapi3-jakarta-spring-boot-starter](https://doc.xiaominfo.com/)                                                             | 帮助开发者快速聚合使用OpenAPI规范.                                        |
 | [aws-java-sdk-s3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                                  | 对象存储服务，<font color="#FFFF00">需要自行导入包</font>                  |
 | [aws-java-sdk-secretsmanager](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/java_secrets-manager_code_examples.html) | 密钥管理器                                                        |
 | [firebase-admin](https://firebase.google.com/docs/admin/setup?hl=zh-cn)                                                                | 读写 Realtime Database 数据，<font color="#FFFF00">需要自行导入包</font> |
@@ -151,9 +150,10 @@ spring:
 > * 逻辑删除全局值（删除时的当前时间戳，表示已删除）
 > * 逻辑未删除全局值（0，表示未删除）
 
-> knife4j 的配置
-> * 开启Knife4j增强模式
-> * markdown文件路径 `classpath:markdown/*``
+[//]: # (> knife4j 的配置)
+
+[//]: # (> * 开启Knife4j增强模式)
+[//]: # (> * markdown文件路径 `classpath:markdown/*``)
 
 > logging 的配置
 > * 日志存放路径 `./logs/${spring.application.name}`

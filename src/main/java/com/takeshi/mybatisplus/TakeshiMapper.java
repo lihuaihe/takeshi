@@ -2,13 +2,11 @@ package com.takeshi.mybatisplus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
@@ -19,11 +17,8 @@ import com.takeshi.exception.TakeshiException;
 import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
-import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.logging.LogFactory;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,9 +26,9 @@ import java.util.stream.Collectors;
 /**
  * 扩展的 mybatis-plus mapper 层接口
  * <pre>{@code
- * 自定义多表关联分页查询，在mapper层新建一个方法
- * //示例：
- * //@Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
+ * // 自定义多表关联分页查询，在mapper层新建一个方法
+ * // 示例：
+ * // @Select("select ${ew.sqlSelect} from tableName t1 left join tableName t2 on t1.t1_id = t2.t1_id ${ew.customSqlSegment}")
  * TakeshiPage<T> pageList(TakeshiPage<T> page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
  * }
  * </pre>
@@ -349,24 +344,6 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * TableId 注解存在更新记录，否插入一条记录
-     *
-     * @param entity 实体对象
-     * @return boolean
-     */
-    default boolean insertOrUpdate(T entity) {
-        if (null == entity) {
-            return false;
-        }
-        TableInfo tableInfo = TableInfoHelper.getTableInfo(this.getEntityClass());
-        Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!");
-        String keyProperty = tableInfo.getKeyProperty();
-        Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!");
-        Object idVal = tableInfo.getPropertyValue(entity, tableInfo.getKeyProperty());
-        return StringUtils.checkValNull(idVal) || ObjUtil.isNull(this.selectById((Serializable) idVal)) ? SqlHelper.retBool(this.insert(entity)) : SqlHelper.retBool(this.updateById(entity));
-    }
-
-    /**
      * 根据updateWrapper尝试更新，否继续执行saveOrUpdate(T)方法
      * 此次修改主要是减少了此项业务代码的代码量（存在性验证之后的insertOrUpdate操作）
      *
@@ -376,63 +353,6 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      */
     default boolean insertOrUpdate(T entity, Wrapper<T> updateWrapper) {
         return SqlHelper.retBool(this.update(entity, updateWrapper)) || this.insertOrUpdate(entity);
-    }
-
-    /**
-     * 插入数据（批量）
-     *
-     * @param list 实体对象集合
-     * @return boolean
-     */
-    default boolean insertBatch(Collection<T> list) {
-        return this.insertBatch(list, DEFAULT_BATCH_SIZE);
-    }
-
-    /**
-     * 插入数据（批量）
-     *
-     * @param list      实体对象集合
-     * @param batchSize 插入批次数量
-     * @return boolean
-     */
-    default boolean insertBatch(Collection<T> list, int batchSize) {
-        Class<T> entityClass = this.getEntityClass();
-        String sqlStatement = this.getSqlStatement(SqlMethod.INSERT_ONE);
-        return SqlHelper.executeBatch(entityClass, LogFactory.getLog(entityClass), list, batchSize, (sqlSession, entity) -> sqlSession.insert(sqlStatement, entity));
-    }
-
-    /**
-     * TableId 注解存在更新记录，否插入一条记录
-     *
-     * @param entityList 实体对象集合
-     * @return boolean
-     */
-    default boolean insertOrUpdateBatch(Collection<T> entityList) {
-        return this.insertOrUpdateBatch(entityList, DEFAULT_BATCH_SIZE);
-    }
-
-    /**
-     * TableId 注解存在更新记录，否插入一条记录
-     *
-     * @param entityList 实体对象集合
-     * @param batchSize  批次提交数量
-     * @return boolean
-     */
-    default boolean insertOrUpdateBatch(Collection<T> entityList, int batchSize) {
-        Class<T> entityClass = this.getEntityClass();
-        TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
-        Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!");
-        String keyProperty = tableInfo.getKeyProperty();
-        Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!");
-        return SqlHelper.saveOrUpdateBatch(entityClass, this.getMapperClass(), LogFactory.getLog(entityClass), entityList, batchSize, (sqlSession, entity) -> {
-            Object idVal = tableInfo.getPropertyValue(entity, keyProperty);
-            return StringUtils.checkValNull(idVal)
-                    || CollUtil.isEmpty(sqlSession.selectList(this.getSqlStatement(SqlMethod.SELECT_BY_ID), entity));
-        }, (sqlSession, entity) -> {
-            MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
-            param.put(Constants.ENTITY, entity);
-            sqlSession.update(this.getSqlStatement(SqlMethod.UPDATE_BY_ID), param);
-        });
     }
 
     /**
@@ -466,33 +386,6 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
     }
 
     /**
-     * 根据 TableId 批量更新记录
-     *
-     * @param entityList 实体对象集合
-     * @return boolean
-     */
-    default boolean updateBatchById(Collection<T> entityList) {
-        return this.updateBatchById(entityList, DEFAULT_BATCH_SIZE);
-    }
-
-    /**
-     * 根据 TableId 批量更新记录
-     *
-     * @param entityList 实体对象集合
-     * @param batchSize  批次提交数量
-     * @return boolean
-     */
-    default boolean updateBatchById(Collection<T> entityList, int batchSize) {
-        Class<T> entityClass = this.getEntityClass();
-        String sqlStatement = this.getSqlStatement(SqlMethod.UPDATE_BY_ID);
-        return SqlHelper.executeBatch(entityClass, LogFactory.getLog(entityClass), entityList, batchSize, (sqlSession, entity) -> {
-            MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
-            param.put(Constants.ENTITY, entity);
-            sqlSession.update(sqlStatement, param);
-        });
-    }
-
-    /**
      * 获取 entity 的 class
      *
      * @return Class
@@ -511,16 +404,6 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         Class<T> entityClass = this.getEntityClass();
         TableInfo tableInfo = Optional.ofNullable(TableInfoHelper.getTableInfo(entityClass)).orElseThrow(() -> ExceptionUtils.mpe("Can not find TableInfo from Class: \"%s\".", entityClass.getName()));
         return ClassUtils.toClassConfident(tableInfo.getCurrentNamespace());
-    }
-
-    /**
-     * 获取mapperStatementId
-     *
-     * @param sqlMethod MybatisPlus 支持的 SQL 方法
-     * @return sql
-     */
-    default String getSqlStatement(SqlMethod sqlMethod) {
-        return SqlHelper.getSqlStatement(this.getMapperClass(), sqlMethod);
     }
 
 }

@@ -5,7 +5,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.exception.TakeshiException;
-import lombok.SneakyThrows;
 
 /**
  * 全球手机号码工具类
@@ -32,12 +31,15 @@ public final class GlobalPhoneNumberUtil {
      * 测试电话号码是否与有效模式匹配
      *
      * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param number      无区号的电话号码
      * @return boolean
      */
-    @SneakyThrows
     public static boolean isValidNumber(String countryCode, String number) {
-        return instance.isValidNumber(parse(countryCode, number));
+        try {
+            return instance.isValidNumber(parse(countryCode, number));
+        } catch (NumberParseException e) {
+            return false;
+        }
     }
 
     /**
@@ -46,9 +48,12 @@ public final class GlobalPhoneNumberUtil {
      * @param phoneNumber 带区号的电话号码，例如：+8618888888888
      * @return boolean
      */
-    @SneakyThrows
     public static boolean isValidNumber(String phoneNumber) {
-        return instance.isValidNumber(parse(phoneNumber));
+        try {
+            return instance.isValidNumber(parse(phoneNumber));
+        } catch (NumberParseException e) {
+            return false;
+        }
     }
 
     /**
@@ -58,9 +63,12 @@ public final class GlobalPhoneNumberUtil {
      * @param defaultRegion 默认国家区域，例如：CN
      * @return boolean
      */
-    @SneakyThrows
     public static boolean isValidNumberWithRegion(String phoneNumber, String defaultRegion) {
-        return instance.isValidNumber(parseWithRegion(phoneNumber, defaultRegion));
+        try {
+            return instance.isValidNumber(parseWithRegion(phoneNumber, defaultRegion));
+        } catch (NumberParseException e) {
+            return false;
+        }
     }
 
     /**
@@ -77,7 +85,7 @@ public final class GlobalPhoneNumberUtil {
      * 测试电话号码是否与有效模式匹配，不匹配抛出异常
      *
      * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param number      无区号的电话号码
      */
     public static void verifyNumber(String countryCode, String number) {
         try {
@@ -135,29 +143,29 @@ public final class GlobalPhoneNumberUtil {
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
      * @param countryCode 区号，例如：+86
-     * @param number      电话号码
+     * @param number      无区号的电话号码
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String countryCode, String number) throws NumberParseException {
-        return instance.parse(countryCode.concat(number), null);
+        return parse(countryCode + number);
     }
 
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param phoneNumber 带区号的电话号码
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
      */
     public static Phonenumber.PhoneNumber parse(String phoneNumber) throws NumberParseException {
-        return instance.parse(phoneNumber, null);
+        return parseWithRegion(phoneNumber, null);
     }
 
     /**
      * 解析字符串并将其作为原始缓冲区格式的电话号码返回
      *
-     * @param phoneNumber   电话号码，例如：+8618888888888
+     * @param phoneNumber   带区号的电话号码，例如：+8618888888888
      * @param defaultRegion 默认国家区域，例如：CN
      * @return PhoneNumber
      * @throws NumberParseException 数字解析异常
@@ -169,8 +177,19 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 使用E164规则将电话号码格式化为指定格式
      *
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
+     * @return 格式化后的电话号码，例如：+8618888888888
+     * @throws NumberParseException 数字解析异常
+     */
+    public static String formatE164(String phoneNumber) throws NumberParseException {
+        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.E164);
+    }
+
+    /**
+     * 使用E164规则将电话号码格式化为指定格式
+     *
      * @param phoneNumber 电话号码
-     * @return 格式化的电话号码，例如：+8618888888888
+     * @return 格式化后的电话号码，例如：+8618888888888
      */
     public static String formatE164(Phonenumber.PhoneNumber phoneNumber) {
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
@@ -179,8 +198,19 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 使用INTERNATIONAL规则将电话号码格式化为指定格式
      *
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
+     * @return 格式化后的电话号码，例如：+86 188 8888 8888
+     * @throws NumberParseException 数字解析异常
+     */
+    public static String formatInternational(String phoneNumber) throws NumberParseException {
+        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+    }
+
+    /**
+     * 使用INTERNATIONAL规则将电话号码格式化为指定格式
+     *
      * @param phoneNumber 电话号码
-     * @return 格式化的电话号码，例如：+86 188 8888 8888
+     * @return 格式化后的电话号码，例如：+86 188 8888 8888
      */
     public static String formatInternational(Phonenumber.PhoneNumber phoneNumber) {
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
@@ -189,8 +219,19 @@ public final class GlobalPhoneNumberUtil {
     /**
      * 使用NATIONAL规则将电话号码格式化为指定格式
      *
+     * @param phoneNumber 带区号的电话号码，例如：+8618888888888
+     * @return 格式化后的电话号码，例如：188 8888 8888
+     * @throws NumberParseException 数字解析异常
+     */
+    public static String formatNational(String phoneNumber) throws NumberParseException {
+        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
+    }
+
+    /**
+     * 使用NATIONAL规则将电话号码格式化为指定格式
+     *
      * @param phoneNumber 电话号码
-     * @return 格式化的电话号码，例如：188 8888 8888
+     * @return 格式化后的电话号码，例如：188 8888 8888
      */
     public static String formatNational(Phonenumber.PhoneNumber phoneNumber) {
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);

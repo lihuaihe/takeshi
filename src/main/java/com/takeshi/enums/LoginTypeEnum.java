@@ -29,6 +29,10 @@ public enum LoginTypeEnum {
      */
     ALIPAY,
     /**
+     * 小程序登录
+     */
+    MINI_PROGRAM,
+    /**
      * 抖音登录
      */
     TIKTOK,

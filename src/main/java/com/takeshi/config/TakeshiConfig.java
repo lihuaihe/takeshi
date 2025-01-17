@@ -1,6 +1,5 @@
 package com.takeshi.config;
 
-import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,7 +26,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -62,8 +60,6 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class TakeshiConfig {
 
-    private final SaTokenConfig saTokenConfig;
-
     /**
      * 跨域配置
      *
@@ -76,7 +72,6 @@ public class TakeshiConfig {
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addExposedHeader(saTokenConfig.getTokenName());
         corsConfiguration.addExposedHeader(HttpHeaders.CONTENT_DISPOSITION);
         corsConfiguration.addExposedHeader(HttpHeaders.ETAG);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -122,7 +117,7 @@ public class TakeshiConfig {
     /**
      * 统一配置，解决前后端交互大数值类型精度丢失的问题
      *
-     * @param builder builder
+     * @param builder Jackson2ObjectMapperBuilder
      * @return ObjectMapper
      */
     @Bean
@@ -149,6 +144,7 @@ public class TakeshiConfig {
                       .build()
                       .findAndRegisterModules()
                       .registerModule(simpleModule)
+                      // 配置序列化日期时间序列化成字符串而不是时间戳
                       .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
@@ -185,14 +181,17 @@ public class TakeshiConfig {
     /**
      * 配置cache缓存到redis
      *
-     * @param objectMapper objectMapper
-     * @param factory      factory
+     * @param redissonClient redissonClient
+     * @param configLocation configLocation
      * @return CacheManager
      */
     @Bean
     @ConditionalOnMissingBean
-    public CacheManager cacheManager(ObjectMapper objectMapper, RedisConnectionFactory factory) {
-        return TtlRedisCacheManager.defaultInstance(objectMapper, factory);
+    public CacheManager cacheManager(RedissonClient redissonClient, @Value("${takeshi.redisson-cache-config-location:#{null}}") String configLocation) {
+        TtlRedissonCacheManager ttlRedissonCacheManager = new TtlRedissonCacheManager(redissonClient, configLocation);
+        // 禁止缓存NULL值，如果缓存NULL值就跳过
+        ttlRedissonCacheManager.setAllowNullValues(false);
+        return ttlRedissonCacheManager;
     }
 
     /**

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.bo.RetBO;
-import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -16,11 +15,13 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
+ * 接口统一返回值
+ *
  * @author 七濑武【Nanase Takeshi】
  */
 @Data
-@Accessors(chain = true)
 @Schema(description = "接口返回值对象")
+@Accessors(chain = true)
 public class ResponseData<T> implements Serializable {
 
     @Serial
@@ -43,7 +44,7 @@ public class ResponseData<T> implements Serializable {
      */
     @JsonIgnore
     @Schema(hidden = true)
-    private Object[] args;
+    private transient Object[] args;
 
     /**
      * 数据
@@ -108,7 +109,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> fail(String message, Object... args) {
+    public static <T> ResponseData<T> fail(String message, Object[] args) {
         return new ResponseData<>(TakeshiCode.FAIL.getCode(), message, args);
     }
 
@@ -160,7 +161,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>     T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(int code, String message, T data, Object... args) {
+    public static <T> ResponseData<T> retData(int code, String message, T data, Object[] args) {
         return new ResponseData<>(code, message, data, args);
     }
 
@@ -219,7 +220,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>   T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retData(RetBO RetBO, T data, Object... args) {
+    public static <T> ResponseData<T> retData(RetBO RetBO, T data, Object[] args) {
         return new ResponseData<>(RetBO, data, args);
     }
 
@@ -243,7 +244,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>         T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, String failMessage, Object... args) {
+    public static <T> ResponseData<T> retBool(boolean flag, String failMessage, Object[] args) {
         return flag ? success() : fail(failMessage, args);
     }
 
@@ -256,7 +257,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>          T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfFalse, Object... args) {
+    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfFalse, Object[] args) {
         return flag ? success() : retData(retBOOfFalse, args);
     }
 
@@ -283,7 +284,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>          T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object... args) {
+    public static <T> ResponseData<T> retBool(boolean flag, RetBO retBOOfTrue, RetBO retBOOfFalse, Object[] args) {
         return flag ? retData(retBOOfTrue, args) : retData(retBOOfFalse, args);
     }
 
@@ -295,7 +296,7 @@ public class ResponseData<T> implements Serializable {
      * @param <T>  T
      * @return {@link ResponseData}
      */
-    public static <T> ResponseData<T> retExist(boolean flag, Object... args) {
+    public static <T> ResponseData<T> retExist(boolean flag, Object[] args) {
         return flag ? retData(TakeshiCode.IS_EXIST, null, args) : retData(TakeshiCode.NOT_EXIST, null, args);
     }
 
@@ -331,12 +332,22 @@ public class ResponseData<T> implements Serializable {
         this.init(retBO, data);
     }
 
-    private ResponseData(RetBO retBO, T data, Object... args) {
+    private ResponseData(RetBO retBO, T data, Object[] args) {
         this.init(retBO, data, args);
     }
 
-    private ResponseData(int code, String message, T data, Object... args) {
+    private ResponseData(int code, String message, T data, Object[] args) {
         this.init(code, message, data, args);
+    }
+
+    /**
+     * 初始化一些值
+     *
+     * @param retBO retBO
+     * @param data  附加对象
+     */
+    private void init(RetBO retBO, T data) {
+        this.init(retBO.getCode(), retBO.getMessage(), data);
     }
 
     /**
@@ -346,8 +357,19 @@ public class ResponseData<T> implements Serializable {
      * @param data  附加对象
      * @param args  参数
      */
-    void init(RetBO retBO, T data, Object... args) {
+    private void init(RetBO retBO, T data, Object[] args) {
         this.init(retBO.getCode(), retBO.getMessage(), data, args);
+    }
+
+    /**
+     * 初始化一些值
+     *
+     * @param code    状态码
+     * @param message 提示信息
+     * @param data    附加对象
+     */
+    private void init(int code, String message, T data) {
+        this.init(code, message, data, null);
     }
 
     /**
@@ -358,7 +380,7 @@ public class ResponseData<T> implements Serializable {
      * @param data    附加对象
      * @param args    参数
      */
-    void init(int code, String message, T data, Object... args) {
+    private void init(int code, String message, T data, Object[] args) {
         this.code = code;
         this.message = TakeshiUtil.formatMessage(message, args);
         this.data = data;
@@ -366,9 +388,51 @@ public class ResponseData<T> implements Serializable {
         this.traceId = MDC.get(RequestConstants.TRACE_ID);
     }
 
-    @Override
-    public String toString() {
-        return GsonUtil.toJson(this);
+    /**
+     * 创建实例
+     *
+     * @param retBO retBO
+     * @param <T>   T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(RetBO retBO) {
+        return instance(retBO.getCode(), retBO.getMessage());
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param message 提示信息
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(String message) {
+        return instance(TakeshiCode.FAIL.getCode(), message);
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param code    状态码
+     * @param message 提示信息
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(int code, String message) {
+        return instance(code, message, null);
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param code    状态码
+     * @param message 提示信息
+     * @param data    附加对象
+     * @param <T>     T
+     * @return ResponseData
+     */
+    public static <T> ResponseData<T> instance(int code, String message, T data) {
+        return new ResponseData<T>().setCode(code).setMessage(message).setData(data);
     }
 
 }

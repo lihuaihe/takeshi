@@ -2,14 +2,21 @@ package com.takeshi.constants;
 
 import cn.dev33.satoken.context.SaHolder;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.google.gson.JsonSyntaxException;
 import com.takeshi.pojo.bo.GeoPointBO;
 import com.takeshi.util.GsonUtil;
+import lombok.SneakyThrows;
+import org.apache.tomcat.util.http.parser.AcceptLanguage;
 
+import java.io.StringReader;
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * RequestConstants
@@ -54,6 +61,11 @@ public interface RequestConstants {
     interface Header {
 
         /**
+         * 调用接口header里面传的Accept-Language字段
+         */
+        String ACCEPT_LANGUAGE = "Accept-Language";
+
+        /**
          * 调用接口header里面传的User-Agent字段
          */
         String USER_AGENT = "User-Agent";
@@ -84,9 +96,43 @@ public interface RequestConstants {
         String SIGN = "x-sign";
 
         /**
-         * 从header里面获取UserAgent
+         * 从header里面获取Accept-Language，且按照优先级排序，如果转换不了返回NULL
          *
-         * @return UserAgent
+         * @return {@link List<AcceptLanguage>}
+         */
+        @SneakyThrows
+        static List<AcceptLanguage> getAcceptLanguageDefaultNull() {
+            String acceptLanguage = SaHolder.getRequest().getHeader(ACCEPT_LANGUAGE);
+            if (StrUtil.isBlank(acceptLanguage)) {
+                return null;
+            }
+            List<AcceptLanguage> list = AcceptLanguage.parse(new StringReader(acceptLanguage));
+            list.sort(Comparator.comparing(AcceptLanguage::getQuality).reversed());
+            return list;
+        }
+
+        /**
+         * 从header里面获取Accept-Language，只获取优先级最高的，如果转换不了返回NULL
+         *
+         * @return {@link Locale}
+         */
+        @SneakyThrows
+        static Locale getLanguageDefaultNull() {
+            String acceptLanguage = SaHolder.getRequest().getHeader(ACCEPT_LANGUAGE);
+            if (StrUtil.isBlank(acceptLanguage)) {
+                return null;
+            }
+            return AcceptLanguage.parse(new StringReader(acceptLanguage))
+                                 .stream()
+                                 .max(Comparator.comparing(AcceptLanguage::getQuality))
+                                 .map(AcceptLanguage::getLocale)
+                                 .orElse(null);
+        }
+
+        /**
+         * 从header里面获取UserAgent，如果没有则抛出异常
+         *
+         * @return {@link UserAgent}
          */
         static UserAgent getUserAgent() {
             String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
@@ -95,9 +141,22 @@ public interface RequestConstants {
         }
 
         /**
-         * 从header里面获取时区
+         * 从header里面获取UserAgent，如果没有则返回NULL
          *
-         * @return ZoneId
+         * @return {@link UserAgent}
+         */
+        static UserAgent getUserAgentDefaultNull() {
+            String userAgent = SaHolder.getRequest().getHeader(USER_AGENT);
+            if (StrUtil.isBlank(userAgent)) {
+                return null;
+            }
+            return UserAgentUtil.parse(userAgent);
+        }
+
+        /**
+         * 从header里面获取时区，如果没有则抛出异常
+         *
+         * @return {@link ZoneId}
          */
         static ZoneId getTimezone() {
             try {
@@ -110,9 +169,22 @@ public interface RequestConstants {
         }
 
         /**
-         * 从header里面获取经纬度
+         * 从header里面获取时区，如果没有则返回NULL
          *
-         * @return GeoPointBO
+         * @return {@link ZoneId}
+         */
+        static ZoneId getTimezoneDefaultNull() {
+            String timezone = SaHolder.getRequest().getHeader(TIMEZONE);
+            if (StrUtil.isBlank(timezone)) {
+                return null;
+            }
+            return ZoneId.of(timezone);
+        }
+
+        /**
+         * 从header里面获取经纬度，如果没有则抛出异常
+         *
+         * @return {@link GeoPointBO}
          */
         static GeoPointBO getGeoPoint() {
             try {
@@ -122,6 +194,19 @@ public interface RequestConstants {
             } catch (IllegalArgumentException | JsonSyntaxException e) {
                 throw new IllegalArgumentException("Geo point data format error");
             }
+        }
+
+        /**
+         * 从header里面获取经纬度，如果没有则返回NULL
+         *
+         * @return {@link GeoPointBO}
+         */
+        static GeoPointBO getGeoPointDefaultNull() {
+            String geoPoint = SaHolder.getRequest().getHeader(GEO_POINT);
+            if (StrUtil.isBlank(geoPoint)) {
+                return null;
+            }
+            return GsonUtil.fromJson(geoPoint, GeoPointBO.class);
         }
 
     }

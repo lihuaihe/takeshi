@@ -11,12 +11,12 @@ import cn.hutool.core.map.MapUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takeshi.config.security.TakeshiHttpRequestWrapper;
 import com.takeshi.constants.RequestConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +38,13 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     /**
      * body
      */
-    public static String body = "body";
+    public static final String BODY = "body";
+
+    static {
+        SaSignTemplate.timestamp = RequestConstants.Header.TIMESTAMP;
+        SaSignTemplate.nonce = RequestConstants.Header.NONCE;
+        SaSignTemplate.sign = RequestConstants.Header.SIGN;
+    }
 
     /**
      * 将所有参数连接成一个字符串(不排序)，形如：b=28a=18c=3，忽略null值
@@ -237,8 +243,9 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     @SneakyThrows
     private Map<String, String> getAllParamMap(SaRequest request) {
         Map<String, String> paramMap = new HashMap<>(request.getParamMap());
-        if (!HttpMethod.GET.matches(request.getMethod()) && request.getSource() instanceof TakeshiHttpRequestWrapper takeshiHttpRequestWrapper) {
-            JsonNode jsonNode = objectMapper.readTree(takeshiHttpRequestWrapper.getInputStream());
+        if (!HttpMethod.GET.matches(request.getMethod())
+                && request.getSource() instanceof ContentCachingRequestWrapper contentCachingRequestWrapper) {
+            JsonNode jsonNode = objectMapper.readTree(contentCachingRequestWrapper.getContentAsByteArray());
             if (!jsonNode.isNull()) {
                 if (jsonNode.isObject()) {
                     Map<String, String> map = objectMapper.convertValue(jsonNode, new TypeReference<>() {
@@ -247,7 +254,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
                         paramMap.putAll(map);
                     }
                 } else {
-                    paramMap.put(body, objectMapper.writeValueAsString(jsonNode));
+                    paramMap.put(BODY, objectMapper.writeValueAsString(jsonNode));
                 }
             }
         }
