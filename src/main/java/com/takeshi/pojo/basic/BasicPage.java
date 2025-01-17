@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springdoc.core.annotations.ParameterObject;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -20,7 +19,6 @@ import java.io.Serializable;
 @Data
 @Schema(description = "列表分页查询参数")
 @Accessors(chain = true)
-@ParameterObject
 public class BasicPage implements Serializable {
 
     @Serial

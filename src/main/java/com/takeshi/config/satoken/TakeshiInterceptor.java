@@ -16,10 +16,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.extra.servlet.JakartaServletUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,6 +27,7 @@ import com.takeshi.annotation.RepeatSubmit;
 import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.annotation.TakeshiLog;
 import com.takeshi.config.properties.TakeshiProperties;
+import com.takeshi.config.security.CachedBodyHttpServletRequest;
 import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.enums.TakeshiRedisKeyEnum;
@@ -45,15 +46,17 @@ import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -145,11 +148,12 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             log.info("TakeshiInterceptor.preHandle --> Request Http Method: {}", StrUtil.builder(StrUtil.BRACKET_START, request.getMethod(), StrUtil.BRACKET_END, methodName));
             ObjectMapper objectMapper = SpringUtil.getBean(ObjectMapper.class);
             Map<String, String> urlParam = JakartaServletUtil.getParamMap(request);
-            Map<String, String> multipart = null;
-            Object bodyObject = null;
-            if (request instanceof StandardMultipartHttpServletRequest multipartRequest) {
+            Object fileParam = null;
+            JsonNode bodyParam = null;
+            if (request instanceof MultipartHttpServletRequest multipartRequest) {
+                // multipart/form-data方式上传的文件
                 MultiValueMap<String, MultipartFile> multiFileMap = multipartRequest.getMultiFileMap();
-                multipart = multiFileMap.entrySet()
+                fileParam = multiFileMap.entrySet()
                                         .stream()
                                         .collect(Collectors.toMap(
                                                          Map.Entry::getKey,
@@ -159,35 +163,22 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                                                                        .collect(Collectors.joining(StrUtil.COMMA))
                                                  )
                                         );
-            } else if (!HttpMethod.GET.matches(request.getMethod())) {
-                JsonNode jsonNode = objectMapper.readTree(((ContentCachingRequestWrapper) request).getContentAsByteArray());
-                if (!jsonNode.isNull()) {
-                    if (jsonNode.isObject()) {
-                        bodyObject = objectMapper.<Map<String, Object>>convertValue(jsonNode, new TypeReference<>() {
-                        });
-                    } else if (jsonNode.isArray()) {
-                        bodyObject = objectMapper.<Collection<Object>>convertValue(jsonNode, new TypeReference<>() {
-                        });
-                    } else if (jsonNode.isTextual()) {
-                        bodyObject = jsonNode.textValue();
-                    } else if (jsonNode.isNumber()) {
-                        bodyObject = jsonNode.numberValue();
-                    } else if (jsonNode.isBoolean()) {
-                        bodyObject = jsonNode.booleanValue();
-                    } else {
-                        bodyObject = jsonNode.toString();
-                    }
-                }
+            } else if (StrUtil.startWithIgnoreCase(request.getContentType(), ContentType.OCTET_STREAM.toString())) {
+                // application/octet-stream方式上传的文件
+                fileParam = DataSizeUtil.format(request.getContentLength());
+            } else if (!HttpMethod.GET.matches(request.getMethod()) && request instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest) {
+                bodyParam = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
             }
             ObjectNode paramObjectNode = objectMapper.createObjectNode();
+            paramObjectNode.put("contentType", request.getContentType());
             if (CollUtil.isNotEmpty(urlParam)) {
                 paramObjectNode.putPOJO("urlParam", urlParam);
             }
-            if (CollUtil.isNotEmpty(multipart)) {
-                paramObjectNode.putPOJO("multipart", multipart);
+            if (ObjUtil.isNotNull(fileParam)) {
+                paramObjectNode.putPOJO("fileParam", fileParam);
             }
-            if (ObjUtil.isNotEmpty(bodyObject)) {
-                paramObjectNode.putPOJO("bodyObject", bodyObject);
+            if (ObjUtil.isNotNull(bodyParam)) {
+                paramObjectNode.set("bodyParam", bodyParam);
             }
             String paramObjectValue = objectMapper.writeValueAsString(paramObjectNode);
             TakeshiProperties takeshiProperties = SpringUtil.getBean(TakeshiProperties.class);
