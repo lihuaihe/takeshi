@@ -40,6 +40,12 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
      */
     public static final String BODY = "body";
 
+    static {
+        SaSignTemplate.timestamp = RequestConstants.Header.TIMESTAMP;
+        SaSignTemplate.nonce = RequestConstants.Header.NONCE;
+        SaSignTemplate.sign = RequestConstants.Header.SIGN;
+    }
+
     /**
      * 将所有参数连接成一个字符串(不排序)，形如：b=28a=18c=3，忽略null值
      *
