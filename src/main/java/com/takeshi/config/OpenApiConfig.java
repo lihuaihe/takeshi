@@ -39,6 +39,7 @@ import org.springdoc.core.service.AbstractRequestService;
 import org.springdoc.core.service.GenericResponseService;
 import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springdoc.webmvc.api.MultipleOpenApiWebMvcResource;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,6 +80,13 @@ public class OpenApiConfig {
 
     @Value("${spring.application.name:}")
     private String applicationName;
+
+    static {
+        SpringDocUtils.getConfig().replaceParameterObjectWithClass(Year.class, String.class);
+        SpringDocUtils.getConfig().replaceParameterObjectWithClass(YearMonth.class, String.class);
+        SpringDocUtils.getConfig().replaceParameterObjectWithClass(MonthDay.class, String.class);
+        SpringDocUtils.getConfig().replaceParameterObjectWithClass(OffsetTime.class, String.class);
+    }
 
     /**
      * 自定义ModelConverter
@@ -235,6 +243,9 @@ public class OpenApiConfig {
     @Bean
     public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
         return openApi -> {
+            openApi.getPaths().values().forEach(pathItem -> {
+                pathItem.readOperations().get(0);
+            });
             if (CollUtil.isNotEmpty(openApi.getTags())) {
                 // 只有@Tag注解的description有值时getTags才不会为空
                 openApi.getTags().forEach(tag -> {

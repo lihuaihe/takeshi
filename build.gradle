@@ -39,7 +39,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.0.1'
-version = '25.01.17.0-SNAPSHOT'
+version = '25.01.20.0-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
