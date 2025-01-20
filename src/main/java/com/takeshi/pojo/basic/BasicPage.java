@@ -40,4 +40,10 @@ public class BasicPage implements Serializable {
     @Parameter(description = "每页数据条数，传-1则不分页", example = "10", schema = @Schema(description = "每页数据条数，传-1则不分页", example = "10"))
     private Long pageSize;
 
+    /**
+     * 关键字模糊搜索
+     */
+    @Parameter(description = "关键字模糊搜索", schema = @Schema(description = "关键字模糊搜索"))
+    private String keyword;
+
 }
