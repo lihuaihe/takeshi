@@ -20,12 +20,6 @@ import java.time.Instant;
 public class BasicQueryPage extends BasicPage {
 
     /**
-     * 关键字模糊搜索
-     */
-    @Parameter(description = "关键字模糊搜索", schema = @Schema(description = "关键字模糊搜索"))
-    private String keyword;
-
-    /**
      * 开始时间
      */
     @Parameter(description = "开始时间", schema = @Schema(description = "开始时间"))
