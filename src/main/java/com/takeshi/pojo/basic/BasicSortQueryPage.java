@@ -1,6 +1,5 @@
 package com.takeshi.pojo.basic;
 
-import com.takeshi.annotation.NumZeroFormat;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -23,7 +22,6 @@ public class BasicSortQueryPage extends BasicSortPage {
     /**
      * 关键字模糊搜索
      */
-    @NumZeroFormat
     @Parameter(description = "关键字模糊搜索", schema = @Schema(description = "关键字模糊搜索"))
     private String keyword;
 
