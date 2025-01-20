@@ -175,65 +175,89 @@ public final class GlobalPhoneNumberUtil {
     }
 
     /**
-     * 使用E164规则将电话号码格式化为指定格式
+     * 使用E164规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 带区号的电话号码，例如：+8618888888888
      * @return 格式化后的电话号码，例如：+8618888888888
      * @throws NumberParseException 数字解析异常
      */
     public static String formatE164(String phoneNumber) throws NumberParseException {
-        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.E164);
+        Phonenumber.PhoneNumber parseNumber = parse(phoneNumber);
+        if (!instance.isValidNumber(parseNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
+        return instance.format(parseNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
     }
 
     /**
-     * 使用E164规则将电话号码格式化为指定格式
+     * 使用E164规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 电话号码
      * @return 格式化后的电话号码，例如：+8618888888888
+     * @throws NumberParseException 数字解析异常
      */
-    public static String formatE164(Phonenumber.PhoneNumber phoneNumber) {
+    public static String formatE164(Phonenumber.PhoneNumber phoneNumber) throws NumberParseException {
+        if (!instance.isValidNumber(phoneNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
     }
 
     /**
-     * 使用INTERNATIONAL规则将电话号码格式化为指定格式
+     * 使用INTERNATIONAL规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 带区号的电话号码，例如：+8618888888888
      * @return 格式化后的电话号码，例如：+86 188 8888 8888
      * @throws NumberParseException 数字解析异常
      */
     public static String formatInternational(String phoneNumber) throws NumberParseException {
-        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+        Phonenumber.PhoneNumber parseNumber = parse(phoneNumber);
+        if (!instance.isValidNumber(parseNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
+        return instance.format(parseNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
     }
 
     /**
-     * 使用INTERNATIONAL规则将电话号码格式化为指定格式
+     * 使用INTERNATIONAL规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 电话号码
      * @return 格式化后的电话号码，例如：+86 188 8888 8888
+     * @throws NumberParseException 数字解析异常
      */
-    public static String formatInternational(Phonenumber.PhoneNumber phoneNumber) {
+    public static String formatInternational(Phonenumber.PhoneNumber phoneNumber) throws NumberParseException {
+        if (!instance.isValidNumber(phoneNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
     }
 
     /**
-     * 使用NATIONAL规则将电话号码格式化为指定格式
+     * 使用NATIONAL规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 带区号的电话号码，例如：+8618888888888
      * @return 格式化后的电话号码，例如：188 8888 8888
      * @throws NumberParseException 数字解析异常
      */
     public static String formatNational(String phoneNumber) throws NumberParseException {
-        return instance.format(parse(phoneNumber), PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
+        Phonenumber.PhoneNumber parseNumber = parse(phoneNumber);
+        if (!instance.isValidNumber(parseNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
+        return instance.format(parseNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
     }
 
     /**
-     * 使用NATIONAL规则将电话号码格式化为指定格式
+     * 使用NATIONAL规则将电话号码格式化为指定格式，并且校验号码格式是否正确
      *
      * @param phoneNumber 电话号码
      * @return 格式化后的电话号码，例如：188 8888 8888
+     * @throws NumberParseException 数字解析异常
      */
-    public static String formatNational(Phonenumber.PhoneNumber phoneNumber) {
+    public static String formatNational(Phonenumber.PhoneNumber phoneNumber) throws NumberParseException {
+        if (!instance.isValidNumber(phoneNumber)) {
+            throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "The string supplied did not seem to be a phone number.");
+        }
         return instance.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
     }
 
