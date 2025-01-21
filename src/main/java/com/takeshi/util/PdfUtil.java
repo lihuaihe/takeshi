@@ -22,7 +22,6 @@ import java.util.Map;
  * <p>默认使用thymeleaf作为html模版引擎</p>
  * <p>如需其他字体支持，自行设置字体，参考{@link ConverterProperties}, 且css中还需要添加字体样式才会显示中文 BODY{font-family: SimSun;}</p>
  *
- * <p>以下是打印设置</p>
  * <pre>{@code
  * implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
  * implementation 'com.itextpdf:html2pdf:5.0.0'
