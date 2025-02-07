@@ -170,7 +170,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
                 bodyParam = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
             }
             ObjectNode paramObjectNode = objectMapper.createObjectNode();
-            paramObjectNode.put("contentType", request.getContentType());
+            if (StrUtil.isNotBlank(request.getContentType())) {
+                paramObjectNode.put("contentType", request.getContentType());
+            }
             if (CollUtil.isNotEmpty(urlParam)) {
                 paramObjectNode.putPOJO("urlParam", urlParam);
             }
