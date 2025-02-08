@@ -116,7 +116,7 @@ public class OpenApiConfig {
             } else if (clazz == Date.class || clazz == LocalDateTime.class) {
                 Schema<?> schema = chain.next().resolve(type, context, chain);
                 // 使用新的Schema替换原来的，否则example不生效
-                return new StringSchema().description(schema.getDescription()).example(LocalDateTime.now().format(TakeshiDatePattern.NORM_DATETIME_FORMATTER));
+                return new StringSchema().description(schema.getDescription()).example(LocalDateTime.now().format(TakeshiDatePattern.UTC_SIMPLE_FORMATTER));
             } else if (clazz == LocalTime.class) {
                 type.setType(String.class);
                 Schema<?> schema = chain.next().resolve(type, context, chain);

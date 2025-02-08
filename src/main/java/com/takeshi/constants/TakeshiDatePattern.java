@@ -13,6 +13,11 @@ import java.time.format.DateTimeFormatter;
 public abstract class TakeshiDatePattern extends DatePattern {
 
     /**
+     * yyyy-MM-dd'T'HH:mm:ss
+     */
+    public static final DateTimeFormatter UTC_SIMPLE_FORMATTER = createFormatter(UTC_SIMPLE_PATTERN);
+
+    /**
      * MM-dd
      */
     public static final String NORM_MONTH_DAY_PATTERN = "MM-dd";
