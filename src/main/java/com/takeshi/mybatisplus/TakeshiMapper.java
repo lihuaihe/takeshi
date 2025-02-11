@@ -2,7 +2,9 @@ package com.takeshi.mybatisplus;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -14,11 +16,12 @@ import com.baomidou.mybatisplus.core.toolkit.*;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.takeshi.exception.TakeshiException;
-import com.takeshi.pojo.basic.TakeshiPage;
+import com.takeshi.pojo.basic.*;
 import com.takeshi.pojo.bo.RetBO;
 import com.takeshi.util.TakeshiUtil;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -404,6 +407,35 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         Class<T> entityClass = this.getEntityClass();
         TableInfo tableInfo = Optional.ofNullable(TableInfoHelper.getTableInfo(entityClass)).orElseThrow(() -> ExceptionUtils.mpe("Can not find TableInfo from Class: \"%s\".", entityClass.getName()));
         return ClassUtils.toClassConfident(tableInfo.getCurrentNamespace());
+    }
+
+    /**
+     * 构建一个QueryWrapper
+     *
+     * @param basicPage 列表查询参数
+     * @param columns   需要进行模糊搜索的数据库字段名
+     * @param <E>       e
+     * @return QueryWrapper
+     */
+    default <E extends BasicPage> QueryWrapper<T> buildQueryWrapper(E basicPage, List<SFunction<T, ?>> columns) {
+        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        String keyword = null;
+        Instant startTime = null, endTime = null;
+        if (basicPage instanceof BasicSortQueryPage basicSortQueryPage) {
+            keyword = basicSortQueryPage.getKeyword();
+            startTime = basicSortQueryPage.getStartTime();
+            endTime = basicSortQueryPage.getEndTime();
+        } else if (basicPage instanceof BasicQueryPage basicQueryPage) {
+            keyword = basicQueryPage.getKeyword();
+            startTime = basicQueryPage.getStartTime();
+            endTime = basicQueryPage.getEndTime();
+        }
+        String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
+        queryWrapper.ge(ObjUtil.isNotNull(startTime), createTime, startTime)
+                    .le(ObjUtil.isNotNull(endTime), createTime, endTime);
+        String sql = "CONCAT_WS(' '," + columns.stream().map(TakeshiUtil::getColumnName).collect(Collectors.joining(StrUtil.COMMA)) + ") like '%" + keyword + "%'";
+        queryWrapper.apply(StrUtil.isNotBlank(keyword) && CollUtil.isNotEmpty(columns), sql);
+        return queryWrapper;
     }
 
 }

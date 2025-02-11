@@ -1,8 +1,5 @@
 package com.takeshi.mybatisplus;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -10,17 +7,15 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.takeshi.pojo.basic.*;
+import com.takeshi.pojo.basic.BasicPage;
+import com.takeshi.pojo.basic.TakeshiPage;
 import com.takeshi.pojo.bo.RetBO;
-import com.takeshi.util.TakeshiUtil;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * 扩展的mybatis-plus service 层接口<br/>
@@ -60,7 +55,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listPage(E basicPage, List<SFunction<T, ?>> columns) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns));
     }
 
     /**
@@ -76,7 +71,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
     }
 
     /**
@@ -92,7 +87,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
@@ -119,7 +114,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPage(E basicPage, List<SFunction<T, ?>> columns) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns));
     }
 
     /**
@@ -135,7 +130,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPageQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<QueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns).func(Objects.nonNull(consumer), consumer));
     }
 
     /**
@@ -151,36 +146,7 @@ public interface ITakeshiService<T> extends IService<T> {
      * @return TakeshiPage
      */
     default <E extends BasicPage> TakeshiPage<T> listTakeshiPageLambdaQuery(E basicPage, List<SFunction<T, ?>> columns, Consumer<LambdaQueryWrapper<T>> consumer) {
-        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.queryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
-    }
-
-    /**
-     * 构建一个QueryWrapper
-     *
-     * @param basicPage 列表查询参数
-     * @param columns   需要进行模糊搜索的数据库字段名
-     * @param <E>       e
-     * @return QueryWrapper
-     */
-    private <E extends BasicPage> QueryWrapper<T> queryWrapper(E basicPage, List<SFunction<T, ?>> columns) {
-        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        String keyword = null;
-        Instant startTime = null, endTime = null;
-        if (basicPage instanceof BasicSortQueryPage basicSortQueryPage) {
-            keyword = basicSortQueryPage.getKeyword();
-            startTime = basicSortQueryPage.getStartTime();
-            endTime = basicSortQueryPage.getEndTime();
-        } else if (basicPage instanceof BasicQueryPage basicQueryPage) {
-            keyword = basicQueryPage.getKeyword();
-            startTime = basicQueryPage.getStartTime();
-            endTime = basicQueryPage.getEndTime();
-        }
-        String createTime = TakeshiUtil.getColumnName(AbstractBasicEntity::getCreateTime);
-        queryWrapper.ge(ObjUtil.isNotNull(startTime), createTime, startTime)
-                    .le(ObjUtil.isNotNull(endTime), createTime, endTime);
-        String sql = "CONCAT_WS(' '," + columns.stream().map(TakeshiUtil::getColumnName).collect(Collectors.joining(StrUtil.COMMA)) + ") like '%" + keyword + "%'";
-        queryWrapper.apply(StrUtil.isNotBlank(keyword) && CollUtil.isNotEmpty(columns), sql);
-        return queryWrapper;
+        return this.getBaseMapper().selectPage(TakeshiPage.of(basicPage), this.getBaseMapper().buildQueryWrapper(basicPage, columns).lambda().func(Objects.nonNull(consumer), consumer));
     }
 
     /**
