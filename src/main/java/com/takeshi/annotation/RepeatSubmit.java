@@ -29,7 +29,7 @@ public @interface RepeatSubmit {
      * @return 时间
      */
     @PositiveOrZero
-    long rateInterval() default 0;
+    long rateIntervalMillis() default 0;
 
     /**
      * 重复提交 排除的字段名称<br/>
@@ -64,7 +64,7 @@ public @interface RepeatSubmit {
      * @return int
      */
     @PositiveOrZero
-    long ipRateInterval() default 0;
+    long ipRateIntervalMillis() default 0;
 
     // ---------end 此部分可对某个接口进行请求速率限制---------
 

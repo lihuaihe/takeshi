@@ -535,7 +535,7 @@ public final class ZonedDateTimeUtil {
      * @return ZonedDateTime
      */
     public static ZonedDateTime endOfWeek(ZonedDateTime zonedDateTime) {
-        return zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
+        return zonedDateTime.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
     }
 
     /**

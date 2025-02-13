@@ -20,7 +20,8 @@ import java.util.Map;
 /**
  * PdfUtil
  * <p>默认使用thymeleaf作为html模版引擎</p>
- * <p>如需其他字体支持，自行设置字体，且css中还需要添加字体样式才会显示中文 BODY{font-family: SimSun;}</p>
+ * <p>如需其他字体支持，自行设置字体，参考{@link ConverterProperties}, 且css中还需要添加字体样式才会显示中文 BODY{font-family: SimSun;}</p>
+ *
  * <pre>{@code
  * implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
  * implementation 'com.itextpdf:html2pdf:5.0.0'
@@ -41,7 +42,7 @@ import java.util.Map;
 public final class PdfUtil {
 
     /**
-     * 配置一个默认的HtmlConverter将使用的属性
+     * 配置一个默认的HtmlConverter将使用的属性，及默认使用的字体
      */
     private static final ConverterProperties DEFAULT_CONVERTER_PROPERTIES = new ConverterProperties().setCharset("UTF_8").setFontProvider(new DefaultFontProvider());
 
