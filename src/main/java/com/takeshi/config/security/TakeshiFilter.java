@@ -93,6 +93,7 @@ public class TakeshiFilter extends OncePerRequestFilter {
                 }
             }
             map.put("Request IP", clientIp);
+            map.put("Header AcceptVersion", request.getHeader(RequestConstants.Header.ACCEPT_VERSION));
             map.put("Request UserAgent", request.getHeader(Header.USER_AGENT.getValue()));
             map.put("Header GeoPoint", request.getHeader(RequestConstants.Header.GEO_POINT));
             map.put("Header Timezone", request.getHeader(RequestConstants.Header.TIMEZONE));

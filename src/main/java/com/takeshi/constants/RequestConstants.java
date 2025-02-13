@@ -61,6 +61,11 @@ public interface RequestConstants {
     interface Header {
 
         /**
+         * 调用接口header里面传的Accept-Version字段，用来区分接口版本
+         */
+        String ACCEPT_VERSION = "Accept-Version";
+
+        /**
          * 调用接口header里面传的Accept-Language字段
          */
         String ACCEPT_LANGUAGE = "Accept-Language";
