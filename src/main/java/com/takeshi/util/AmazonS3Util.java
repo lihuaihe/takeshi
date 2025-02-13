@@ -919,16 +919,16 @@ public final class AmazonS3Util {
     interface UrlParamsConstants {
 
         // 文件大小，单位（字节）
-        String CONTENT_LENGTH = "x-nt-content-length";
+        String CONTENT_LENGTH = "content-length";
 
         // 内容类型
-        String CONTENT_TYPE = "x-nt-content-type";
+        String CONTENT_TYPE = "content-type";
 
         // 缩略图URL
-        String THUMBNAIL = "x-nt-thumbnail";
+        String THUMBNAIL = "thumbnail";
 
         // 视频时长，单位（毫秒）
-        String DURATION = "x-nt-duration";
+        String DURATION = "duration";
 
     }
 

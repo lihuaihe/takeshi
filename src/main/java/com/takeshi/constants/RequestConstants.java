@@ -78,27 +78,27 @@ public interface RequestConstants {
         /**
          * 调用接口header里面传的时区字段(Asia/Shanghai)
          */
-        String TIMEZONE = "x-timezone";
+        String TIMEZONE = "timezone";
 
         /**
          * 调用接口header里面传的经纬度字段{"lon":1.0, "lat":2.0}
          */
-        String GEO_POINT = "x-geo-point";
+        String GEO_POINT = "geo-point";
 
         /**
          * 调用接口header里面传的时间戳字段（毫秒级）
          */
-        String TIMESTAMP = "x-timestamp";
+        String TIMESTAMP = "timestamp";
 
         /**
          * 仅一次有效的随机字符串，可以使用用户信息+时间戳+随机数等信息做个哈希值，作为nonce值
          */
-        String NONCE = "x-nonce";
+        String NONCE = "nonce";
 
         /**
          * 签名参数名
          */
-        String SIGN = "x-sign";
+        String SIGN = "sign";
 
         /**
          * 从header里面获取Accept-Language，且按照优先级排序，如果转换不了返回NULL

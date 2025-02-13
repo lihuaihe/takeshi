@@ -36,8 +36,8 @@
                     });
             })
             rdocEl.addEventListener('before-try', (e) => {
-                e.detail.request.headers.append('x-timestamp', Date.now().toString());
-                e.detail.request.headers.append('x-timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+                e.detail.request.headers.append('timestamp', Date.now().toString());
+                e.detail.request.headers.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
             });
 
             async function addChangResponseStyleBt(rdocShadowRoot) {
