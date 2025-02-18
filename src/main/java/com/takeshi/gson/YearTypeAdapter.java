@@ -13,13 +13,13 @@ import java.time.Year;
 public class YearTypeAdapter implements JsonSerializer<Year>, JsonDeserializer<Year> {
 
     @Override
-    public Year deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return Year.parse(jsonElement.getAsString());
+    public JsonElement serialize(Year year, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(year.getValue());
     }
 
     @Override
-    public JsonElement serialize(Year year, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(year.getValue());
+    public Year deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return Year.parse(jsonElement.getAsString());
     }
 
 }

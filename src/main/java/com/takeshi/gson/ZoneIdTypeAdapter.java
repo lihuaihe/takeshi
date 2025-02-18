@@ -13,13 +13,13 @@ import java.time.ZoneId;
 public class ZoneIdTypeAdapter implements JsonSerializer<ZoneId>, JsonDeserializer<ZoneId> {
 
     @Override
-    public ZoneId deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return ZoneId.of(jsonElement.getAsString());
+    public JsonElement serialize(ZoneId zoneId, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(zoneId.toString());
     }
 
     @Override
-    public JsonElement serialize(ZoneId zoneId, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(zoneId.toString());
+    public ZoneId deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return ZoneId.of(jsonElement.getAsString());
     }
 
 }

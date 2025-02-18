@@ -14,13 +14,13 @@ import java.lang.reflect.Type;
 public class DateTimeTypeAdapter implements JsonSerializer<DateTime>, JsonDeserializer<DateTime> {
 
     @Override
-    public DateTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return DateUtil.parse(jsonElement.getAsString());
+    public JsonElement serialize(DateTime dateTime, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(dateTime.toString());
     }
 
     @Override
-    public JsonElement serialize(DateTime dateTime, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(dateTime.toString());
+    public DateTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return DateUtil.parse(jsonElement.getAsString());
     }
 
 }
