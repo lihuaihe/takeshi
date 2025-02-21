@@ -9,6 +9,7 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.takeshi.annotation.ApiGroup;
 import com.takeshi.annotation.ApiSupport;
+import com.takeshi.annotation.SystemSecurity;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.constants.TakeshiDatePattern;
 import com.takeshi.pojo.bo.RetBO;
@@ -243,9 +244,6 @@ public class OpenApiConfig {
     @Bean
     public GlobalOpenApiCustomizer globalOpenApiCustomizer() {
         return openApi -> {
-            openApi.getPaths().values().forEach(pathItem -> {
-                pathItem.readOperations().get(0);
-            });
             if (CollUtil.isNotEmpty(openApi.getTags())) {
                 // 只有@Tag注解的description有值时getTags才不会为空
                 openApi.getTags().forEach(tag -> {
@@ -263,6 +261,7 @@ public class OpenApiConfig {
      */
     @Bean
     public GlobalOperationCustomizer globalOperationCustomizer() {
+        String tokenName = saTokenConfig.getTokenName();
         String[] colors = new String[]{"red", "pink", "green", "blue", "orange", "yellow", "purple", "brown", "primary-color"};
         Map<String, String> authorColorMap = new ConcurrentHashMap<>();
         AtomicInteger colorIndex = new AtomicInteger();
@@ -284,6 +283,11 @@ public class OpenApiConfig {
                                         })
                                         .toList();
         return (operation, handlerMethod) -> {
+            SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
+                                                    .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
+            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
+                operation.addSecurityItem(new SecurityRequirement().addList(tokenName));
+            }
             ApiSupport apiSupport = handlerMethod.getMethodAnnotation(ApiSupport.class);
             if (ObjUtil.isNotNull(apiSupport)) {
                 // 添加接口开发者名字
@@ -324,7 +328,7 @@ public class OpenApiConfig {
                 .in(SecurityScheme.In.HEADER);
         return new OpenAPI()
                 .info(info)
-                .addSecurityItem(new SecurityRequirement().addList(tokenName))
+                // .addSecurityItem(new SecurityRequirement().addList(tokenName))
                 .components(new Components().addSecuritySchemes(tokenName, securityScheme));
     }
 
