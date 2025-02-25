@@ -24,6 +24,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
 import cn.hutool.extra.template.TemplateUtil;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -42,6 +43,9 @@ import com.takeshi.exception.TakeshiException;
 import com.takeshi.mybatisplus.ColumnResolverWrapper;
 import com.takeshi.pojo.bo.GeoPointBO;
 import com.takeshi.pojo.bo.RetBO;
+import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +60,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
@@ -507,6 +516,95 @@ public final class TakeshiUtil {
             }
         }
         return verify;
+    }
+
+    /**
+     * 验证AppleId授权码，返回apple用户ID
+     *
+     * @param keyId             keyId
+     * @param clientId          clientId
+     * @param teamId            teamId
+     * @param redirectUrl       redirectUrl
+     * @param privateKey        privateKey
+     * @param authorizationCode authorizationCode
+     * @return appleId
+     * @throws NoSuchAlgorithmException NoSuchAlgorithmException
+     * @throws InvalidKeySpecException  InvalidKeySpecException
+     */
+    public static String verifyAppleIdAuthCode(String keyId, String clientId, String teamId, String redirectUrl,
+                                               byte[] privateKey, String authorizationCode)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(privateKey);
+        PrivateKey pk = KeyFactory.getInstance("EC").generatePrivate(pkcs8EncodedKeySpec);
+        String clientSecret = Jwts.builder()
+                                  .setHeaderParam(JwsHeader.KEY_ID, keyId)
+                                  .setSubject(clientId)
+                                  .setIssuer(teamId)
+                                  .setAudience("https://appleid.apple.com")
+                                  .setExpiration(new Date(System.currentTimeMillis() + (60 * 5 * 1000)))
+                                  .setIssuedAt(new Date())
+                                  .signWith(pk, SignatureAlgorithm.ES256)
+                                  .compact();
+        try (HttpResponse execute = HttpUtil.createPost("https://appleid.apple.com/auth/token")
+                                            .form("grant_type", "authorization_code")
+                                            .form("code", authorizationCode)
+                                            .form("redirect_uri", redirectUrl)
+                                            .form("client_id", clientId)
+                                            .form("client_secret", clientSecret)
+                                            .execute()) {
+            String body = execute.body();
+            log.info("TakeshiUtil.verifyAppleIdAuthCode --> body: {}", body);
+            return (String) JWTUtil.parseToken(JSONUtil.parseObj(body).getStr("id_token")).getPayload().getClaim("sub");
+        }
+    }
+
+    /**
+     * 验证Facebook授权码，返回facebook用户ID
+     *
+     * @param clientId          clientId
+     * @param clientSecret      clientSecret
+     * @param redirectUrl       redirectUrl
+     * @param authorizationCode authorizationCode
+     * @return facebookId
+     */
+    public static String verifyFacebookAuthCode(String clientId, String clientSecret, String redirectUrl, String authorizationCode) {
+        try (HttpResponse oauthExecute = HttpUtil.createGet("https://graph.facebook.com/v22.0/oauth/access_token")
+                                                 .form("client_id", clientId)
+                                                 .form("client_secret", clientSecret)
+                                                 .form("redirect_uri", redirectUrl)
+                                                 .form("code", authorizationCode)
+                                                 .execute()) {
+            String oauthBody = oauthExecute.body();
+            log.info("TakeshiUtil.verifyFacebookAuthCode --> oauthBody: {}", oauthBody);
+            JSONObject oauthObj = JSONUtil.parseObj(oauthBody);
+            String accessToken = oauthObj.getStr("access_token");
+            if (StrUtil.isNotBlank(accessToken)) {
+                try (HttpResponse appExecute = HttpUtil.createGet("https://graph.facebook.com/oauth/access_token")
+                                                       .form("client_id", clientId)
+                                                       .form("client_secret", clientSecret)
+                                                       .form("grant_type", "client_credentials")
+                                                       .execute()) {
+                    String appBody = appExecute.body();
+                    log.info("TakeshiUtil.verifyFacebookAuthCode --> appBody: {}", appBody);
+                    String appAccessToken = JSONUtil.parseObj(appBody).getStr("access_token");
+                    if (StrUtil.isNotBlank(appAccessToken)) {
+                        try (HttpResponse execute = HttpUtil.createGet("https://graph.facebook.com/debug_token")
+                                                            .form("input_token", accessToken)
+                                                            .form("access_token", appAccessToken)
+                                                            .execute()) {
+                            String body = execute.body();
+                            log.info("SysUtil.verifyFacebookAuthCode --> body: {}", body);
+                            JSONObject jsonObject = JSONUtil.parseObj(body);
+                            JSONObject data = jsonObject.getJSONObject("data");
+                            if (ObjUtil.isNotNull(data)) {
+                                return data.getStr("user_id");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

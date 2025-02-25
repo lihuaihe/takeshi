@@ -14,13 +14,13 @@ import java.time.MonthDay;
 public class MonthDayTypeAdapter implements JsonSerializer<MonthDay>, JsonDeserializer<MonthDay> {
 
     @Override
-    public MonthDay deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return MonthDay.parse(jsonElement.getAsString(), TakeshiDatePattern.NORM_MONTH_DAY_FORMATTER);
+    public JsonElement serialize(MonthDay monthDay, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(monthDay.format(TakeshiDatePattern.NORM_MONTH_DAY_FORMATTER));
     }
 
     @Override
-    public JsonElement serialize(MonthDay monthDay, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(monthDay.format(TakeshiDatePattern.NORM_MONTH_DAY_FORMATTER));
+    public MonthDay deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return MonthDay.parse(jsonElement.getAsString(), TakeshiDatePattern.NORM_MONTH_DAY_FORMATTER);
     }
 
 }

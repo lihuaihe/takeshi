@@ -28,6 +28,7 @@ public final class GsonUtil {
     public static Gson gson() {
         return Singleton.get("gson", () -> new GsonBuilder()
                 .setDateFormat(TakeshiDatePattern.NORM_DATETIME_PATTERN)
+                .registerTypeHierarchyAdapter(ZoneId.class, new ZoneIdTypeAdapter())
                 .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
                 .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
                 .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())

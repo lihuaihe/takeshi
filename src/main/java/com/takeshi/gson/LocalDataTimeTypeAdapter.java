@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class LocalDataTimeTypeAdapter implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
 
     @Override
-    public LocalDateTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return LocalDateTime.parse(jsonElement.getAsString(), TakeshiDatePattern.NORM_DATETIME_FORMATTER);
+    public JsonElement serialize(LocalDateTime localDateTime, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(localDateTime.format(TakeshiDatePattern.NORM_DATETIME_FORMATTER));
     }
 
     @Override
-    public JsonElement serialize(LocalDateTime localDateTime, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(localDateTime.format(TakeshiDatePattern.NORM_DATETIME_FORMATTER));
+    public LocalDateTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return LocalDateTime.parse(jsonElement.getAsString(), TakeshiDatePattern.NORM_DATETIME_FORMATTER);
     }
 
 }

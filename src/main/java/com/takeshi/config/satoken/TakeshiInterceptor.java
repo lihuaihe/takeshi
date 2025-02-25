@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
-import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
@@ -166,7 +165,8 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             } else if (StrUtil.startWithIgnoreCase(request.getContentType(), ContentType.OCTET_STREAM.toString())) {
                 // application/octet-stream方式上传的文件
                 fileParam = DataSizeUtil.format(request.getContentLength());
-            } else if (!HttpMethod.GET.matches(request.getMethod()) && request instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest) {
+            } else if (request instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest
+                    && cachedBodyHttpServletRequest.getInputStream().read() != -1) {
                 bodyParam = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
             }
             ObjectNode paramObjectNode = objectMapper.createObjectNode();

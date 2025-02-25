@@ -13,13 +13,13 @@ import java.time.OffsetTime;
 public class OffsetTimeTypeAdapter implements JsonSerializer<OffsetTime>, JsonDeserializer<OffsetTime> {
 
     @Override
-    public OffsetTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        return OffsetTime.parse(jsonElement.getAsString());
+    public JsonElement serialize(OffsetTime offsetTime, Type type, JsonSerializationContext jsonSerializationContext) {
+        return new JsonPrimitive(offsetTime.toString());
     }
 
     @Override
-    public JsonElement serialize(OffsetTime offsetTime, Type type, JsonSerializationContext jsonSerializationContext) {
-        return new JsonPrimitive(offsetTime.toString());
+    public OffsetTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        return OffsetTime.parse(jsonElement.getAsString());
     }
 
 }
