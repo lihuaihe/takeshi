@@ -10,6 +10,10 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    configureEach {
+        // Spring 使用了 spring-jcl 作为日志桥接，可能导致日志系统冲突。因此，需要移除 commons-logging.jar
+        exclude group: "commons-logging", module: "commons-logging"
+    }
 }
 
 ext {
