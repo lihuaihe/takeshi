@@ -285,7 +285,7 @@ public class OpenApiConfig {
         return (operation, handlerMethod) -> {
             SystemSecurity systemSecurity = Optional.ofNullable(handlerMethod.getMethodAnnotation(SystemSecurity.class))
                                                     .orElse(handlerMethod.getBeanType().getAnnotation(SystemSecurity.class));
-            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
+            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.passAll() && !systemSecurity.passToken())) {
                 operation.addSecurityItem(new SecurityRequirement().addList(tokenName));
             }
             ApiSupport apiSupport = handlerMethod.getMethodAnnotation(ApiSupport.class);
