@@ -7,7 +7,6 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
@@ -116,25 +115,24 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
 
     /**
      * <p>新增记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成新增数据且更新排序的操作</p>
+     * <p>注意：应该在调用该方法时加个锁，然后在开启事务，建议给排序字段值加上唯一索引，只需要调用该方法即可完成新增数据且更新排序的操作</p>
      *
      * @param entity     要新增的实体数据
      * @param sortColumn 排序的字段
      * @param maxVal     当前数据库中最大的排序值
-     * @return int
+     * @return boolean
      */
-    default boolean insertWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
+    default boolean insertWithSort(T entity, SFunction<T, Integer> sortColumn, int maxVal) {
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         String propertyName = TakeshiUtil.getPropertyName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entity.getClass());
         int val = (int) ReflectUtil.getFieldValue(entity, propertyName);
         // 新增的排序值不能超过数据库的最大排序值+1
         int finalVal = Math.min(val, maxVal + 1);
-        LambdaUpdateWrapper<T> updateWrapper =
-                new UpdateWrapper<T>().setSql(columnName + " = " + columnName + " + 1")
-                                      .orderByDesc(columnName)
-                                      .lambda()
-                                      .ge(sortColumn, finalVal);
+        UpdateWrapper<T> updateWrapper = new UpdateWrapper<T>()
+                .setSql(columnName + " = " + columnName + " + 1")
+                .orderByDesc(columnName)
+                .ge(columnName, finalVal);
         int update = this.update(tableInfo.newInstance(), updateWrapper);
         if (finalVal > maxVal || SqlHelper.retBool(update)) {
             if (val != finalVal) {
@@ -147,13 +145,13 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
 
     /**
      * <p>删除记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成删除数据且更新排序的操作</p>
+     * <p>注意：应该在调用该方法时加个锁，然后在开启事务，建议给排序字段值加上唯一索引，只需要调用该方法即可完成删除数据且更新排序的操作</p>
      *
      * @param id         主键ID值
      * @param sortColumn 排序的字段
-     * @return int
+     * @return boolean
      */
-    default boolean deleteWithSort(Serializable id, SFunction<T, ?> sortColumn) {
+    default boolean deleteWithSort(Serializable id, SFunction<T, Integer> sortColumn) {
         Class<T> entityClass = this.getEntityClass();
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
@@ -166,11 +164,10 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         }
         int oldVal = (int) ts.get(0);
         if (SqlHelper.retBool(this.deleteById(id))) {
-            LambdaUpdateWrapper<T> updateWrapper =
-                    new UpdateWrapper<T>().setSql(columnName + " = " + columnName + " - 1")
-                                          .orderByAsc(columnName)
-                                          .lambda()
-                                          .gt(sortColumn, oldVal);
+            UpdateWrapper<T> updateWrapper = new UpdateWrapper<T>()
+                    .setSql(columnName + " = " + columnName + " - 1")
+                    .orderByAsc(columnName)
+                    .ge(columnName, oldVal);
             this.update(tableInfo.newInstance(), updateWrapper);
             return true;
         }
@@ -179,14 +176,14 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
 
     /**
      * <p>更新记录时更新排序，排序字段必须是 (Integer/int) 类型</p>
-     * <p>注意：应该添加事务且在调用该方法时加个锁，建议给排序字段值加上唯一索引，只需要调用该方法即可完成排序字段的更新操作</p>
+     * <p>注意：应该在调用该方法时加个锁，然后在开启事务，建议给排序字段值加上唯一索引，只需要调用该方法即可完成排序字段的更新操作</p>
      *
      * @param entity     要更新的实体数据
      * @param sortColumn 排序的字段
      * @param maxVal     当前数据库中最大的排序值
-     * @return int
+     * @return boolean
      */
-    default boolean updateWithSort(T entity, SFunction<T, ?> sortColumn, int maxVal) {
+    default boolean updateWithSort(T entity, SFunction<T, Integer> sortColumn, int maxVal) {
         Class<T> entityClass = this.getEntityClass();
         String columnName = TakeshiUtil.getColumnName(sortColumn);
         String propertyName = TakeshiUtil.getPropertyName(sortColumn);
@@ -205,15 +202,15 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
         if (oldVal == finalVal) {
             return SqlHelper.retBool(this.updateById(entity));
         }
-        UpdateWrapper<T> updateWrapper =
-                new UpdateWrapper<T>().setSql(columnName +
-                                                      " = CASE " +
-                                                      " WHEN " + tableInfo.getKeyColumn() + " = " + keyValue + " THEN " + 0 +
-                                                      " WHEN " + columnName + " = " + finalVal + " THEN " + oldVal +
-                                                      " END")
-                                      .in(columnName, oldVal, finalVal)
-                                      .orderByAsc(oldVal < finalVal, columnName)
-                                      .orderByDesc(oldVal > finalVal, columnName);
+        UpdateWrapper<T> updateWrapper = new UpdateWrapper<T>()
+                .setSql(columnName +
+                                " = CASE " +
+                                " WHEN " + tableInfo.getKeyColumn() + " = " + keyValue + " THEN " + 0 +
+                                " WHEN " + columnName + " = " + finalVal + " THEN " + oldVal +
+                                " END")
+                .in(columnName, oldVal, finalVal)
+                .orderByAsc(oldVal < finalVal, columnName)
+                .orderByDesc(oldVal > finalVal, columnName);
         if (SqlHelper.retBool(this.update(tableInfo.newInstance(), updateWrapper))) {
             if (val != finalVal) {
                 ReflectUtil.setFieldValue(entity, TakeshiUtil.getPropertyName(sortColumn), finalVal);
