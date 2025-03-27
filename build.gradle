@@ -32,7 +32,7 @@ ext {
     libphonenumberVersion = '8.13.51'
     html2pdfVersion = '6.0.0'
     hutoolVersion = '5.8.36'
-    saTokenVersion = '1.39.0'
+    saTokenVersion = '1.41.0'
     // thymeleaf要使用的ognl，版本要相互对应上
     ognlVersion = '3.3.5'
     jaxbApiVersion = '2.3.1'
@@ -42,7 +42,7 @@ ext {
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
-//version = '1.1.3'
+//version = '1.1.4'
 version = '25.03.18.0-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
@@ -157,7 +157,7 @@ dependencies {
 
     api "cn.hutool:hutool-all:${hutoolVersion}"
     api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"
-    api "cn.dev33:sa-token-redisson-jackson:${saTokenVersion}"
+    api "cn.dev33:sa-token-redisson-spring-boot-starter:${saTokenVersion}"
 
     api "ognl:ognl:${ognlVersion}"
     // 使用S3时提示：JAXB is unavailable. Will fallback to SDK implementation which may be less performant.If you are using Java 9+, you will need to include javax.xml.bind:jaxb-api as a dependency.

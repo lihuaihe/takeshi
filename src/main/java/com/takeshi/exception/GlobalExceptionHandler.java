@@ -114,7 +114,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<?> noSuchElementException(NoResourceFoundException noResourceFoundException) {
-        log.error("GlobalExceptionHandler.noSuchElementException --> noResourceFoundException: ", noResourceFoundException);
+        if (!"No static resource rdoc-project.md.".equals(noResourceFoundException.getMessage())) {
+            // rdoc-project.md文件没有创建时不打印异常了
+            log.error("GlobalExceptionHandler.noSuchElementException --> noResourceFoundException: ", noResourceFoundException);
+        }
         return ResponseEntity.notFound().build();
     }
 
