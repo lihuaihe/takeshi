@@ -20,28 +20,28 @@ public @interface SystemSecurity {
      *
      * @return boolean
      */
-    boolean token() default false;
+    boolean passToken() default false;
 
     /**
      * 放弃校验APP端调用接口的平台，需要配置yml文件中的 takeshi.app-platform 参数才会生效
      *
      * @return boolean
      */
-    boolean platform() default false;
+    boolean passPlatform() default false;
 
     /**
      * 放弃校验参数签名，需要配置yml文件中的 sa-token.sign.secret-key 值才会生效
      *
      * @return boolean
      */
-    boolean signature() default false;
+    boolean passSignature() default false;
 
     /**
      * 放弃校验客户端时间戳，如果需要校验参数签名则该配置无效，只要校验了参数签名就一定需要校验客户端的时间戳
      *
      * @return boolean
      */
-    boolean timestamp() default true;
+    boolean passTimestamp() default true;
 
     /**
      * 放弃上述token, platform, signature, timestamp的校验
@@ -49,7 +49,7 @@ public @interface SystemSecurity {
      *
      * @return boolean
      */
-    boolean all() default false;
+    boolean passAll() default false;
 
     // ----------------------------------------------------- 分隔线 -----------------------------------------------------
 

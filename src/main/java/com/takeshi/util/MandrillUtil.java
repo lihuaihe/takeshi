@@ -202,7 +202,7 @@ public final class MandrillUtil {
     }
 
     /**
-     * 通过HTML模板与绑定参数融合后返回字符串，设置HTML正文，需要将模版文件放在resources的默认模版路径template目录
+     * 通过HTML模板与绑定参数融合后返回字符串，设置HTML正文，需要将模版文件放在默认模版路径resources/templates目录下
      *
      * @param templateName 模板文件名
      * @param bindingMap   绑定的参数，此Map中的参数会替换模板中的变量

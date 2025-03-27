@@ -11,12 +11,12 @@ import cn.hutool.core.map.MapUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeshi.config.security.CachedBodyHttpServletRequest;
 import com.takeshi.constants.RequestConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +81,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
         // 计算签名
         String paramsStr = this.joinParamsDictSort(paramsMap);
         String fullStr = paramsStr + "&" + key + "=" + secretKey;
-        String signStr = this.abstractStr(fullStr);
+        String signStr = this.digestFullStr(fullStr);
 
         // 输入日志，方便调试
         log.debug("fullStr：{}", fullStr);
@@ -213,7 +213,7 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     @Override
     public boolean isValidRequest(SaRequest request, String... paramNames) {
         if (paramNames.length == 0) {
-            return this.isValidParamMap(request.getParamMap());
+            return this.isValidParamMap(this.getAllParamMap(request));
         } else {
             return this.isValidParamMap(this.takeRequestParam(request, paramNames));
         }
@@ -228,24 +228,66 @@ public class TakeshiSaSignTemplate extends SaSignTemplate {
     @Override
     public void checkRequest(SaRequest request, String... paramNames) {
         if (paramNames.length == 0) {
-            this.checkParamMap(request.getParamMap());
+            checkParamMap(this.getAllParamMap(request));
         } else {
-            this.checkParamMap(this.takeRequestParam(request, paramNames));
+            checkParamMap(takeRequestParam(request, paramNames));
         }
+    }
+
+    /**
+     * 从请求中提取指定的参数
+     *
+     * @param request    请求对象
+     * @param paramNames 指定的参数名称，不可为空，如果传入空数组则代表只拿 timestamp、nonce、sign 三个参数
+     * @return 提取出的参数
+     */
+    @Override
+    protected Map<String, String> takeRequestParam(SaRequest request, String[] paramNames) {
+        return this.getAllParamMap(request, paramNames);
     }
 
     @SneakyThrows
     private Map<String, String> getAllParamMap(SaRequest request) {
         Map<String, String> paramMap = new HashMap<>(request.getParamMap());
         if (!HttpMethod.GET.matches(request.getMethod())
-                && request.getSource() instanceof ContentCachingRequestWrapper contentCachingRequestWrapper) {
-            JsonNode jsonNode = objectMapper.readTree(contentCachingRequestWrapper.getContentAsByteArray());
+                && request.getSource() instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest) {
+            JsonNode jsonNode = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
             if (!jsonNode.isNull()) {
                 if (jsonNode.isObject()) {
                     Map<String, String> map = objectMapper.convertValue(jsonNode, new TypeReference<>() {
                     });
                     if (CollUtil.isNotEmpty(map)) {
                         paramMap.putAll(map);
+                    }
+                } else {
+                    paramMap.put(BODY, objectMapper.writeValueAsString(jsonNode));
+                }
+            }
+        }
+        paramMap.put(timestamp, request.getHeader(RequestConstants.Header.TIMESTAMP));
+        paramMap.put(nonce, request.getHeader(RequestConstants.Header.NONCE));
+        paramMap.put(sign, request.getHeader(RequestConstants.Header.SIGN));
+        return paramMap;
+    }
+
+    @SneakyThrows
+    private Map<String, String> getAllParamMap(SaRequest request, String... paramNames) {
+        Map<String, String> paramMap = new HashMap<>();
+        // 获取指定的参数
+        for (String paramName : paramNames) {
+            paramMap.put(paramName, request.getParam(paramName));
+        }
+        if (!HttpMethod.GET.matches(request.getMethod())
+                && request.getSource() instanceof CachedBodyHttpServletRequest cachedBodyHttpServletRequest) {
+            JsonNode jsonNode = objectMapper.readTree(cachedBodyHttpServletRequest.getInputStream());
+            if (!jsonNode.isNull()) {
+                if (jsonNode.isObject()) {
+                    Map<String, String> map = objectMapper.convertValue(jsonNode, new TypeReference<>() {
+                    });
+                    if (CollUtil.isNotEmpty(map)) {
+                        for (String paramName : paramNames) {
+                            paramMap.put(paramName, map.get(paramName));
+                        }
                     }
                 } else {
                     paramMap.put(BODY, objectMapper.writeValueAsString(jsonNode));

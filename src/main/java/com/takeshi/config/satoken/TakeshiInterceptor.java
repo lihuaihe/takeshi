@@ -197,7 +197,7 @@ public class TakeshiInterceptor implements HandlerInterceptor {
             }
             // 速率限制
             SystemSecurity systemSecurity = this.rateLimit(request, handlerMethod, objectMapper, objectMapper.readValue(paramObjectValue, ObjectNode.class), takeshiProperties);
-            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.all() && !systemSecurity.token())) {
+            if (ObjUtil.isNull(systemSecurity) || (!systemSecurity.passAll() && !systemSecurity.passToken())) {
                 // 执行token认证函数
                 auth.run(handlerMethod);
             }
@@ -223,9 +223,9 @@ public class TakeshiInterceptor implements HandlerInterceptor {
         String clientIp = (String) request.getAttribute(RequestConstants.CLIENT_IP);
         boolean passPlatform = false, passSignature = false, passTimestamp = true;
         if (ObjUtil.isNotNull(systemSecurity)) {
-            passPlatform = systemSecurity.all() || systemSecurity.platform();
-            passSignature = systemSecurity.all() || systemSecurity.signature();
-            passTimestamp = systemSecurity.all() || systemSecurity.timestamp();
+            passPlatform = systemSecurity.passAll() || systemSecurity.passPlatform();
+            passSignature = systemSecurity.passAll() || systemSecurity.passSignature();
+            passTimestamp = systemSecurity.passAll() || systemSecurity.passTimestamp();
         }
         if (takeshiProperties.isAppPlatform() && !passPlatform && !UserAgentUtil.parse(request.getHeader(Header.USER_AGENT.getValue())).isMobile()) {
             // 移动端请求工具校验
