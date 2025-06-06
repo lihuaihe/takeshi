@@ -4,7 +4,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.Header;
@@ -15,15 +14,18 @@ import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiConstants;
 import com.takeshi.util.GsonUtil;
 import com.takeshi.util.TakeshiUtil;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StopWatch;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -40,6 +42,7 @@ import java.util.*;
  */
 @Slf4j
 @AutoConfiguration(value = "takeshiFilter")
+@ConditionalOnMissingBean(name = "takeshiFilter")
 @RequiredArgsConstructor
 public class TakeshiFilter extends OncePerRequestFilter {
 
@@ -49,10 +52,22 @@ public class TakeshiFilter extends OncePerRequestFilter {
 
     private final MultipartResolver multipartResolver;
 
+    private final Tracer tracer;
+
     @Value("${takeshi.enable-response-data-log:true}")
     private boolean enableResponseDataLog;
 
     private List<String> excludeUrlList;
+
+    /**
+     * 允许记录的响应内容类型
+     */
+    private static final List<String> ALLOWED_LOG_CONTENT_TYPES = Arrays.asList(
+            "application/json",
+            "text/plain",
+            "text/html",
+            "application/xml"
+    );
 
     @Override
     public void initFilterBean() throws ServletException {
@@ -69,10 +84,8 @@ public class TakeshiFilter extends OncePerRequestFilter {
         // 如果接口返回值是流式响应，则应将流式响应接口路径配置在excludeUrl中，这样就不会记录日志，否则会无法持续返回流
         if (excludeUrlList.stream().noneMatch(item -> antPathMatcher.match(item, servletPath))) {
             Instant startTime = Instant.now();
-            String traceId = IdUtil.fastSimpleUUID();
-            // 填充traceId
-            MDC.put(RequestConstants.TRACE_ID, traceId);
-            StopWatch stopWatch = new StopWatch(traceId);
+            String stopWatchId = Optional.ofNullable(tracer.currentSpan()).map(Span::context).map(TraceContext::traceId).orElse("");
+            StopWatch stopWatch = new StopWatch(stopWatchId);
             stopWatch.start();
             if (multipartResolver.isMultipart(request)) {
                 request = multipartResolver.resolveMultipart(request);
@@ -101,16 +114,16 @@ public class TakeshiFilter extends OncePerRequestFilter {
             map.put("Header Nonce", request.getHeader(RequestConstants.Header.NONCE));
             log.info("TakeshiFilter.doFilter --> Request Start: {}", GsonUtil.toJson(map));
 
-            response = new ContentCachingResponseWrapper(response);
+            ContentCachingResponseWrapper cachingResponseWrapper = new ContentCachingResponseWrapper(response);
             // 执行过滤器
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, cachingResponseWrapper);
             // 获取 contentCachingResponseWrapper 的返回值
-            byte[] bytes = ((ContentCachingResponseWrapper) response).getContentAsByteArray();
+            byte[] bytes = cachingResponseWrapper.getContentAsByteArray();
             String responseData = StrUtil.str(bytes, StandardCharsets.UTF_8);
-            if (enableResponseDataLog) {
+            if (enableResponseDataLog && ALLOWED_LOG_CONTENT_TYPES.stream().anyMatch(item -> StrUtil.startWithIgnoreCase(cachingResponseWrapper.getContentType(), item))) {
                 log.info("Response Data: {}", responseData);
             }
-            ((ContentCachingResponseWrapper) response).copyBodyToResponse();
+            cachingResponseWrapper.copyBodyToResponse();
             stopWatch.stop();
             long totalTimeMillis = stopWatch.getTotalTimeMillis();
             log.info("End Of Response, Time Consuming: {} ms", totalTimeMillis);
@@ -132,12 +145,6 @@ public class TakeshiFilter extends OncePerRequestFilter {
             return;
         }
         filterChain.doFilter(request, response);
-    }
-
-    @Override
-    public void destroy() {
-        // 请求结束时删除数据，否则会造成内存溢出
-        MDC.remove(RequestConstants.TRACE_ID);
     }
 
 }

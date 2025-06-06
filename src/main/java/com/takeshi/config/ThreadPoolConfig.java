@@ -1,20 +1,22 @@
 package com.takeshi.config;
 
 import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.IdUtil;
-import com.takeshi.constants.RequestConstants;
-import com.takeshi.util.TakeshiThreadUtil;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskDecorator;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -23,9 +25,13 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Lion Li
  **/
 @Slf4j
+@EnableAsync
 @AutoConfiguration(value = "threadPoolConfig")
 @AutoConfigureOrder(Integer.MIN_VALUE)
+@RequiredArgsConstructor
 public class ThreadPoolConfig {
+
+    private final Tracer tracer;
 
     @Value("${server.port:8080}")
     private Integer serverPort;
@@ -36,13 +42,38 @@ public class ThreadPoolConfig {
     private final int CORE = Runtime.getRuntime().availableProcessors() + 1;
 
     /**
-     * threadPoolTaskExecutor
+     * taskDecorator
      *
+     * @return TaskDecorator
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public TaskDecorator taskDecorator() {
+        return runnable -> {
+            Span currentSpan = tracer.currentSpan();
+            if (currentSpan == null) {
+                return runnable;
+            }
+            return () -> {
+                Span childSpan = tracer.spanBuilder().setParent(currentSpan.context()).start();
+                try (Tracer.SpanInScope spanInScope = tracer.withSpan(childSpan)) {
+                    runnable.run();
+                } finally {
+                    childSpan.end();
+                }
+            };
+        };
+    }
+
+    /**
+     * 线程池
+     *
+     * @param taskDecorator taskDecorator
      * @return ThreadPoolTaskExecutor
      */
     @Bean
     @ConditionalOnMissingBean
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor(TaskDecorator taskDecorator) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(CORE);
         executor.setMaxPoolSize(CORE * 2);
@@ -52,15 +83,10 @@ public class ThreadPoolConfig {
         // 线程池维护线程所允许的空闲时间
         int KEEP_ALIVE_SECONDS = 300;
         executor.setKeepAliveSeconds(KEEP_ALIVE_SECONDS);
-        executor.setTaskDecorator(new MdcTaskDecorator());
-        executor.setThreadNamePrefix("task-" + serverPort + "-exec-");
+        executor.setTaskDecorator(taskDecorator);
+        executor.setThreadNamePrefix("thread-" + serverPort + "-exec-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setThreadFactory(r -> {
-            Thread thread = new Thread(r);
-            thread.setUncaughtExceptionHandler((t, e) -> log.error("ThreadPoolConfig.threadPoolTaskExecutor --> e: ", e));
-            return thread;
-        });
         executor.initialize();
         return executor;
     }
@@ -72,23 +98,9 @@ public class ThreadPoolConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    protected ScheduledExecutorService scheduledExecutorService() {
-        return new ScheduledThreadPoolExecutor(CORE,
-                                               ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true),
-                                               new ThreadPoolExecutor.CallerRunsPolicy()) {
-            @Override
-            protected void beforeExecute(Thread t, Runnable r) {
-                MDC.put(RequestConstants.TRACE_ID, IdUtil.fastSimpleUUID());
-                super.beforeExecute(t, r);
-            }
-
-            @Override
-            protected void afterExecute(Runnable r, Throwable t) {
-                super.afterExecute(r, t);
-                TakeshiThreadUtil.printException(r, t);
-                MDC.remove(RequestConstants.TRACE_ID);
-            }
-        };
+    public ScheduledExecutorService scheduledExecutorService() {
+        ThreadFactory threadFactory = ThreadUtil.newNamedThreadFactory("schedule-" + serverPort + "-exec-", true);
+        return new ScheduledThreadPoolExecutor(CORE, threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
 }

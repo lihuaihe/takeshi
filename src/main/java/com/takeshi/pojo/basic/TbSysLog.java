@@ -45,7 +45,7 @@ public class TbSysLog implements Serializable {
      * 请求的IP
      */
     @Schema(description = "请求的IP")
-    private Long clientIp;
+    private byte[] clientIp;
 
     /**
      * 用户代理

@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'signing'
     id 'maven-publish'
+    id 'org.jreleaser' version '1.18.0'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -22,7 +22,7 @@ ext {
     jtsVersion = '1.20.0'
     ffmpegVersion = '7.1-1.5.11'
     javacvVersion = '1.5.11'
-    mybatisPlusVersion = '3.5.9'
+    mybatisPlusVersion = '3.5.12'
     springdocVersion = '2.7.0'
     awsVersion = '2.29.23'
     lutungVersion = '0.0.8'
@@ -31,8 +31,8 @@ ext {
     gsonVersion = '2.12.1'
     libphonenumberVersion = '8.13.51'
     html2pdfVersion = '6.0.0'
-    hutoolVersion = '5.8.36'
-    saTokenVersion = '1.41.0'
+    hutoolVersion = '5.8.38'
+    saTokenVersion = '1.42.0'
     // thymeleaf要使用的ognl，版本要相互对应上
     ognlVersion = '3.3.5'
     jaxbApiVersion = '2.3.1'
@@ -43,7 +43,7 @@ ext {
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.1.4'
-version = '25.03.18.0-SNAPSHOT'
+version = '25.06.06.0-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -99,31 +99,79 @@ publishing {
     }
     repositories {
         maven {
-            if (project.version.toString().endsWith("-SNAPSHOT")) {
-                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
-            } else {
-                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            url = layout.buildDirectory.dir('staging-deploy')
+//            if (project.version.toString().endsWith("-SNAPSHOT")) {
+//                url = "https://oss.sonatype.org/content/repositories/snapshots/"
+//            } else {
+//                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+//            }
+//            credentials {
+//                username = System.getenv('SONATYPE_USERNAME')
+//                password = System.getenv('SONATYPE_PASSWORD')
+//            }
+        }
+    }
+
+    jreleaser {
+        signing {
+            active = 'ALWAYS'
+            armored = true
+        }
+        deploy {
+            maven {
+//                mavenCentral {
+//                    sonatype {
+//                        active = 'ALWAYS'
+//                        url = 'https://central.sonatype.com/api/v1/publisher'
+//                        username = 'omN2YUJt'
+//                        password = 'HNXCSpPZIk8Ql55OtLrvuCBcKyQnob36YpPKNdMDe7Vp'
+//                        stagingRepository('build/staging-deploy')
+//                    }
+//                }
+                nexus3 {
+                    'snapshot-deploy' {
+                        active = 'SNAPSHOT'
+                        url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+//                        snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots'
+                        applyMavenCentralRules = true
+                        snapshotSupported = true
+//                        closeRepository = true
+//                        releaseRepository = true
+                        username = 'omN2YUJt'
+                        password = 'HNXCSpPZIk8Ql55OtLrvuCBcKyQnob36YpPKNdMDe7Vp'
+                        stagingRepository('build/staging-deploy')
+                    }
+                }
             }
-            credentials {
-                username = System.getenv('SONATYPE_USERNAME')
-                password = System.getenv('SONATYPE_PASSWORD')
+        }
+        release {
+            github {
+                enabled = false
+                skipRelease = true
             }
         }
     }
+//    <server>
+//	<id>${server}</id>
+//	<username>omN2YUJt</username>
+//	<password>HNXCSpPZIk8Ql55OtLrvuCBcKyQnob36YpPKNdMDe7Vp</password>
+//</server>
+
 }
 
-signing {
-    def signingKeyId = System.getenv('SIGNING_KEY_ID')
-    def signingSecretKey = file(System.getenv('SIGNING_SECRET_KEY_RING_FILE')).text
-    def signingPassword = System.getenv('SIGNING_PASSWORD')
-    useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
-    sign publishing.publications.mavenJava
-}
+//signing {
+//    def signingKeyId = System.getenv('SIGNING_KEY_ID')
+//    def signingSecretKey = file(System.getenv('SIGNING_SECRET_KEY_RING_FILE')).text
+//    def signingPassword = System.getenv('SIGNING_PASSWORD')
+//    useInMemoryPgpKeys(signingKeyId, signingSecretKey, signingPassword)
+//    sign publishing.publications.mavenJava
+//}
 
 dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'io.micrometer:micrometer-tracing-bridge-brave'
     compileOnly 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
     api "org.redisson:redisson-spring-boot-starter:${redissonVersion}"

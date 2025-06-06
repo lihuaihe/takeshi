@@ -160,7 +160,7 @@ public class TakeshiConfig {
     }
 
     /**
-     * 配置redisson客户端
+     * 配置redisson客户端，单机模式
      *
      * @param redisProperties redisProperties
      * @param objectMapper    objectMapper
@@ -174,7 +174,9 @@ public class TakeshiConfig {
         config.useSingleServer()
               .setClientName(redisProperties.getClientName())
               .setAddress(redisProperties.getUrl())
-              .setDatabase(redisProperties.getDatabase());
+              .setPassword(redisProperties.getPassword())
+              .setDatabase(redisProperties.getDatabase())
+              .setTimeout((int) redisProperties.getTimeout().toMillis());
         return Redisson.create(config);
     }
 

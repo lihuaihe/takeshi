@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/rapidoc/dist/rapidoc-min.js"></script>
     <script>
         const prefixUrl = 'v3/api-docs/';
-        // fetch请求会缓存，修改文件后有时需要强制刷新才会显示修改后的内容
+        // fetch请求会缓存，修改 rdoc-project.md 文件后有时需要强制刷新才会显示修改后的内容
         // 如果禁用了springdoc.swagger-ui.enabled，则接口/swagger-config请求不通
         const configPromise = fetch(prefixUrl + 'swagger-config').then(res => res.json());
         const mdPromise = fetch('rdoc-project.md').then(res => {
@@ -17,38 +17,101 @@
                 return res.text();
             }
         });
-        window.addEventListener('DOMContentLoaded', (event) => {
+        window.addEventListener('DOMContentLoaded', (e) => {
             const versionSelectorEl = document.getElementById('version-selector');
             let overviewEl = document.getElementById('overview');
-            const rdocEl = document.getElementById('rdoc');
+            const rdocEl = document.querySelector('rapi-doc');
             rdocEl.addEventListener('before-render', (e) => {
                 document.title = e.detail.spec.info.title;
                 rdocEl.setAttribute('nav-active-item-marker', 'colored-block')
             });
             rdocEl.addEventListener('spec-loaded', (e) => {
-                let rdocShadowRoot = document.querySelector('rapi-doc').shadowRoot;
-                addChangResponseStyleBt(rdocShadowRoot);
-                rdocShadowRoot.querySelectorAll('[part*="section-navbar-path"]')
+                addBt();
+                rdocEl.shadowRoot.querySelectorAll('[part~="section-navbar-path"]')
                     .forEach(el => {
                         el.addEventListener('click', (e) => {
-                            addChangResponseStyleBt(rdocShadowRoot);
+                            if (rdocEl.shadowRoot.querySelector('api-request').shadowRoot.querySelector('[part~=btn-last-params]')) {
+                                rdocEl.shadowRoot.querySelector('api-request').shadowRoot.querySelector('[part~=btn-last-params]').remove();
+                            }
+                            addBt();
                         })
                     });
             })
             rdocEl.addEventListener('before-try', (e) => {
-                e.detail.request.headers.append('timestamp', Date.now().toString());
-                e.detail.request.headers.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+                const {request} = e.detail;
+                request.headers.append('timestamp', Date.now().toString());
+                request.headers.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+                let param = {};
+                const path = e.composedPath(); // 包括 Shadow DOM 内部路径
+                const requestPanelInputEls = [...path[0].shadowRoot.firstElementChild.querySelectorAll('input, textarea:not(.is-hidden)')];
+                requestPanelInputEls.forEach(el => {
+                    if (el.tagName === 'INPUT') {
+                        param.input = param.input || {};
+                        param.input[el.dataset.pname] = el.value;
+                    } else if (el.tagName === 'TEXTAREA') {
+                        param['body'] = el.value;
+                    }
+                });
+                if (Object.keys(param).length) {
+                    localStorage.setItem(window.location.hash.slice(1), JSON.stringify(param));
+                }
             });
 
-            async function addChangResponseStyleBt(rdocShadowRoot) {
+            function addBt() {
+                addRequestLastParamsBt();
+                addChangResponseStyleBt();
+            }
+
+            async function addRequestLastParamsBt() {
                 const startTime = Date.now();
-                let apiResponseEl;
-                while (!apiResponseEl) {
-                    apiResponseEl = rdocShadowRoot.querySelector('api-response');
+                let apiRequestEl;
+                while (!apiRequestEl) {
+                    apiRequestEl = rdocEl.shadowRoot.querySelector('api-request');
                     if (Date.now() - startTime > 2000) {
                         return;
                     }
-                    if (apiResponseEl) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    if (apiRequestEl && apiRequestEl.shadowRoot && apiRequestEl.shadowRoot.querySelector('[part=wrap-request-btn]')) {
+                        let shadowRoot = apiRequestEl.shadowRoot;
+                        const requestPanelInputEls = [...shadowRoot.firstElementChild.querySelectorAll('input, textarea:not(.is-hidden)')];
+                        if (requestPanelInputEls.length) {
+                            if (!shadowRoot.querySelector('[part~=btn-last-params]')) {
+                                let wrapRequestBtnEL = shadowRoot.querySelector('[part=wrap-request-btn]');
+                                let bt = document.createElement('button');
+                                bt.classList.add('m-btn', 'thin-border');
+                                bt.part.add('btn', 'btn-outline', 'btn-last-params');
+                                bt.textContent = 'LAST PARAMS'
+                                bt.title = 'Use the parameters of the last request';
+                                bt.style.marginRight = '5px';
+                                wrapRequestBtnEL.insertBefore(bt, wrapRequestBtnEL.children[1]);
+                                bt.addEventListener('click', (e) => {
+                                    let param = JSON.parse(localStorage.getItem(window.location.hash.slice(1)));
+                                    if (param) {
+                                        requestPanelInputEls.forEach(el => {
+                                            if (el.tagName === 'INPUT') {
+                                                let inputParam = param.input;
+                                                el.value = inputParam[el.dataset.pname];
+                                            } else if (el.tagName === 'TEXTAREA') {
+                                                el.value = param.body;
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            async function addChangResponseStyleBt() {
+                const startTime = Date.now();
+                let apiResponseEl;
+                while (!apiResponseEl) {
+                    apiResponseEl = rdocEl.shadowRoot.querySelector('api-response');
+                    if (Date.now() - startTime > 2000) {
+                        return;
+                    }
+                    if (apiResponseEl && apiResponseEl.shadowRoot && apiResponseEl.shadowRoot.querySelector('[part~=btn-selected-response-status]')) {
                         let shadowRoot = apiResponseEl.shadowRoot;
                         let responseBtEl = shadowRoot.getElementById('response-bt');
                         if (responseBtEl) {
@@ -118,7 +181,7 @@
                             });
                         }
                     }
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 
@@ -153,6 +216,7 @@
             padding: 5px;
             font-size: 16px;
             border-radius: 4px;
+            -webkit-appearance: none; /* 清除浏览器默认样式 */
         }
 
         #overview {
@@ -164,7 +228,6 @@
 </head>
 <body>
 <rapi-doc
-        id="rdoc"
         render-style="focused"
         show-header="false"
         schema-style="table"
