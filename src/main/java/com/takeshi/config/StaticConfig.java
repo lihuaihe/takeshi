@@ -80,7 +80,7 @@ public class StaticConfig implements SpringApplicationRunListener {
     @Override
     public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
         Binder binder = Binder.get(environment);
-        TakeshiProperties takeshiProperties = binder.bind("takeshi", TakeshiProperties.class).orElse(null);
+        TakeshiProperties takeshiProperties = binder.bind("takeshi", TakeshiProperties.class).orElse(new TakeshiProperties());
         String applicationName = environment.getProperty("spring.application.name");
         String active = environment.getProperty("spring.profiles.active");
         StaticConfig.takeshiProperties = takeshiProperties;

@@ -42,8 +42,8 @@ ext {
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
-//version = '1.1.5'
-version = '25.6.0-SNAPSHOT'
+//version = '1.1.6'
+version = '25.6.30-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -138,6 +138,8 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    // 如果需要使用micrometer-tracing-bridge-brave必须引入spring-boot-starter-actuator来进行自动装配使Tracer注入
     api 'io.micrometer:micrometer-tracing-bridge-brave'
     compileOnly 'org.springframework.boot:spring-boot-starter-thymeleaf'
     api 'org.springframework.retry:spring-retry'
