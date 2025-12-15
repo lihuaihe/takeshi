@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author 七濑武【Nanase Takeshi】
  */
-public abstract class ListTypeHandler<T> extends BaseTypeHandler<List<T>> {
+public abstract class AbstractListTypeHandler<T> extends BaseTypeHandler<List<T>> {
 
     /**
      * 具体类型，由子类提供
