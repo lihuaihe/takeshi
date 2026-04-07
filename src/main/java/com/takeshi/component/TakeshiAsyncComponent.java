@@ -1,24 +1,26 @@
 package com.takeshi.component;
 
-import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
 import com.takeshi.annotation.TakeshiLog;
-import com.takeshi.constants.RequestConstants;
 import com.takeshi.constants.TakeshiCode;
 import com.takeshi.pojo.basic.ResponseData;
 import com.takeshi.pojo.basic.TbSysLog;
 import com.takeshi.util.GsonUtil;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.net.InetAddress;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * TakeshiAsyncComponent
@@ -32,6 +34,8 @@ import java.util.Map;
 public class TakeshiAsyncComponent {
 
     private final DataSource dataSource;
+
+    private final Tracer tracer;
 
     /**
      * 新增一条接口请求相关信息到数据库
@@ -57,7 +61,7 @@ public class TakeshiAsyncComponent {
             TbSysLog tbSysLog = new TbSysLog();
             tbSysLog.setLogType(takeshiLog.logType().name());
             tbSysLog.setLoginId(loginId);
-            tbSysLog.setClientIp(Ipv4Util.ipv4ToLong(clientIp));
+            tbSysLog.setClientIp(InetAddress.getByName(clientIp).getAddress());
             tbSysLog.setUserAgent(userAgent);
             tbSysLog.setHttpMethod(httpMethod);
             tbSysLog.setMethodName(methodName);
@@ -65,7 +69,7 @@ public class TakeshiAsyncComponent {
             tbSysLog.setRequestHeader(GsonUtil.toJson(headerMap));
             tbSysLog.setRequestParams(paramObjectValue);
             tbSysLog.setResponseData(StrUtil.emptyToNull(responseData));
-            tbSysLog.setTraceId(MDC.get(RequestConstants.TRACE_ID));
+            tbSysLog.setTraceId(Optional.ofNullable(tracer.currentSpan()).map(Span::context).map(TraceContext::traceId).orElse(null));
             tbSysLog.setSuccessful(this.successful(responseData));
             tbSysLog.setRequestTime(startTime);
             tbSysLog.setCostTimeMillis(totalTimeMillis);

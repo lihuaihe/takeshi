@@ -416,14 +416,12 @@ public interface TakeshiMapper<T> extends BaseMapper<T> {
      */
     default <E extends BasicPage> QueryWrapper<T> buildQueryWrapper(E basicPage, List<SFunction<T, ?>> columns) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        String keyword = null;
+        String keyword = basicPage.getKeyword();
         Instant startTime = null, endTime = null;
         if (basicPage instanceof BasicSortQueryPage basicSortQueryPage) {
-            keyword = basicSortQueryPage.getKeyword();
             startTime = basicSortQueryPage.getStartTime();
             endTime = basicSortQueryPage.getEndTime();
         } else if (basicPage instanceof BasicQueryPage basicQueryPage) {
-            keyword = basicQueryPage.getKeyword();
             startTime = basicQueryPage.getStartTime();
             endTime = basicQueryPage.getEndTime();
         }

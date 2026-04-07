@@ -14,6 +14,7 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
+import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -160,7 +161,7 @@ public class TakeshiConfig {
     }
 
     /**
-     * 配置redisson客户端
+     * 配置redisson客户端，单机模式
      *
      * @param redisProperties redisProperties
      * @param objectMapper    objectMapper
@@ -171,10 +172,18 @@ public class TakeshiConfig {
     public RedissonClient redissonClient(RedisProperties redisProperties, ObjectMapper objectMapper) {
         Config config = new Config();
         config.setCodec(new JsonJacksonCodec(objectMapper));
-        config.useSingleServer()
-              .setClientName(redisProperties.getClientName())
-              .setAddress(redisProperties.getUrl())
-              .setDatabase(redisProperties.getDatabase());
+        SingleServerConfig singleServerConfig =
+                config.useSingleServer()
+                      .setClientName(redisProperties.getClientName())
+                      .setAddress(redisProperties.getUrl())
+                      .setPassword(redisProperties.getPassword())
+                      .setDatabase(redisProperties.getDatabase());
+        if (StrUtil.isBlank(redisProperties.getUrl()) && StrUtil.isNotBlank(redisProperties.getHost())) {
+            singleServerConfig.setAddress("redis://" + redisProperties.getHost() + ":" + redisProperties.getPort());
+        }
+        if (redisProperties.getTimeout() != null) {
+            singleServerConfig.setTimeout((int) redisProperties.getTimeout().toMillis());
+        }
         return Redisson.create(config);
     }
 
