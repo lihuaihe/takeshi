@@ -2,6 +2,7 @@ package com.takeshi.config;
 
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.hutool.core.collection.CollUtil;
+import com.github.xiaoymin.knife4j.core.extend.OpenApiExtend;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.json.JSONObject;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
+import org.springdoc.core.customizers.OperationCustomizer;
 import org.springdoc.core.customizers.SpringDocCustomizers;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.SpringDocConfigProperties;
@@ -46,13 +48,16 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
@@ -306,6 +311,55 @@ public class OpenApiConfig {
             retBOList.forEach(retBO -> apiResponses.compute(String.valueOf(retBO.getCode()), (k, v) -> Optional.ofNullable(v).orElse(new ApiResponse()).description(retBO.getMessage())));
             return operation;
         };
+    }
+
+    /**
+     * Knife4j OperationId 唯一化配置
+     * <p>
+     * 仅在用户项目引入 Knife4j 依赖后自动生效，将接口的 operationId 设置为
+     * {@code 类名_方法名}，避免不同 Controller 中同名方法在文档中相互覆盖。
+     * <p>
+     * 引入以下依赖后自动开启（无需额外配置）：
+     * <pre>{@code
+     * // Maven
+     * <dependency>
+     *     <groupId>com.github.xiaoymin</groupId>
+     *     <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+     * </dependency>
+     *
+     * // Gradle
+     * implementation "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${version}"
+     * }</pre>
+     *
+     * @author Lil' Doe
+     */
+    @Configuration
+    @ConditionalOnClass(OpenApiExtend.class)
+    public static class Knife4jOperationIdConfig {
+
+        /**
+         * 注册 OperationCustomizer，为每个接口生成唯一的 operationId
+         *
+         * @return OperationCustomizer
+         * @author Lil' Doe
+         *  2026/4/13 00:00
+         */
+        @Bean
+        public OperationCustomizer takeshiOperationIdCustomizer() {
+            return (operation, handlerMethod) -> {
+                if (operation == null || handlerMethod == null) {
+                    return operation;
+                }
+                if (StringUtils.hasText(operation.getOperationId())) {
+                    return operation;
+                }
+                String className = handlerMethod.getBeanType().getSimpleName();
+                String methodName = handlerMethod.getMethod().getName();
+                operation.setOperationId(className + "_" + methodName);
+                return operation;
+            };
+        }
+
     }
 
     /**

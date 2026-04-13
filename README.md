@@ -187,6 +187,14 @@ takeshi:
     # firebase使用的json文件名，默认使用firebase.json
     json-file-name: 'firebase.json'
     database-url: 'database-url'
+  #跳过指定日志
+  sql-log-filter:
+    #是否开启
+    enabled: true
+    # 跳过指定包下的sql
+    extra-packages:
+      - com.ljky.sportl.mapper
+
 ```
 
 ### 🌍国际化消息
