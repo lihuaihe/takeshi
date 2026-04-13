@@ -10,6 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 自定义额外属性值
  *
@@ -73,5 +76,30 @@ public class TakeshiProperties {
      * 注解{@link Cacheable}使用的redisson缓存配置，例如：使用classpath:redisson-cache-config.yml，也可以使用json文件的路径，填写内容参考：{@link CacheConfig}
      */
     private String redissonCacheConfigLocation;
+
+    /**
+     * SQL 日志过滤配置，开启后可通过 MDC 标记在指定代码块内屏蔽 SQL 相关日志
+     */
+    private SqlLogFilter sqlLogFilter = new SqlLogFilter();
+
+    /**
+     * SQL 日志过滤配置
+     *
+     * @author Lil' Doe
+     */
+    @Data
+    public static class SqlLogFilter {
+
+        /**
+         * 是否启用 SQL 日志过滤，默认不启用
+         */
+        private boolean enabled = false;
+
+        /**
+         * 额外需要屏蔽的 logger 包前缀列表（通常填写业务项目的 mapper 包，例如：com.example.mapper）
+         */
+        private List<String> extraPackages = new ArrayList<>();
+
+    }
 
 }
