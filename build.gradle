@@ -38,12 +38,14 @@ ext {
     jaxbApiVersion = '2.3.1'
     twilioVersion = '10.6.3'
     micaAutoVersion = '3.1.4'
+    knife4jVersion = '4.5.0'
 }
 
 group = 'life.725'
 archivesBaseName = 'takeshi-spring-boot-starter'
 //version = '1.1.6'
-version = '25.6.30-SNAPSHOT'
+//version = '25.6.30-SNAPSHOT'
+version = '26.4.13-SNAPSHOT'
 
 javadoc.options.encoding = 'UTF-8'
 compileJava.options.encoding = 'UTF-8'
@@ -181,6 +183,8 @@ dependencies {
     api "javax.xml.bind:jaxb-api:${jaxbApiVersion}"
 
     compileOnly "com.twilio.sdk:twilio:${twilioVersion}"
+
+    compileOnly "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:${knife4jVersion}"
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

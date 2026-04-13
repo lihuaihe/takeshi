@@ -445,6 +445,7 @@ public final class AmazonS3Util {
                                                                  .build()
                                          )
                                          .build()
+
                     );
                 }
                 if (ObjUtil.isNotNull(this.quality)) {
